@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [[ "$1" == "install" ]]; then
+	echo "Installing MetaViromeWrapper now! Please wait while we setup your environemnt :)"
+elif [[ "$1" == "setup" ]]; then
+    echo "Downloading databases... This may take sometime! Please wait patiently. Average download time is ~10-15 minutes."
+elif [[ "$1" == "run" ]]; then
+    echo "Running snakemake"
+else
+    echo "Invalid module specified."
+fi
+

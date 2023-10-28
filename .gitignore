@@ -1,1 +1,13 @@
-data/database
+pipeline/database
+.snakemake
+
+data/*
+!data/.gitkeep
+
+output/*
+!output/.gitkeep
+
+logs/*
+!log/.gitkeep
+
+pipeline/params

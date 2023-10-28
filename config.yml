@@ -1,0 +1,25 @@
+# setup working directories
+workdir : "."
+samplelist : "sample_list.tsv"
+datadir : "data/fastqc"
+contigdir : "data/testdata"
+dbdir: "data/database"
+
+
+# setup database directories
+vs2db: "pipeline/database/vs2/"
+phamerdb: "pipeline/database/phabox/"
+
+# 3) viral contig identification [params]
+dvfparams: "--len 200"
+vs2params : "--prep-for-dramv --min-length 200 --min-score 0 --include-groups dsDNAphage,ssDNA"
+virbotparams: ""
+phamerparams: "--len 200"
+
+vs2cutoff: 0.7
+dvfcutoff: 0.9
+dvfpval: 0.05
+phamercutoff: 0.7
+phamerpred: "phage"
+
+
