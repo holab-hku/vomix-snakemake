@@ -10,11 +10,9 @@ localrules:
   filter_outputs
 
 configfile: "config.yml"
-workdir: config['workdir']
 
 # Set temporary dir
-
-os.environ["TMPDIR"] = "tmp"
+# os.environ["TMPDIR"] = "tmp"
 #if not os.getenv("TMPDIR"):
 #  os.environ["TMPDIR"] = "tmp"
 #  os.makedirs(os.environ["TMPDIR"],exist_ok=True)
@@ -44,7 +42,7 @@ rule dvf_classify:
     dvfparams = config['dvfparams'], 
     model_dir = "pipeline/bin/DeepVirFinder/models/",
     output_dir = "output/intermediate/3__viralcontigident/dvf/{sample_id}",
-    tmp_dir = "$TMPDIR/{sample_id}"
+    tmp_dir = "tmp/{sample_id}"
   log:
     "logs/3__viralcontigident_{sample_id}.log"
   conda:
@@ -80,7 +78,7 @@ rule vs2_classify:
     vs2params = config['vs2params'],
     db_dir = config['vs2db'],
     output_dir = "output/intermediate/3__viralcontigident/vs2/{sample_id}",
-    tmp_dir = "$TMPDIR/{sample_id}"
+    tmp_dir = "tmp/{sample_id}"
   log:
     "logs/3__viralcontigident_{sample_id}.log"
   conda:
@@ -90,7 +88,7 @@ rule vs2_classify:
     #runtime = lambda wildcards, attempt: attempt*attempt*60
   shell:
     """
-    rm -rf {output}
+    rm -rf {params.output_dir}
     mkdir -p {params.tmp_dir}
 
     virsorter run \
@@ -123,10 +121,11 @@ rule virbot_classify:
   params:
     virbotparams = config['virbotparams'],
     output_dir = "output/intermediate/3__viralcontigident/virbot/{sample_id}", 
-    tmp_dir = "$TMPDIR/virbot/{sample_id}"
+    tmp_dir = "tmp_virbot/{sample_id}"
   shell:
     """
     rm -rf {params.tmp_dir} # remove any old directories
+    rm -rf {params.output_dir}
     mkdir -p {params.output_dir}
 
     python pipeline/bin/VirBot/VirBot.py \
@@ -135,7 +134,7 @@ rule virbot_classify:
         --threads {threads} \
         {params.virbotparams} &> {log}
 
-    mv {params.tmp_dir}/tmp {params.tmp_dir}/intermediate
+    #mv {params.tmp_dir}/tmp {params.tmp_dir}/intermediate
     mv -f {params.tmp_dir}/* {params.output_dir}
     rm -r {params.tmp_dir}
     """
@@ -160,10 +159,10 @@ rule phamer_classify:
     params_dir = "pipeline/params/phabox/",
     output_dir = "output/intermediate/3__viralcontigident/phamer/{sample_id}",
     script_dir = "pipeline/bin/PhaBOX/scripts/",
-    tmp_dir = "$TMPDIR/{sample_id}"
+    tmp_dir = "tmp/{sample_id}"
   shell:
     """
-    rm -r {params.output_dir}
+    rm -rf {params.output_dir}
     mkdir -p {params.output_dir}
     mkdir -p {params.tmp_dir}
 
@@ -195,15 +194,16 @@ rule merge_outputs:
     "output/3__viralcontigident/{sample_id}/merged_scores.csv"
   params:
     out_dir = "output/3__viralcontigident/{sample_id}",
-    tmp_dir = "$TMPDIR/{sample_id}"
+    tmp_dir = "tmp/{sample_id}"
   log:
     "logs/3__viralcontigident_mergeoutput.log"
   threads: 1
   shell:
     """
     mkdir -p {params.out_dir}
-    python pipeline/src/viralcontigident_mergeout.py {input.vs2out} {input.dvfout} {input.virbotout} {input.phamerout} --output {params.tmp_dir}
-    mv {params.tmp_dir} {output}
+    mkdir -p {params.tmp_dir}
+    python pipeline/src/viralcontigident_mergeout.py {input.vs2out} {input.dvfout} {input.virbotout} {input.phamerout} --output {params.tmp_dir}/tmp.csv
+    mv {params.tmp_dir}/* {output}
     """
     
     

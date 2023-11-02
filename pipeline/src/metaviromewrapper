@@ -1,12 +1,66 @@
 #!/bin/bash
 
+#######################
+# INSTAL DEPENDENCIES #
+#######################
+
 if [[ "$1" == "install" ]]; then
 	echo "Installing MetaViromeWrapper now! Please wait while we setup your environemnt :)"
+	git clone https://github.com/jessieren/DeepVirFinder pipeline/bin/DeepVirFinder 
+	git clone https://github.com/GreyGuoweiChen/RNA_virus_detector pipeline/bin/VirBot
+	git clone https://github.com/KennthShang/PhaBOX.git pipeline/bin/PhaBOX
+
+	chmod 777 pipeline/srcs/* # give permission to all scripts 
+
+	for direct in $(cat pipeline/rules/pipelinesequence.list); do mkdir -p output/${direct}; mkdir -p output/intermediate/${direct} ;done
+
+###################
+# SETUP DATABASES #
+###################
+
 elif [[ "$1" == "setup" ]]; then
-    echo "Downloading databases... This may take sometime! Please wait patiently. Average download time is ~10-15 minutes."
+	echo "Downloading databases... This may take sometime! Please wait patiently. Average download time is ~10-15 minutes."
+
+	### VIRSORTER 2 DATABASE
+	conda env create --name virsorter_tmp --file pipeline/envs/vs2.yml -y
+	conda activate virsorter_tmp
+	rm -rf pipeleine/database/vs2 
+	echo "Downloading VirSorter2 database."
+	virsorter setup -d pipeline/database/vs2 -j "${@:2}"
+	conda deactivate
+	conda activate base
+	conda env remove --name virsorter_tmp -y
+
+	### PHABOX DATABASES 
+	fileid="1hjACPsIOqqcS5emGaduYvYrCzrIpt2_9"
+	filename="pipeline/database/phabox.zip"
+	html=`curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}"`
+	curl -Lb ./cookie "https://drive.google.com/uc?export=download&`echo ${html}|grep -Po '(confirm=[a-zA-Z0-9\-_]+)'`&id=${fileid}" -o ${filename}
+	unzip ${filename}  > /dev/null
+
+
+	### PHABOX PARAMETERS
+	fileid="1E94ii3Q0O8ZBm7UsyDT_n06YekNtfV20"
+	filename="pipeline/params/phabox.zip"
+	html=`curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}"`
+	curl -Lb ./cookie "https://drive.google.com/uc?export=download&`echo ${html}|grep -Po '(confirm=[a-zA-Z0-9\-_]+)'`&id=${fileid}" -o ${filename}
+	unzip ${filename} > /dev/null
+
+	chmod 777 pipeline/bin/PhaBOX/blastxml_to_tabular.py # give executable permission
+
+	# VIRBOT DATABASE
+	# Make sure to fix this later. There is a database inside bin/VirBot that needs to be downloaded from a link then unziped
+	# The git repo does not have the correct file
+
+
+
+###################
+# RUN THE PROGRAM #
+###################
+
 elif [[ "$1" == "run" ]]; then
-    echo "Running snakemake"
+	echo "Running snakemake"
 else
-    echo "Invalid module specified."
+   	 echo "Invalid module specified."
 fi
 

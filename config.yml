@@ -2,7 +2,7 @@
 workdir : "."
 samplelist : "sample_list.tsv"
 datadir : "data/fastqc"
-contigdir : "data/testdata"
+contigdir : "output/2__assembly/contigs" # should not end with a /
 dbdir: "data/database"
 
 
