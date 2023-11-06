@@ -192,9 +192,9 @@ rule merge_outputs:
     virbotout = "output/intermediate/3__viralcontigident/virbot/{sample_id}/pos_contig_score.csv",
     phamerout = "output/intermediate/3__viralcontigident/phamer/{sample_id}/out/phamer_prediction.csv"
   output:
-    "output/3__viralcontigident/{sample_id}/merged_scores.csv"
+    "output/3__viralcontigident/samples/{sample_id}/merged_scores.csv"
   params:
-    out_dir = "output/3__viralcontigident/{sample_id}",
+    out_dir = "output/3__viralcontigident/samples/{sample_id}",
     tmp_dir = "tmp/{sample_id}"
   log:
     "logs/3__viralcontigident_mergeoutput.log"
@@ -215,11 +215,11 @@ rule merge_outputs:
 rule filter_output:
   input:
     contig_file = os.path.join(config['contigdir'], "{sample_id}.fa"),
-    merged_scrs = "output/3__viralcontigident/{sample_id}/merged_scores.csv"
+    merged_scrs = "output/3__viralcontigident/samples/{sample_id}/merged_scores.csv"
   output:
-    filtered_contigs = "output/3__viralcontigident/{sample_id}/viral_contigs.fa",
-    filtered_scrs = "output/3__viralcontigident/{sample_id}/merged_scores_filtered.csv",
-    positive_hits = "output/3__viralcontigident/{sample_id}/viral_hits.txt"
+    filtered_contigs = "output/3__viralcontigident/samples/{sample_id}/viral_contigs.fa",
+    filtered_scrs = "output/3__viralcontigident/samples/{sample_id}/merged_scores_filtered.csv",
+    positive_hits = "output/3__viralcontigident/samples/{sample_id}/viral_hits.txt"
   params:
     script_path = "pipeline/src/filtercontig_scores.py",
     vs2_cutoff = config['vs2cutoff'], 
@@ -251,29 +251,44 @@ rule filter_output:
 # CD-HIT CLUSTER #
 ##################
 
+rule cat_contigs:
+  input:
+    expand("output/3__viralcontigident/samples/{sample_id}/viral_contigs.fa", sample_id = ["CRC_meta"])
+  output: 
+    "output/3__viralcontigident/combined_viralcontigs.fa"
+  log:
+    "logs/3__viralcontigident_catcontigs.log"
+  threads: 1
+  shell:
+    """
+    cat {input} > {output}
+    """
+
 
 
 rule derep_cluster:
   input:
-   " output/3__viralcontigident/{sample_id}/viral_contigs.fa"
+   "output/3__viralcontigident/combined_viralcontigs.fa"
   output:
-   expand("output/3__viralcontigident/output/viral_contigs_derep{coverage}.fa", coverage = config['cdhitcoverage'])
+    "output/3__viralcontigident/output/combined_viralcontigs_derep.fa"
+   #expand("output/3__viralcontigident/output/combined_viralcontigs_derep{coverage}.fa", coverage = config['cdhitcoverage'])
   params:
     cdhitparams = config['cdhitparams'],
     coveragecutoff = config['cdhitcoverage'],
     output_dir = "output/3__viralcontigident/output",
-    tmp_dir = "$TMPDIR/{sample_id}",
-    tmp_file = "$TMPDIR/{sample_id}/dereplicated_viral_contigs.fa"
-  log:
+    tmp_dir = "$TMPDIR/",
+    tmp_file = "$TMPDIR/dereplicated_viral_contigs.fa"
+  log: 
+    "logs/3__viralcontigident_cdhitderep.log"
   threads: 12
   shell:
     """
-    mkdir -p {params.tmpr_dir}
+    mkdir -p {params.tmp_dir}
     mkdir -p {params.output_dir}
 
     cd-hit -i {input} -o {params.tmp_file} -T {threads} -c {params.coveragecutoff} {params.cdhitparams}
 
-    mv 
+    mv {params.tmp_file} {output}
 
     
     """
