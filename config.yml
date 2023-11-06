@@ -23,3 +23,5 @@ phamercutoff: 0.7
 phamerpred: "phage"
 
 
+cdhitcoverage: 0.95
+cdhitparams: "-d 400 -M 0 -n 5"

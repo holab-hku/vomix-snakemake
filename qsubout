@@ -1,1 +1,4 @@
-Merged dataframe saved to tmp/CRC_meta/tmp.csv
+Collecting package metadata (current_repodata.json): ...working... done
+Solving environment: ...working... failed with repodata from current_repodata.json, will retry with next repodata source.
+Collecting package metadata (repodata.json): ...working... done
+Solving environment: ...working... 

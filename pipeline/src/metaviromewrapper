@@ -11,6 +11,17 @@ if [[ "$1" == "install" ]]; then
 	git clone https://github.com/KennthShang/PhaBOX.git pipeline/bin/PhaBOX
 
 	chmod 777 pipeline/srcs/* # give permission to all scripts 
+	
+	touch .gitignore
+	echo "pipeline/database
+	.snakemake
+	data/*
+	!data/.gitkeep
+	output/*
+	!output/.gitkeep
+	logs/*
+	!log/.gitkeep
+	pipeline/params" >> .gitignore
 
 	for direct in $(cat pipeline/rules/pipelinesequence.list); do mkdir -p output/${direct}; mkdir -p output/intermediate/${direct} ;done
 

@@ -12,10 +12,9 @@ localrules:
 configfile: "config.yml"
 
 # Set temporary dir
-# os.environ["TMPDIR"] = "tmp"
-#if not os.getenv("TMPDIR"):
-#  os.environ["TMPDIR"] = "tmp"
-#  os.makedirs(os.environ["TMPDIR"],exist_ok=True)
+if not os.getenv("TMPDIR"):
+  os.environ["TMPDIR"] = "tmp"
+  os.makedirs(os.environ["TMPDIR"],exist_ok=True)
 
 
 # Set wildcard constraints
@@ -42,7 +41,7 @@ rule dvf_classify:
     dvfparams = config['dvfparams'], 
     model_dir = "pipeline/bin/DeepVirFinder/models/",
     output_dir = "output/intermediate/3__viralcontigident/dvf/{sample_id}",
-    tmp_dir = "tmp/{sample_id}"
+    tmp_dir = "$TMPDIR/{sample_id}"
   log:
     "logs/3__viralcontigident_{sample_id}.log"
   conda:
@@ -78,7 +77,7 @@ rule vs2_classify:
     vs2params = config['vs2params'],
     db_dir = config['vs2db'],
     output_dir = "output/intermediate/3__viralcontigident/vs2/{sample_id}",
-    tmp_dir = "tmp/{sample_id}"
+    tmp_dir = "$TMPDIR/{sample_id}"
   log:
     "logs/3__viralcontigident_{sample_id}.log"
   conda:
@@ -121,11 +120,13 @@ rule virbot_classify:
   params:
     virbotparams = config['virbotparams'],
     output_dir = "output/intermediate/3__viralcontigident/virbot/{sample_id}", 
-    tmp_dir = "tmp_virbot/{sample_id}"
+    tmp_dir = "$TMPDIR/_virbot/{sample_id}",
+    tmp_dir_parent = "$TMPDIR/_virbot"
   shell:
     """
     rm -rf {params.tmp_dir} # remove any old directories
     rm -rf {params.output_dir}
+    mkdir -p {params.tmp_dir_parent}l
     mkdir -p {params.output_dir}
 
     python pipeline/bin/VirBot/VirBot.py \
@@ -206,7 +207,11 @@ rule merge_outputs:
     mv {params.tmp_dir}/* {output}
     """
     
-    
+
+#########################
+# FILTER ORIGINAL FASTA #
+#########################
+
 rule filter_output:
   input:
     contig_file = os.path.join(config['contigdir'], "{sample_id}.fa"),
@@ -240,4 +245,35 @@ rule filter_output:
     seqtk subseq {input.contig_file} {output.positive_hits} > {output.filtered_contigs}
 
     """
-  
+ 
+
+##################
+# CD-HIT CLUSTER #
+##################
+
+
+
+rule derep_cluster:
+  input:
+   " output/3__viralcontigident/{sample_id}/viral_contigs.fa"
+  output:
+   expand("output/3__viralcontigident/output/viral_contigs_derep{coverage}.fa", coverage = config['cdhitcoverage'])
+  params:
+    cdhitparams = config['cdhitparams'],
+    coveragecutoff = config['cdhitcoverage'],
+    output_dir = "output/3__viralcontigident/output",
+    tmp_dir = "$TMPDIR/{sample_id}",
+    tmp_file = "$TMPDIR/{sample_id}/dereplicated_viral_contigs.fa"
+  log:
+  threads: 12
+  shell:
+    """
+    mkdir -p {params.tmpr_dir}
+    mkdir -p {params.output_dir}
+
+    cd-hit -i {input} -o {params.tmp_file} -T {threads} -c {params.coveragecutoff} {params.cdhitparams}
+
+    mv 
+
+    
+    """
