@@ -1,8 +1,11 @@
 pipeline/database
 .snakemake
 
-data/*
-!data/.gitkeep
+tmp/*
+!tmp/.gitkeep 
+
+fastq/*
+!fastq/.gitkeep
 
 output/*
 !output/.gitkeep

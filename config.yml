@@ -2,7 +2,7 @@
 workdir : "."
 samplelist : "sample_list.tsv"
 datadir : "data/fastqc"
-contigdir : "output/2__assembly/contigs" # should not end with a /
+contigdir : "output/2__assembly/" # should not end with a /
 dbdir: "data/database"
 
 
@@ -10,11 +10,18 @@ dbdir: "data/database"
 vs2db: "pipeline/database/vs2/"
 phamerdb: "pipeline/database/phabox/"
 
+# 1) preprocessing [params]
+
+# 2) assembly [params]
+megahit_min_contig_len: 300
+megaitparams: "--prune-level 3"
+
+
 # 3) viral contig identification [params]
-dvfparams: "--len 200"
-vs2params : "--prep-for-dramv --min-length 200 --min-score 0 --include-groups dsDNAphage,ssDNA"
+dvfparams: "--len 1500"
+vs2params : "--prep-for-dramv --min-length 2500 --min-score 0 --include-groups dsDNAphage,ssDNA"
 virbotparams: ""
-phamerparams: "--len 200"
+phamerparams: "--len 2000"
 
 vs2cutoff: 0.7
 dvfcutoff: 0.9
@@ -24,4 +31,6 @@ phamerpred: "phage"
 
 
 cdhitcoverage: 0.95
-cdhitparams: "-d 400 -M 0 -n 5"
+cdhitparams: "-d 400 -M 0 -n 5 -aS 0.85"
+
+checkvparams: ""

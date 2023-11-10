@@ -3,27 +3,44 @@ import glob
 import sys
 import platform
 import pandas as pd
+import snakemake
 
-from source.utils.parse import parse_sample_list
-from snakemake.utils import min_version, validate
-from snakemake.exceptions import WorkflowError
+#from snakemake import glob_wildcards
+#from source.utils.parse import parse_sample_list
+#from snakemake.utils import min_version, validate
+#from snakemake.exceptions import WorkflowError
 
-workdir: config["workdir"]
 configfile: "config.yml"
+workdir: config["workdir"]
 
-# Set temporary dir
+### Set temporary dir
 if not os.getenv("TMPDIR"):
   os.environ["TMPDIR"] = "tmp"
   os.makedirs(os.environ["TMPDIR"],exist_ok=True)
 
-# Set wildcard constraints
+### Set wildcard constraints
 wildcard_constraints:
   sample_id = "[A-Za-z0-9_\-\.]+"
 
-# Include rules
-include: "pipeline/rules/viralcontigident.smk"
 
-# Set output targets based on sample names
+### Parse sample list
+df = pd.read_csv("sample_list.tsv", sep="\t")
+sample_list = df.iloc[:, 0].tolist()
 
-# 3) Viral Contig Identification
-viralcontigident = expand("output/3__viralcontigident/{sample_id}/merged_scores.csv", sample_id = samples.keys())
+
+### Include rules
+include: "viralcontigident.smk"
+
+
+#### Set output targets based on sample names
+viralcontigident = "output/3__viralcontigident/checkv/viruses.fna"
+
+
+
+### Set rule all outputs
+
+rule viralcontigident:
+  input: viralcontigident
+
+
+
