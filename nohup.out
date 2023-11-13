@@ -1,33 +1,182 @@
-fatal: unable to stat 'Snakefile.save': No such file or directory
-warning: adding embedded git repository: pipeline/bin/DeepVirFinder
-hint: You've added another git repository inside your current repository.
-hint: Clones of the outer repository will not contain the contents of
-hint: the embedded repository and will not know how to obtain it.
-hint: If you meant to add a submodule, use:
-hint: 
-hint: 	git submodule add <url> pipeline/bin/DeepVirFinder
-hint: 
-hint: If you added this path by mistake, you can remove it from the
-hint: index with:
-hint: 
-hint: 	git rm --cached pipeline/bin/DeepVirFinder
-hint: 
-hint: See "git help submodule" for more information.
-warning: adding embedded git repository: pipeline/bin/PhaBOX
-warning: adding embedded git repository: pipeline/bin/VirBot
-warning: adding embedded git repository: pipeline/bin/DeepVirFinder
-hint: You've added another git repository inside your current repository.
-hint: Clones of the outer repository will not contain the contents of
-hint: the embedded repository and will not know how to obtain it.
-hint: If you meant to add a submodule, use:
-hint: 
-hint: 	git submodule add <url> pipeline/bin/DeepVirFinder
-hint: 
-hint: If you added this path by mistake, you can remove it from the
-hint: index with:
-hint: 
-hint: 	git rm --cached pipeline/bin/DeepVirFinder
-hint: 
-hint: See "git help submodule" for more information.
-warning: adding embedded git repository: pipeline/bin/PhaBOX
-warning: adding embedded git repository: pipeline/bin/VirBot
+Provided cluster nodes: 64
+Job counts:
+	count	jobs
+	1	cat_contigs
+	3	dvf_classify
+	3	filter_output
+	3	genomad_classify
+	3	merge_outputs
+	3	phamer_classify
+	3	virbot_classify
+	3	vs2_classify
+	22
+
+rule virbot_classify:
+    input: output/assembly/R0018-LKC-DNA/final.contigs.fa
+    output: output/viralcontigident/R0018-LKC-DNA/intermediate/virbot/pos_contig_score.csv
+    log: logs/viralcontigident_R0018-LKC-DNA_virbot.log
+    jobid: 13
+    benchmark: benchmarks/viralcontigident_R0018-LKC-DNA_virbot.log
+    wildcards: sample_id=R0018-LKC-DNA
+    threads: 8
+
+
+rule phamer_classify:
+    input: output/assembly/R0016-CMW/final.contigs.fa
+    output: output/viralcontigident/R0016-CMW/intermediate/phamer/out/phamer_prediction.csv
+    log: logs/viralcontigident_R0016-CMW_phamer.log
+    jobid: 17
+    benchmark: benchmarks/viralcontigident_R0016-CMW_phamer.log
+    wildcards: sample_id=R0016-CMW
+    threads: 8
+
+
+rule vs2_classify:
+    input: output/assembly/R0016-CMW/final.contigs.fa
+    output: output/viralcontigident/R0016-CMW/intermediate/vs2/final-viral-score.tsv
+    log: logs/viralcontigident_R0016-CMW_vs2.log
+    jobid: 21
+    benchmark: benchmarks/viralcontigident_R0016-CMW_vs2.log
+    wildcards: sample_id=R0016-CMW
+    threads: 8
+
+
+rule phamer_classify:
+    input: output/assembly/R0022-TWP-DNA/final.contigs.fa
+    output: output/viralcontigident/R0022-TWP-DNA/intermediate/phamer/out/phamer_prediction.csv
+    log: logs/viralcontigident_R0022-TWP-DNA_phamer.log
+    jobid: 8
+    benchmark: benchmarks/viralcontigident_R0022-TWP-DNA_phamer.log
+    wildcards: sample_id=R0022-TWP-DNA
+    threads: 8
+
+
+rule genomad_classify:
+    input: output/assembly/R0022-TWP-DNA/final.contigs.fa
+    output: output/viralcontigident/R0022-TWP-DNA/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv
+    log: logs/viralcontigident_R0022-TWP-DNA_genomad.log
+    jobid: 9
+    benchmark: benchmarks/viralcontigident_R0022-TWP-DNA_genomad.log
+    wildcards: sample_id=R0022-TWP-DNA
+    threads: 8
+
+
+rule virbot_classify:
+    input: output/assembly/R0022-TWP-DNA/final.contigs.fa
+    output: output/viralcontigident/R0022-TWP-DNA/intermediate/virbot/pos_contig_score.csv
+    log: logs/viralcontigident_R0022-TWP-DNA_virbot.log
+    jobid: 11
+    benchmark: benchmarks/viralcontigident_R0022-TWP-DNA_virbot.log
+    wildcards: sample_id=R0022-TWP-DNA
+    threads: 8
+
+
+rule genomad_classify:
+    input: output/assembly/R0016-CMW/final.contigs.fa
+    output: output/viralcontigident/R0016-CMW/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv
+    log: logs/viralcontigident_R0016-CMW_genomad.log
+    jobid: 20
+    benchmark: benchmarks/viralcontigident_R0016-CMW_genomad.log
+    wildcards: sample_id=R0016-CMW
+    threads: 8
+
+
+rule vs2_classify:
+    input: output/assembly/R0018-LKC-DNA/final.contigs.fa
+    output: output/viralcontigident/R0018-LKC-DNA/intermediate/vs2/final-viral-score.tsv
+    log: logs/viralcontigident_R0018-LKC-DNA_vs2.log
+    jobid: 16
+    benchmark: benchmarks/viralcontigident_R0018-LKC-DNA_vs2.log
+    wildcards: sample_id=R0018-LKC-DNA
+    threads: 8
+
+
+rule dvf_classify:
+    input: output/assembly/R0018-LKC-DNA/final.contigs.fa
+    output: output/viralcontigident/R0018-LKC-DNA/intermediate/dvf/final_score.txt
+    log: logs/viralcontigident_R0018-LKC-DNA_dvf.log
+    jobid: 14
+    benchmark: benchmarks/viralcontigident_R0018-LKC-DNA_dvf.log
+    wildcards: sample_id=R0018-LKC-DNA
+    threads: 8
+
+
+rule phamer_classify:
+    input: output/assembly/R0018-LKC-DNA/final.contigs.fa
+    output: output/viralcontigident/R0018-LKC-DNA/intermediate/phamer/out/phamer_prediction.csv
+    log: logs/viralcontigident_R0018-LKC-DNA_phamer.log
+    jobid: 15
+    benchmark: benchmarks/viralcontigident_R0018-LKC-DNA_phamer.log
+    wildcards: sample_id=R0018-LKC-DNA
+    threads: 8
+
+
+rule dvf_classify:
+    input: output/assembly/R0016-CMW/final.contigs.fa
+    output: output/viralcontigident/R0016-CMW/intermediate/dvf/final_score.txt
+    log: logs/viralcontigident_R0016-CMW_dvf.log
+    jobid: 19
+    benchmark: benchmarks/viralcontigident_R0016-CMW_dvf.log
+    wildcards: sample_id=R0016-CMW
+    threads: 8
+
+
+rule vs2_classify:
+    input: output/assembly/R0022-TWP-DNA/final.contigs.fa
+    output: output/viralcontigident/R0022-TWP-DNA/intermediate/vs2/final-viral-score.tsv
+    log: logs/viralcontigident_R0022-TWP-DNA_vs2.log
+    jobid: 7
+    benchmark: benchmarks/viralcontigident_R0022-TWP-DNA_vs2.log
+    wildcards: sample_id=R0022-TWP-DNA
+    threads: 8
+
+
+rule genomad_classify:
+    input: output/assembly/R0018-LKC-DNA/final.contigs.fa
+    output: output/viralcontigident/R0018-LKC-DNA/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv
+    log: logs/viralcontigident_R0018-LKC-DNA_genomad.log
+    jobid: 12
+    benchmark: benchmarks/viralcontigident_R0018-LKC-DNA_genomad.log
+    wildcards: sample_id=R0018-LKC-DNA
+    threads: 8
+
+
+rule virbot_classify:
+    input: output/assembly/R0016-CMW/final.contigs.fa
+    output: output/viralcontigident/R0016-CMW/intermediate/virbot/pos_contig_score.csv
+    log: logs/viralcontigident_R0016-CMW_virbot.log
+    jobid: 18
+    benchmark: benchmarks/viralcontigident_R0016-CMW_virbot.log
+    wildcards: sample_id=R0016-CMW
+    threads: 8
+
+
+rule dvf_classify:
+    input: output/assembly/R0022-TWP-DNA/final.contigs.fa
+    output: output/viralcontigident/R0022-TWP-DNA/intermediate/dvf/final_score.txt
+    log: logs/viralcontigident_R0022-TWP-DNA_dvf.log
+    jobid: 10
+    benchmark: benchmarks/viralcontigident_R0022-TWP-DNA_dvf.log
+    wildcards: sample_id=R0022-TWP-DNA
+    threads: 8
+
+Finished job 17.
+1 of 22 steps (5%) done
+Finished job 8.
+2 of 22 steps (9%) done
+Finished job 13.
+3 of 22 steps (14%) done
+Finished job 9.
+4 of 22 steps (18%) done
+Finished job 11.
+5 of 22 steps (23%) done
+Finished job 20.
+6 of 22 steps (27%) done
+Finished job 21.
+7 of 22 steps (32%) done
+Finished job 14.
+8 of 22 steps (36%) done
+Finished job 15.
+9 of 22 steps (41%) done
+Finished job 19.
+10 of 22 steps (45%) done

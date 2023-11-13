@@ -2,7 +2,7 @@
 workdir : "."
 samplelist : "sample_list.tsv"
 datadir : "data/fastqc"
-contigdir : "output/2__assembly/" # should not end with a /
+contigdir : "output/assembly/" # should not end with a /
 dbdir: "data/database"
 
 
@@ -18,6 +18,7 @@ megaitparams: "--prune-level 3"
 
 
 # 3) viral contig identification [params]
+genomadparams: ""
 dvfparams: "--len 1500"
 vs2params : "--prep-for-dramv --min-length 2500 --min-score 0 --include-groups dsDNAphage,ssDNA"
 virbotparams: ""

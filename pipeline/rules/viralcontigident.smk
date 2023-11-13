@@ -1,10 +1,49 @@
-#localrules:
-#  dvf_classify,
-#  vs2_classify, 
-#  virbot_classify, 
-#  phamer_classify, 
-#  merge_outputs, 
-#  filter_outputs
+localrules:
+  merge_outputs, 
+  filter_outputs, 
+  cat_contigs
+
+
+
+
+
+###########################
+# GENOMAD CLASSIFICATION  #
+###########################
+
+rule genomad_classify:
+  input:
+    os.path.join(config['contigdir'], "{sample_id}/final.contigs.fa")
+  output:
+    "output/viralcontigident/{sample_id}/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv"
+  params:
+    genomadparams = config['genomadparams'],
+    db_dir = "pipeline/database/genomad",
+    output_dir = "output/viralcontigident/{sample_id}/intermediate/genomad/",
+    tmp_dir = "$TMPDIR/{sample_id}"
+  log: "logs/viralcontigident_{sample_id}_genomad.log"
+  benchmark: "benchmarks/viralcontigident_{sample_id}_genomad.log"
+  conda: "pipeline/envs/genomad.yml"
+  threads: 8
+  #resources:
+  #runtime = lambda wildcards, attempt: attempt*attempt*60
+  shell:
+    """
+    mkdir -p {params.output_dir}
+    rm -rf {params.tmp_dir}/*
+    mkdir -p {params.tmp_dir}
+
+    genomad end-to-end \
+        --cleanup \
+        {input} \
+        {params.tmp_dir} \
+        {params.db_dir} \
+        --threads {threads} \
+        {params.genomadparams} &> {log}
+
+    mv {params.tmp_dir}/* {params.output_dir}
+    """
+
 
 
 ################################
@@ -16,16 +55,15 @@ rule dvf_classify:
   input:
     os.path.join(config['contigdir'], "{sample_id}/final.contigs.fa")
   output:
-    "output/intermediate/3__viralcontigident/dvf/{sample_id}/final_score.txt"
+    "output/viralcontigident/{sample_id}/intermediate/dvf/final_score.txt"
   params:
     dvfparams = config['dvfparams'], 
     model_dir = "pipeline/bin/DeepVirFinder/models/",
-    output_dir = "output/intermediate/3__viralcontigident/dvf/{sample_id}",
+    output_dir = "output/viralcontigident/{sample_id}/intermediate/dvf/",
     tmp_dir = "$TMPDIR/{sample_id}"
-  log:
-    "logs/3__viralcontigident_{sample_id}_dvf.log"
-  conda:
-    "pipeline/envs/dvf.yml"
+  log: "logs/viralcontigident_{sample_id}_dvf.log"
+  benchmark: "benchmarks/viralcontigident_{sample_id}_dvf.log"
+  conda: "pipeline/envs/dvf.yml"
   threads: 8
   #resources:
   #runtime = lambda wildcards, attempt: attempt*attempt*60
@@ -52,16 +90,15 @@ rule vs2_classify:
   input:
     os.path.join(config['contigdir'], "{sample_id}/final.contigs.fa")
   output:
-    "output/intermediate/3__viralcontigident/vs2/{sample_id}/final-viral-score.tsv"
+    "output/viralcontigident/{sample_id}/intermediate/vs2/final-viral-score.tsv"
   params:
     vs2params = config['vs2params'],
     db_dir = config['vs2db'],
-    output_dir = "output/intermediate/3__viralcontigident/vs2/{sample_id}",
+    output_dir = "output/viralcontigident/{sample_id}/intermediate/vs2/",
     tmp_dir = "$TMPDIR/{sample_id}"
-  log:
-    "logs/3__viralcontigident_{sample_id}_vs2.log"
-  conda:
-    "pipeline/envs/vs2.yml"
+  log: "logs/viralcontigident_{sample_id}_vs2.log"
+  benchmark: "benchmarks/viralcontigident_{sample_id}_vs2.log"
+  conda: "pipeline/envs/vs2.yml"
   threads: 8
   #resources:
     #runtime = lambda wildcards, attempt: attempt*attempt*60
@@ -91,17 +128,16 @@ rule virbot_classify:
   input:
     os.path.join(config['contigdir'], "{sample_id}/final.contigs.fa")
   output:
-    "output/intermediate/3__viralcontigident/virbot/{sample_id}/pos_contig_score.csv"
-  log:
-    "logs/3__viralcontigident_{sample_id}_virbot.log"
-  conda:
-    "pipeline/envs/virbot.yml"
-  threads: 8
+    "output/viralcontigident/{sample_id}/intermediate/virbot/pos_contig_score.csv"
   params:
     virbotparams = config['virbotparams'],
-    output_dir = "output/intermediate/3__viralcontigident/virbot/{sample_id}", 
+    output_dir = "output/viralcontigident/{sample_id}/intermediate/virbot/",
     tmp_dir = "$TMPDIR/_virbot/{sample_id}",
     tmp_dir_parent = "$TMPDIR/_virbot"
+  log: "logs/viralcontigident_{sample_id}_virbot.log"
+  benchmark: "benchmarks/viralcontigident_{sample_id}_virbot.log"
+  conda: "pipeline/envs/virbot.yml"
+  threads: 8
   shell:
     """
     rm -rf {params.tmp_dir} # remove any old directories
@@ -128,19 +164,18 @@ rule phamer_classify:
   input:
     os.path.join(config['contigdir'], "{sample_id}/final.contigs.fa")
   output:
-    "output/intermediate/3__viralcontigident/phamer/{sample_id}/out/phamer_prediction.csv"
-  log:
-    "logs/3__viralcontigident_{sample_id}_phamer.log"
-  conda:
-    "pipeline/envs/phabox.yml"
-  threads: 8
+    "output/viralcontigident/{sample_id}/intermediate/phamer/out/phamer_prediction.csv"
   params:
     phamerparams = config['phamerparams'],
     db_dir = config['phamerdb'],
     params_dir = "pipeline/params/phabox/",
-    output_dir = "output/intermediate/3__viralcontigident/phamer/{sample_id}",
+    output_dir = "output/viralcontigident/{sample_id}/intermediate/phamer/",
     script_dir = "pipeline/bin/PhaBOX/scripts/",
-    tmp_dir = "tmp/{sample_id}"
+    tmp_dir = "$TMPDIR/{sample_id}"
+  log: "logs/viralcontigident_{sample_id}_phamer.log"
+  benchmark: "benchmarks/viralcontigident_{sample_id}_phamer.log"
+  conda: "pipeline/envs/phabox.yml"
+  threads: 8
   shell:
     """
     rm -rf {params.output_dir}
@@ -167,17 +202,17 @@ rule phamer_classify:
 
 rule merge_outputs:
   input:
-    vs2out = "output/intermediate/3__viralcontigident/vs2/{sample_id}/final-viral-score.tsv",
-    dvfout = "output/intermediate/3__viralcontigident/dvf/{sample_id}/final_score.txt", 
-    virbotout = "output/intermediate/3__viralcontigident/virbot/{sample_id}/pos_contig_score.csv",
-    phamerout = "output/intermediate/3__viralcontigident/phamer/{sample_id}/out/phamer_prediction.csv"
+    vs2out = "output/viralcontigident/{sample_id}/intermediate/vs2/final-viral-score.tsv",
+    dvfout = "output/viralcontigident/{sample_id}/intermediate/dvf/final_score.txt", 
+    virbotout = "output/viralcontigident/{sample_id}/intermediate/virbot/pos_contig_score.csv",
+    phamerout = "output/viralcontigident/{sample_id}/intermediate/phamer/out/phamer_prediction.csv",
+    genomadout = "output/viralcontigident/{sample_id}/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv"
   output:
-    "output/3__viralcontigident/samples/{sample_id}/merged_scores.csv"
+    "output/viralcontigident/{sample_id}/output/merged_scores.csv"
   params:
-    out_dir = "output/3__viralcontigident/samples/{sample_id}",
-    tmp_dir = "tmp/{sample_id}"
-  log:
-    "logs/3__viralcontigident_{sample_id}_mergeoutput.log"
+    out_dir = "output/viralcontigident/{sample_id}/output/",
+    tmp_dir = "$TMPDIR/{sample_id}"
+  log: "logs/viralcontigident_{sample_id}_mergeoutput.log"
   threads: 1
   shell:
     """
@@ -195,11 +230,11 @@ rule merge_outputs:
 rule filter_output:
   input:
     contig_file = os.path.join(config['contigdir'], "{sample_id}/final.contigs.fa"),
-    merged_scrs = "output/3__viralcontigident/samples/{sample_id}/merged_scores.csv"
+    merged_scrs = "output/viralcontigident/{sample_id}/output/merged_scores.csv"
   output:
-    filtered_contigs = "output/3__viralcontigident/samples/{sample_id}/viral_contigs.fa",
-    filtered_scrs = "output/3__viralcontigident/samples/{sample_id}/merged_scores_filtered.csv",
-    positive_hits = "output/3__viralcontigident/samples/{sample_id}/viral_hits.txt"
+    filtered_contigs = "output/viralcontigident/{sample_id}/output/viral.contigs.fa",
+    filtered_scrs = "output/viralcontigident/{sample_id}/output/merged_scores_filtered.csv",
+    positive_hits = "output/viralcontigident/{sample_id}/output/viralhits_list"
   params:
     script_path = "pipeline/src/filtercontig_scores.py",
     vs2_cutoff = config['vs2cutoff'], 
@@ -207,8 +242,7 @@ rule filter_output:
     dvf_pvalmax = config['dvfpval'],
     phamer_cutoff = config['phamercutoff'], 
     phamer_pred = config['phamerpred'] 
-  log:
-  "logs/3__viralcontigident_{sample_id}_filtercontigs.log"
+  log: "logs/viralcontigident_{sample_id}_filtercontigs.log"
   threads: 1
   shell:
     """
@@ -233,11 +267,10 @@ rule filter_output:
 
 rule cat_contigs:
   input:
-    expand("output/3__viralcontigident/samples/{sample_id}/viral_contigs.fa", sample_id = sample_list)
+    expand("output/viralcontigident/{sample_id}/output/viral.contigs.fa", sample_id = sample_list)
   output: 
-    "output/3__viralcontigident/combined_viralcontigs.fa"
-  log:
-    "logs/3__viralcontigident_catcontigs.log"
+    "output/viralcontigident/output/combined.viralcontigs.fa"
+  log: "logs/viralcontigident_catcontigs.log"
   threads: 1
   shell:
     """
@@ -247,18 +280,18 @@ rule cat_contigs:
 
 rule cdhit_derep:
   input:
-    "output/3__viralcontigident/combined_viralcontigs.fa"
+    "output/viralcontigident/output/combined.viralcontigs.fa"
   output:
-    fasta = "output/3__viralcontigident/combined_viralcontigs_derep.fa",
-    cluster = "output/3__viralcontigident/combined_viralcontigs_derep.fa.clstr"
+    fasta = "output/viralcontigident/output/combined.viralcontigs.derep.fa",
+    cluster = "output/viralcontigident/output/combined.viralcontigs.derep.fa.clstr"
   params:
     cdhitparams = config['cdhitparams'],
     coveragecutoff = config['cdhitcoverage'],
     output_dir = "output/3__viralcontigident",
     tmp_dir = "$TMPDIR",
-    tmp_file = "$TMPDIR/dereplicated_viral_contigs.fa"
-  log: 
-    "logs/3__viralcontigident_cdhitderep.log"
+    tmp_file = "$TMPDIR/dereplicated.viral.contigs.fa"
+  log: "logs/viralcontigident_cdhitderep.log"
+  benchmark: "benchmarks/viralcontigident_{sample_id}_cdhit.log"
   threads: 12
   shell:
     """
@@ -267,24 +300,24 @@ rule cdhit_derep:
 
     cd-hit -i {input} -o {params.tmp_file} -T {threads} -c {params.coveragecutoff} {params.cdhitparams}
 
-    mv {params.tmp_dir}/dereplicated_viral_contigs.fa {output.fasta}
-    mv {params.tmp_dir}/dereplicated_viral_contigs.fa.clstr {output.cluster}
+    mv {params.tmp_dir}/dereplicated.viral.contigs.fa {output.fasta}
+    mv {params.tmp_dir}/dereplicated.viralcontigs.fa.clstr {output.cluster}
     """
 
 
 rule checkv:
   input:
-    "output/3__viralcontigident/combined_viralcontigs_derep.fa"
+    "output/viralcontigident/output/combined.viralcontigs.derep.fa"
   output:
-    "output/3__viralcontigident/checkv/viruses.fna"
+    "output/viralcontigident/output/checkv/viruses.fna"
   params:
     checkvparams= config['checkvparams'],
-    output_dir = "output/3__viralcontigident/checkv",
+    output_dir = "output/viralcontigident/checkv/output",
     tmp_dir = "$TMPDIR/checkv",
     db_dir = "pipeline/database/checkv"
-  log:
-     "logs/3__viralcontigident_cdhitderep.log"
-  threads: 32
+  log: "logs/viralcontigident_cdhitderep.log"
+  benchmark: "benchmarks/viralcontigident_{sample_id}_checkv.log"
+  threads: 64
   conda: "pipeline/envs/checkv.yml"
   shell:
     """

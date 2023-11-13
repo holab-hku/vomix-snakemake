@@ -24,7 +24,7 @@ wildcard_constraints:
 
 
 ### Parse sample list
-df = pd.read_csv("sample_list.tsv", sep="\t")
+df = pd.read_csv("sample_list.tsv", sep="\t", header=0)
 sample_list = df.iloc[:, 0].tolist()
 
 
