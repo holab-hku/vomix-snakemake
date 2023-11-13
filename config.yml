@@ -11,6 +11,8 @@ vs2db: "pipeline/database/vs2/"
 phamerdb: "pipeline/database/phabox/"
 
 # 1) preprocessing [params]
+dwnldparams : ""
+pigzparams: ""
 
 # 2) assembly [params]
 megahit_min_contig_len: 300

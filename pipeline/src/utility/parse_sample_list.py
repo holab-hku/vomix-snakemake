@@ -29,7 +29,7 @@ def validate_samples(samples):
         cmd = ['sratools', 'info', acc]
         p = subprocess.run(cmd, stdout=subprocess.PIPE).stdout
         found = p.decode().split("\n")[0].split(":")[-1].lstrip()
-        print(p)
+       # print(p)
         if int(found) == 0:
             sys.exit("""
 ########################## WARNING ###################################

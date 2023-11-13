@@ -1,182 +1,74 @@
-Provided cluster nodes: 64
-Job counts:
-	count	jobs
-	1	cat_contigs
-	3	dvf_classify
-	3	filter_output
-	3	genomad_classify
-	3	merge_outputs
-	3	phamer_classify
-	3	virbot_classify
-	3	vs2_classify
-	22
+warning  libmamba Cache file "/home/eshekar/.conda/pkgs/cache/497deca9.json" was modified by another program
+warning  libmamba Cache file "/home/eshekar/.conda/pkgs/cache/09cdf8bf.json" was modified by another program
+warning  libmamba Cache file "/home/eshekar/.conda/pkgs/cache/47929eba.json" was modified by another program
+warning  libmamba Cache file "/home/eshekar/.conda/pkgs/cache/3e39a7aa.json" was modified by another program
+warning  libmamba Cache file "/home/eshekar/.conda/pkgs/cache/2ce54b42.json" was modified by another program
+warning  libmamba Cache file "/home/eshekar/.conda/pkgs/cache/4ea078d6.json" was modified by another program
+Transaction
 
-rule virbot_classify:
-    input: output/assembly/R0018-LKC-DNA/final.contigs.fa
-    output: output/viralcontigident/R0018-LKC-DNA/intermediate/virbot/pos_contig_score.csv
-    log: logs/viralcontigident_R0018-LKC-DNA_virbot.log
-    jobid: 13
-    benchmark: benchmarks/viralcontigident_R0018-LKC-DNA_virbot.log
-    wildcards: sample_id=R0018-LKC-DNA
-    threads: 8
+  Prefix: /home/eshekar/.conda/envs/metaviromewrapper
+
+  Updating specs:
+
+   - pigz
+   - ca-certificates
+   - certifi
+   - openssl
 
 
-rule phamer_classify:
-    input: output/assembly/R0016-CMW/final.contigs.fa
-    output: output/viralcontigident/R0016-CMW/intermediate/phamer/out/phamer_prediction.csv
-    log: logs/viralcontigident_R0016-CMW_phamer.log
-    jobid: 17
-    benchmark: benchmarks/viralcontigident_R0016-CMW_phamer.log
-    wildcards: sample_id=R0016-CMW
-    threads: 8
+  Package          Version  Build        Channel                    Size
+──────────────────────────────────────────────────────────────────────────
+  Install:
+──────────────────────────────────────────────────────────────────────────
+
+  + libzlib         1.2.13  hd590300_5   conda-forge/linux-64     Cached
+  + pigz               2.8  h2797004_0   conda-forge/linux-64       72kB
+
+  Change:
+──────────────────────────────────────────────────────────────────────────
+
+  - _libgcc_mutex      0.1  main         pkgs/main                      
+  + _libgcc_mutex      0.1  conda_forge  conda-forge/linux-64     Cached
+  - zlib            1.2.13  h5eee18b_0   pkgs/main                      
+  + zlib            1.2.13  hd590300_5   conda-forge/linux-64     Cached
+
+  Upgrade:
+──────────────────────────────────────────────────────────────────────────
+
+  - libgcc-ng       11.2.0  h1234567_1   pkgs/main                      
+  + libgcc-ng       13.2.0  h807b86a_3   conda-forge/linux-64     Cached
+  - libgomp         11.2.0  h1234567_1   pkgs/main                      
+  + libgomp         13.2.0  h807b86a_3   conda-forge/linux-64     Cached
+
+  Downgrade:
+──────────────────────────────────────────────────────────────────────────
+
+  - _openmp_mutex      5.1  1_gnu        pkgs/main                      
+  + _openmp_mutex      4.5  2_gnu        conda-forge/linux-64     Cached
+
+  Summary:
+
+  Install: 2 packages
+  Change: 2 packages
+  Upgrade: 2 packages
+  Downgrade: 1 packages
+
+  Total download: 72kB
+
+──────────────────────────────────────────────────────────────────────────
 
 
-rule vs2_classify:
-    input: output/assembly/R0016-CMW/final.contigs.fa
-    output: output/viralcontigident/R0016-CMW/intermediate/vs2/final-viral-score.tsv
-    log: logs/viralcontigident_R0016-CMW_vs2.log
-    jobid: 21
-    benchmark: benchmarks/viralcontigident_R0016-CMW_vs2.log
-    wildcards: sample_id=R0016-CMW
-    threads: 8
+
+Looking for: ['pigz']
 
 
-rule phamer_classify:
-    input: output/assembly/R0022-TWP-DNA/final.contigs.fa
-    output: output/viralcontigident/R0022-TWP-DNA/intermediate/phamer/out/phamer_prediction.csv
-    log: logs/viralcontigident_R0022-TWP-DNA_phamer.log
-    jobid: 8
-    benchmark: benchmarks/viralcontigident_R0022-TWP-DNA_phamer.log
-    wildcards: sample_id=R0022-TWP-DNA
-    threads: 8
+Pinned packages:
+  - python 3.6.*
 
 
-rule genomad_classify:
-    input: output/assembly/R0022-TWP-DNA/final.contigs.fa
-    output: output/viralcontigident/R0022-TWP-DNA/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv
-    log: logs/viralcontigident_R0022-TWP-DNA_genomad.log
-    jobid: 9
-    benchmark: benchmarks/viralcontigident_R0022-TWP-DNA_genomad.log
-    wildcards: sample_id=R0022-TWP-DNA
-    threads: 8
 
+Downloading and Extracting Packages
 
-rule virbot_classify:
-    input: output/assembly/R0022-TWP-DNA/final.contigs.fa
-    output: output/viralcontigident/R0022-TWP-DNA/intermediate/virbot/pos_contig_score.csv
-    log: logs/viralcontigident_R0022-TWP-DNA_virbot.log
-    jobid: 11
-    benchmark: benchmarks/viralcontigident_R0022-TWP-DNA_virbot.log
-    wildcards: sample_id=R0022-TWP-DNA
-    threads: 8
-
-
-rule genomad_classify:
-    input: output/assembly/R0016-CMW/final.contigs.fa
-    output: output/viralcontigident/R0016-CMW/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv
-    log: logs/viralcontigident_R0016-CMW_genomad.log
-    jobid: 20
-    benchmark: benchmarks/viralcontigident_R0016-CMW_genomad.log
-    wildcards: sample_id=R0016-CMW
-    threads: 8
-
-
-rule vs2_classify:
-    input: output/assembly/R0018-LKC-DNA/final.contigs.fa
-    output: output/viralcontigident/R0018-LKC-DNA/intermediate/vs2/final-viral-score.tsv
-    log: logs/viralcontigident_R0018-LKC-DNA_vs2.log
-    jobid: 16
-    benchmark: benchmarks/viralcontigident_R0018-LKC-DNA_vs2.log
-    wildcards: sample_id=R0018-LKC-DNA
-    threads: 8
-
-
-rule dvf_classify:
-    input: output/assembly/R0018-LKC-DNA/final.contigs.fa
-    output: output/viralcontigident/R0018-LKC-DNA/intermediate/dvf/final_score.txt
-    log: logs/viralcontigident_R0018-LKC-DNA_dvf.log
-    jobid: 14
-    benchmark: benchmarks/viralcontigident_R0018-LKC-DNA_dvf.log
-    wildcards: sample_id=R0018-LKC-DNA
-    threads: 8
-
-
-rule phamer_classify:
-    input: output/assembly/R0018-LKC-DNA/final.contigs.fa
-    output: output/viralcontigident/R0018-LKC-DNA/intermediate/phamer/out/phamer_prediction.csv
-    log: logs/viralcontigident_R0018-LKC-DNA_phamer.log
-    jobid: 15
-    benchmark: benchmarks/viralcontigident_R0018-LKC-DNA_phamer.log
-    wildcards: sample_id=R0018-LKC-DNA
-    threads: 8
-
-
-rule dvf_classify:
-    input: output/assembly/R0016-CMW/final.contigs.fa
-    output: output/viralcontigident/R0016-CMW/intermediate/dvf/final_score.txt
-    log: logs/viralcontigident_R0016-CMW_dvf.log
-    jobid: 19
-    benchmark: benchmarks/viralcontigident_R0016-CMW_dvf.log
-    wildcards: sample_id=R0016-CMW
-    threads: 8
-
-
-rule vs2_classify:
-    input: output/assembly/R0022-TWP-DNA/final.contigs.fa
-    output: output/viralcontigident/R0022-TWP-DNA/intermediate/vs2/final-viral-score.tsv
-    log: logs/viralcontigident_R0022-TWP-DNA_vs2.log
-    jobid: 7
-    benchmark: benchmarks/viralcontigident_R0022-TWP-DNA_vs2.log
-    wildcards: sample_id=R0022-TWP-DNA
-    threads: 8
-
-
-rule genomad_classify:
-    input: output/assembly/R0018-LKC-DNA/final.contigs.fa
-    output: output/viralcontigident/R0018-LKC-DNA/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv
-    log: logs/viralcontigident_R0018-LKC-DNA_genomad.log
-    jobid: 12
-    benchmark: benchmarks/viralcontigident_R0018-LKC-DNA_genomad.log
-    wildcards: sample_id=R0018-LKC-DNA
-    threads: 8
-
-
-rule virbot_classify:
-    input: output/assembly/R0016-CMW/final.contigs.fa
-    output: output/viralcontigident/R0016-CMW/intermediate/virbot/pos_contig_score.csv
-    log: logs/viralcontigident_R0016-CMW_virbot.log
-    jobid: 18
-    benchmark: benchmarks/viralcontigident_R0016-CMW_virbot.log
-    wildcards: sample_id=R0016-CMW
-    threads: 8
-
-
-rule dvf_classify:
-    input: output/assembly/R0022-TWP-DNA/final.contigs.fa
-    output: output/viralcontigident/R0022-TWP-DNA/intermediate/dvf/final_score.txt
-    log: logs/viralcontigident_R0022-TWP-DNA_dvf.log
-    jobid: 10
-    benchmark: benchmarks/viralcontigident_R0022-TWP-DNA_dvf.log
-    wildcards: sample_id=R0022-TWP-DNA
-    threads: 8
-
-Finished job 17.
-1 of 22 steps (5%) done
-Finished job 8.
-2 of 22 steps (9%) done
-Finished job 13.
-3 of 22 steps (14%) done
-Finished job 9.
-4 of 22 steps (18%) done
-Finished job 11.
-5 of 22 steps (23%) done
-Finished job 20.
-6 of 22 steps (27%) done
-Finished job 21.
-7 of 22 steps (32%) done
-Finished job 14.
-8 of 22 steps (36%) done
-Finished job 15.
-9 of 22 steps (41%) done
-Finished job 19.
-10 of 22 steps (45%) done
+Preparing transaction: ...working... done
+Verifying transaction: ...working... done
+Executing transaction: ...working... done

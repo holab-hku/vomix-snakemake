@@ -210,6 +210,7 @@ rule merge_outputs:
   output:
     "output/viralcontigident/{sample_id}/output/merged_scores.csv"
   params:
+    scrpit_path = "./pipeline/src/viralcontigident/mergeout.py"
     out_dir = "output/viralcontigident/{sample_id}/output/",
     tmp_dir = "$TMPDIR/{sample_id}"
   log: "logs/viralcontigident_{sample_id}_mergeoutput.log"
@@ -218,7 +219,7 @@ rule merge_outputs:
     """
     mkdir -p {params.out_dir}
     mkdir -p {params.tmp_dir}
-    python pipeline/src/viralcontigident_mergeout.py {input.vs2out} {input.dvfout} {input.virbotout} {input.phamerout} --output {params.tmp_dir}/tmp.csv
+    python {params.script_path} {input.vs2out} {input.dvfout} {input.virbotout} {input.phamerout} --output {params.tmp_dir}/tmp.csv
     mv {params.tmp_dir}/* {output}
     """
     
@@ -236,7 +237,7 @@ rule filter_output:
     filtered_scrs = "output/viralcontigident/{sample_id}/output/merged_scores_filtered.csv",
     positive_hits = "output/viralcontigident/{sample_id}/output/viralhits_list"
   params:
-    script_path = "pipeline/src/filtercontig_scores.py",
+    script_path = "./pipeline/src/viralcontigident/filtercontig_scores.py",
     vs2_cutoff = config['vs2cutoff'], 
     dvf_cutoff = config['dvfcutoff'], 
     dvf_pvalmax = config['dvfpval'],
@@ -267,7 +268,7 @@ rule filter_output:
 
 rule cat_contigs:
   input:
-    expand("output/viralcontigident/{sample_id}/output/viral.contigs.fa", sample_id = sample_list)
+    expand("output/viralcontigident/{sample_id}/output/viral.contigs.fa", sample_id = samples.keys())
   output: 
     "output/viralcontigident/output/combined.viralcontigs.fa"
   log: "logs/viralcontigident_catcontigs.log"
