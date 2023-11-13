@@ -19,9 +19,9 @@ def validate_samples(samples):
     :return:
     """
     for sample, items in samples.items():
-        
         # Check if files exist locally
         if os.path.exists(samples[sample]["R1"]) and os.path.exists(samples[sample]["R2"]):
+           #  print('files found in datadir')
             continue
 
         # Check if it exists in SRA if not present locally
@@ -71,13 +71,16 @@ def parse_sample_list(f, datadir):
         except KeyError:
             R1 = '{}_1.fastq.gz'.format(sample)
             R2 = '{}_2.fastq.gz'.format(sample)
+           # print(R1)
+           #  print(R2)
 
 
         if 'accession' in df.columns:
             accession = df.loc[sample, 'accession']
         else:
             accession = ''
-        
+       
+        # print('{dir}/{f}'.format(f=R1, dir=datadir))
         samples[sample] = {'R1': '{dir}/{f}'.format(f=R1, dir=datadir),
                            'R2': '{dir}/{f}'.format(f=R2, dir=datadir),
                            'accession': accession}

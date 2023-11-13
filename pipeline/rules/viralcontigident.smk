@@ -210,7 +210,7 @@ rule merge_outputs:
   output:
     "output/viralcontigident/{sample_id}/output/merged_scores.csv"
   params:
-    scrpit_path = "./pipeline/src/viralcontigident/mergeout.py"
+    script_path = "./pipeline/src/viralcontigident/mergeout.py",
     out_dir = "output/viralcontigident/{sample_id}/output/",
     tmp_dir = "$TMPDIR/{sample_id}"
   log: "logs/viralcontigident_{sample_id}_mergeoutput.log"

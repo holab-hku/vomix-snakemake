@@ -1,7 +1,7 @@
 # setup working directories
 workdir : "."
 samplelist : "sample_list.tsv"
-datadir : "data/fastqc"
+datadir : "fastq/"
 contigdir : "output/assembly/" # should not end with a /
 dbdir: "data/database"
 
