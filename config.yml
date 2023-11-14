@@ -1,6 +1,6 @@
 # setup working directories
 workdir : "."
-samplelist : "sample_list.tsv"
+samplelist : "sample_list_final.tsv"
 datadir : "fastq/"
 contigdir : "output/assembly/" # should not end with a /
 dbdir: "data/database"
@@ -13,6 +13,7 @@ phamerdb: "pipeline/database/phabox/"
 # 1) preprocessing [params]
 dwnldparams : ""
 pigzparams: ""
+fastpparams: ""
 
 # 2) assembly [params]
 megahit_min_contig_len: 300

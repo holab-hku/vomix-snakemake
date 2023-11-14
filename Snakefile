@@ -24,12 +24,11 @@ wildcard_constraints:
 
 
 ### Parse sample python dictionary
-
 ### It has the format samples[sample_name]  =  {'R1': 'path to R1',
 #                                               'R2': 'path to R2',
 #                                               'accession': 'accession id'}
 
-samples = parse_sample_list(config["samplelist"], config['datadir'])
+samples, assemblies = parse_sample_list(config["samplelist"], config['datadir'])
 accession_ids = [sample['accession'] for sample in samples.values()]
 
 
@@ -39,15 +38,15 @@ include: "viralcontigident.smk"
 
 
 #### Set output targets based on sample names
-# preprocess = expand(os.path.join(config['datadir'], "{sample_id}_{i}.fastq.gz"), sample_id = accession_ids, i = [1,2])
-preprocess = expand("output/preprocess/{sample_id}_R{i}.cut.trim.fastq.gz", sample_id = samples.keys(), i = [1,2])
-viralcontigident = "output/3__viralcontigident/checkv/viruses.fna"
+preprocess = expand("output/preprocess/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz", sample_id = samples.keys(), i = [1,2])
+preprocess += ["output/report/preprocess/preprocess_report.html"]
+viralcontigident = "output/viralcontigident/output/checkv/viruses.fna"
 
 
 
 ### Set rule all outputs
-#rule preprocess:
-#  input: preprocess
+rule preprocess:
+  input: preprocess
 rule viralcontigident:
   input: viralcontigident
 

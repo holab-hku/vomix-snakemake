@@ -40,3 +40,70 @@ rule download_fastq:
 
     """
 
+
+
+rule fastp:
+  input: 
+    R1 = os.path.join(config['datadir'], '{sample_id}_1.fastq.gz'),
+    R2 = os.path.join(config['datadir'], '{sample_id}_2.fastq.gz')
+  output:
+    R1 = "output/preprocess/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz",
+    R2 = "output/preprocess/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz", 
+    html = "output/preprocess/{sample_id}/report.fastp.html", 
+    json = "output/preprocess/{sample_id}/report.fastp.json"
+  params:
+    fastpparams = config['fastpparams'],
+    R1_tmp = "$TMPDIR/{sample_id}/R1.fastq.gz",
+    R2_tmp = "$TMPDIR/{sample_id}/R2.fastq.gz",
+    html_tmp = "$TMPDIR/{sample_id}/fastp.html",
+    json_tmp = "$TMPDIR/{sample_id}/fastp.json",
+    tmp_dir = "$TMPDIR/{sample_id}/"
+  log: "logs/preprocess_{sample_id}_fastp.log"
+  threads: 12
+  conda: "pipeline/envs/fastp.yml"
+  shell:
+    """
+    mkdir -p {params.tmp_dir}
+
+    fastp -i {input.R1} -I {input.R2} \
+        -o {params.R1_tmp} -O {params.R2_tmp} \
+        --thread {threads} \
+        --html {params.html_tmp} \
+        --json {params.json_tmp} \
+        {params.fastpparams} &> {log}
+
+    mv {params.R1_tmp} {output.R1}
+    mv {params.R2_tmp} {output.R2}
+    mv {params.html_tmp} {output.html}
+    mv {params.json_tmp} {output.json}
+
+    rm -r {params.tmp_dir}
+
+    """
+
+
+rule multiqc:
+  input:
+    fastplogs = expand("output/preprocess/{sample_id}/report.fastp.json", sample_id = accession_ids)
+  output:
+    "output/report/preprocess/preprocess_report.html",
+    "output/report/preprocess/preprocess_report_data/multiqc.log"
+  params:
+    search_dir = "output/preprocess/",
+    output_dir = "output/report/preprocess/",
+    tmp_dir = "$TMPDIR/multiqc/"
+  log: "logs/preprocess_multiqc.log"
+  threads: 1
+  conda: "pipeline/envs/multiqc.yml"
+  shell:
+    """
+    rm -rf {params.tmp_dir}
+    mkdir -p {params.tmp_dir}
+    mkdir -p {params.tmp_dir}
+
+    multiqc {params.search_dir} -f -o {params.tmp_dir} -n preprocess_report.html 
+
+    mv {params.tmp_dir}/preprocess_report* {params.output_dir}
+
+    """
+

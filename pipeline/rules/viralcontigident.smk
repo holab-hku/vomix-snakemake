@@ -1,7 +1,7 @@
-localrules:
-  merge_outputs, 
-  filter_outputs, 
-  cat_contigs
+#localrules:
+ # merge_outputs, 
+ # filter_outputs, 
+ # cat_contigs
 
 
 
@@ -292,7 +292,7 @@ rule cdhit_derep:
     tmp_dir = "$TMPDIR",
     tmp_file = "$TMPDIR/dereplicated.viral.contigs.fa"
   log: "logs/viralcontigident_cdhitderep.log"
-  benchmark: "benchmarks/viralcontigident_{sample_id}_cdhit.log"
+  benchmark: "benchmarks/viralcontigident_cdhit.log"
   threads: 12
   shell:
     """
