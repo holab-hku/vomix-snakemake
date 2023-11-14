@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import pandas as pd
-import numpy as np
 import subprocess
 import sys
 import os
@@ -22,7 +21,6 @@ def validate_samples(samples):
 	for sample, items in samples.items():
 
 		# check if files exist locally
-		#print(samples[sample]["R1"])
 		if os.path.exists(samples[sample]["R1"]) and os.path.exists(samples[sample]["R2"]):
 			#print(sample)
 			continue
@@ -32,7 +30,6 @@ def validate_samples(samples):
 		cmd = ['sratools', 'info', acc]
 		p = subprocess.run(cmd, stdout=subprocess.PIPE).stdout
 		found = p.decode().split("\n")[0].split(":")[-1].lstrip()
-		#print(sample, found)
 		if int(found) == 0:
 			sys.exit("""
 ########################## WARNING ###################################
@@ -60,27 +57,25 @@ def parse_sample_list(f, datadir):
 	df = df.replace(r'^\s*$', float('nan'), regex=True)
 	if 'assembly' not in df.columns:
 		    df['assembly'] = float('nan')
-	#print(df)
 	
 	# iterate through df and if sample_id is missing, replace is with SRA accession
 	# also add assembly as sample_id if no assembly is given (single-sample assembly)
 	for i, row in df.iterrows():
-		if pd.isna(row['sample_id']) and not pd.isna(row['SRA']):
-			df.at[i, 'sample_id'] = row['SRA']
+		if pd.isna(row['sample_id']) and not pd.isna(row['accession']):
+			df.loc[i, 'sample_id'] = row['accession']
 
-		elif pd.isna(row['sample_id']) and pd.isna(row['SRA']):
+		elif pd.isna(row['sample_id']) and pd.isna(row['accession']):
 			raise ValueError("Column with both empty sample_id and SRA accession, please provide at least one")
-
+	
 	# if there are no assemblies set, make it the same as sample_id (single sample assembly)
 	df['assembly'] = [row['assembly'] if not pd.isna(row['assembly']) else row['sample_id'] for _, row in df.iterrows()]
 	
 	# if there are no R1 or R2s, generate them
-	df['R1'] = [row['R1'] if not pd.isna(row['R1']) else '{}_1.fastq.gz'.format(row['sample_id']) for _, row in df.iterrows()]
-	df['R2'] = [row['R2'] if not pd.isna(row['R2']) else '{}_2.fastq.gz'.format(row['sample_id']) for _, row in df.iterrows()]
-
+	df['R1'] = [row['R1'] if not pd.isna(row['R1']) else '{dir}{s}_1.fastq.gz'.format(dir= datadir, s=row['sample_id']) for _, row in df.iterrows()]
+	df['R2'] = [row['R2'] if not pd.isna(row['R2']) else '{dir}{s}_2.fastq.gz'.format(dir = datadir, s=row['sample_id']) for _, row in df.iterrows()]
+		
 	df.fillna('', inplace=True)
 	
-	#print(df)
 	# set unique names for the file index
 	try:
 		df.set_index('sample_id', inplace=True)
@@ -102,9 +97,7 @@ def parse_sample_list(f, datadir):
 	for assembly in df.assembly.unique():
 		df_filt = df[df['assembly'] == assembly]
 		R1s = df_filt['R1'].tolist()
-		R1spath = ['{dir}/{f}'.format(f=value, dir=datadir) for value in R1s]
 		R2s = df_filt['R2'].tolist()
-		R2spath = ['{dir}/{f}'.format(f=value, dir=datadir) for value in R2s]
 
 		try:
 			accessions = df_filt['accession'].tolist()
@@ -113,7 +106,7 @@ def parse_sample_list(f, datadir):
 
 		sample_ids = df_filt.index.tolist()
 
-		assemblies[assembly] = {'R1': R1spath, 'R2': R2spath, 
+		assemblies[assembly] = {'R1': R1s, 'R2': R2s, 
 				'sample_id' : sample_ids, 
 				'accession' : accessions}
 
@@ -140,9 +133,6 @@ def parse_sample_list(f, datadir):
 		samples[sample_id] = {'R1': R1,
 				'R2': R2,
 				'accession': accession}
-	
-
-	
 	validate_samples(samples)
 	# potential add code here to write a new update sample file
 	return samples, assemblies
