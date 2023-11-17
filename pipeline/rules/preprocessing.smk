@@ -84,7 +84,7 @@ rule fastp:
 
 rule multiqc:
   input:
-    fastplogs = expand("output/preprocess/{sample_id}/report.fastp.json", sample_id = accession_ids)
+    fastplogs = expand("output/preprocess/{sample_id}/report.fastp.json", sample_id = samples.keys())
   output:
     "output/report/preprocess/preprocess_report.html",
     "output/report/preprocess/preprocess_report_data/multiqc.log"
@@ -103,7 +103,7 @@ rule multiqc:
 
     multiqc {params.search_dir} -f -o {params.tmp_dir} -n preprocess_report.html 
 
-    mv {params.tmp_dir}/preprocess_report* {params.output_dir}
+    mv {params.tmp_dir}preprocess_report* {params.output_dir}
 
     """
 

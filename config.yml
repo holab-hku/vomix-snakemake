@@ -1,9 +1,9 @@
 # setup working directories
 workdir : "."
 samplelist : "sample_list.tsv"
-datadir : "./fastq/"
-contigdir : "./output/assembly/" # should not end with a /
-dbdir: "./data/database/"
+datadir : "fastq/"
+contigdir : "output/assembly/" # should not end with a /
+dbdir: "data/database/"
 
 
 # setup database directories
@@ -21,14 +21,15 @@ megaitparams: "--prune-level 3"
 
 
 # 3) viral contig identification [params]
-genomadparams: ""
+genomadparams: "--enable-score-calibration"
 dvfparams: "--len 1500"
 vs2params : "--prep-for-dramv --min-length 2500 --min-score 0 --include-groups dsDNAphage,ssDNA"
 virbotparams: ""
 phamerparams: "--len 2000"
 
+genomadcutoff: 0.7
 vs2cutoff: 0.7
-dvfcutoff: 0.9
+dvfcutoff: 0.8
 dvfpval: 0.05
 phamercutoff: 0.7
 phamerpred: "phage"

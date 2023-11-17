@@ -4,6 +4,9 @@ pipeline/database
 tmp/*
 !tmp/.gitkeep 
 
+benchmarks/
+!benchmakrs/.gitkeep
+
 fastq/*
 !fastq/.gitkeep
 
