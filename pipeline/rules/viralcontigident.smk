@@ -1,7 +1,6 @@
-localrules:
-  filter_output
-
-
+#localrules:
+ # merge_outputs,
+ #filter_outputs
 
 
 ###########################
@@ -24,7 +23,7 @@ rule genomad_classify:
   threads: 8
   resources:
     #runtime_min=lambda wildcards, attempt: attempt*attempt*120
-    mem_mb=lambda wildcards, attempt: attempt * 72000
+    mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
   shell:
     """
     mkdir -p {params.output_dir}
@@ -57,16 +56,14 @@ rule dvf_classify:
   params:
     dvfparams = config['dvfparams'], 
     model_dir = "pipeline/bin/DeepVirFinder/models/",
-    output_dir = "output/viralcon;tigident/{sample_id}/intermediate/dvf/",
+    output_dir = "output/viralcontigident/{sample_id}/intermediate/dvf/",
     tmp_dir = "$TMPDIR/{sample_id}"
   log: "logs/viralcontigident_{sample_id}_dvf.log"
   benchmark: "benchmarks/viralcontigident_{sample_id}_dvf.log"
   conda: "pipeline/envs/dvf.yml"
   threads: 8
   resources:
-    mem_mb=lambda wildcards, attempt: attempt * 16000
-  #resources:
-  #runtime = lambda wildcards, attempt: attempt*attempt*60
+    mem_mb=lambda wildcards, attempt: attempt * 16 * 10**3
   shell:
     """
     mkdir -p {params.output_dir}
@@ -177,7 +174,7 @@ rule phamer_classify:
   conda: "pipeline/envs/phabox.yml"
   threads: 8
   resources:
-    mem_mb=lambda wildcards, attempt: attempt * 16000
+    mem_mb=lambda wildcards, attempt: attempt * 16 * 10**3
   shell:
     """
     rm -rf {params.output_dir}
@@ -247,7 +244,7 @@ rule merge_outputs:
   input:
     genomadout = "output/viralcontigident/{sample_id}/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv",
     dvfout = "output/viralcontigident/{sample_id}/intermediate/dvf/final_score.txt", 
-    phamerout = "output/viralcontigident/{sample_id}/intermediate/phamer/out/phamer_prediction.csv",
+    phamerout = "output/viralcontigident/{sample_id}/intermediate/phamer/out/phamer_prediction.csv"
   output:
     "output/viralcontigident/{sample_id}/output/merged_scores.csv"
   params:
@@ -255,10 +252,8 @@ rule merge_outputs:
     out_dir = "output/viralcontigident/{sample_id}/output/",
     tmp_dir = "$TMPDIR/{sample_id}"
   log: "logs/viralcontigident_{sample_id}_mergeoutput.log"
-  #conda: "pipeline/envs/base.yml"
+  conda: "pipeline/envs/utility.yml"
   threads: 1
-  resources:
-    mem_mb=lambda wildcards, attempt: attempt * 72000
   shell:
     """
     mkdir -p {params.out_dir}
@@ -272,7 +267,7 @@ rule merge_outputs:
 # FILTER ORIGINAL FASTA #
 #########################
 
-rule filter_output:
+rule filter_outputs:
   input:
     contig_file = os.path.join(config['contigdir'], "{sample_id}/final.contigs.fa"),
     merged_scrs = "output/viralcontigident/{sample_id}/output/merged_scores.csv"
@@ -288,7 +283,7 @@ rule filter_output:
     phamer_cutoff = config['phamercutoff'], 
     phamer_pred = config['phamerpred'] 
   log: "logs/viralcontigident_{sample_id}_filtercontigs.log"
-  #conda: "pipeline/envs/base.yml"
+  conda: "pipeline/envs/utility.yml"
   threads: 1
   shell:
     """
@@ -317,10 +312,9 @@ rule cat_contigs:
   output: 
     "output/viralcontigident/output/combined.viralcontigs.fa"
   log: "logs/viralcontigident_catcontigs.log"
-  conda: "pipeline/envs/base.yml"
   threads: 1
   resources:
-    mem_mb = 72000
+    mem_mb = 16 * 10**3
   shell:
     """
     cat {input} > {output}
@@ -334,23 +328,22 @@ rule cdhit_derep:
     fasta = "output/viralcontigident/output/combined.viralcontigs.derep.fa",
     cluster = "output/viralcontigident/output/combined.viralcontigs.derep.fa.clstr"
   params:
+    cdhitpath = config['cdhitdir'],
     cdhitparams = config['cdhitparams'],
-    coveragecutoff = config['cdhitcoverage'],
-    output_dir = "output/3__viralcontigident",
+    output_dir = "output/viralcontigident/output",
     tmp_dir = "$TMPDIR",
     tmp_file = "$TMPDIR/dereplicated.viral.contigs.fa"
   log: "logs/viralcontigident_cdhitderep.log"
   benchmark: "benchmarks/viralcontigident_cdhit.log"
-  conda: "pipeline/envs/cdhit.yml"
-  threads: 12
+  threads: 64
   resources:
-    mem_mb = lambda wildcards, attempt: attempt * 72000
+    mem_mb = lambda wildcards, attempt: attempt * 72 * 10**3
   shell:
     """
     mkdir -p {params.tmp_dir}
     mkdir -p {params.output_dir}
-
-    cd-hit -i {input} -o {params.tmp_file} -T {threads} -c {params.coveragecutoff} {params.cdhitparams}
+    
+    {params.cdhitpath}cd-hit -i {input} -o {params.tmp_file} -T {threads} {params.cdhitparams}
 
     mv {params.tmp_dir}/dereplicated.viral.contigs.fa {output.fasta}
     mv {params.tmp_dir}/dereplicated.viralcontigs.fa.clstr {output.cluster}
@@ -371,7 +364,7 @@ rule checkv:
   benchmark: "benchmarks/viralcontigident_checkv.log"
   threads: 64
   resources:
-    mem_mb = 72000
+    mem_mb = lambda wildcards, attempt: attempt * 72 * 10**3
   conda: "pipeline/envs/checkv.yml"
   shell:
     """

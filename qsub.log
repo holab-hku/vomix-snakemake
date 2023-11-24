@@ -1,0 +1,43 @@
+miniconda3/4.12.0 is loaded 
+mamba/1.4.2 is loaded 
+snakemake/7.28.1 is loaded 
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cores: 88
+Rules claiming more threads will be scaled down.
+Provided resources: mem_mb=72000, mem_mib=68665, disk_mb=8144, disk_mib=7767
+Select jobs to execute...
+
+[Tue Nov 21 23:21:33 2023]
+rule cdhit_derep:
+    input: output/viralcontigident/output/combined.viralcontigs.fa
+    output: output/viralcontigident/output/combined.viralcontigs.derep.fa, output/viralcontigident/output/combined.viralcontigs.derep.fa.clstr
+    log: logs/viralcontigident_cdhitderep.log
+    jobid: 0
+    benchmark: benchmarks/viralcontigident_cdhit.log
+    reason: Missing output files: output/viralcontigident/output/combined.viralcontigs.derep.fa, output/viralcontigident/output/combined.viralcontigs.derep.fa.clstr, benchmarks/viralcontigident_cdhit.log
+    threads: 64
+    resources: mem_mb=72000, mem_mib=68665, disk_mb=8144, disk_mib=7767, tmpdir=/tmp/pbs.1175094.xomics
+
+=>> PBS: job killed: walltime 86436 exceeded limit 86400
+Will exit after finishing currently running jobs (scheduler).
+[Wed Nov 22 23:22:05 2023]
+Error in rule cdhit_derep:
+    jobid: 0
+    input: output/viralcontigident/output/combined.viralcontigs.fa
+    output: output/viralcontigident/output/combined.viralcontigs.derep.fa, output/viralcontigident/output/combined.viralcontigs.derep.fa.clstr
+    log: logs/viralcontigident_cdhitderep.log (check log file(s) for error details)
+    shell:
+        
+    mkdir -p $TMPDIR
+    mkdir -p output/viralcontigident/out
+    
+    pipeline/bin/CD-HIT/cd-hit -i output/viralcontigident/output/combined.viralcontigs.fa -o $TMPDIR/dereplicated.viral.contigs.fa -T 64 -c 0.95 -d 400 -M 0 -n 5 -aS 0.85
+
+    mv $TMPDIR/dereplicated.viral.contigs.fa output/viralcontigident/output/combined.viralcontigs.derep.fa
+    mv $TMPDIR/dereplicated.viralcontigs.fa.clstr output/viralcontigident/output/combined.viralcontigs.derep.fa.clstr
+    
+        (one of the commands exited with non-zero exit code; note that snakemake uses bash strict mode!)
+
+Will exit after finishing currently running jobs (scheduler).
+Shutting down, this might take some time.

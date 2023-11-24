@@ -40,7 +40,10 @@ include: "viralcontigident.smk"
 #### Set output targets based on sample names
 preprocess = expand("output/preprocess/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz", sample_id = samples.keys(), i = [1,2])
 preprocess += ["output/report/preprocess/preprocess_report.html"]
-viralcontigident = "output/viralcontigident/output/checkv/viruses.fna"
+
+viralcontigident = expand("output/viralcontigident/{sample_id}/output/viral.contigs.fa", sample_id = samples.keys())
+viralcontigident += "output/viralcontigident/output/checkv/viruses.fna"
+
 
 
 

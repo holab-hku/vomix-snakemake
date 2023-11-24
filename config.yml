@@ -31,11 +31,11 @@ genomadcutoff: 0.7
 vs2cutoff: 0.7
 dvfcutoff: 0.8
 dvfpval: 0.05
-phamercutoff: 0.7
+phamercutoff: 0.9
 phamerpred: "phage"
 
 
-cdhitcoverage: 0.95
-cdhitparams: "-d 400 -M 0 -n 5 -aS 0.85"
+cdhitdir: "pipeline/bin/CD-HIT/"
+cdhitparams: "-c 0.95 -d 400 -M 0 -n 5 -aS 0.85"
 
 checkvparams: ""
