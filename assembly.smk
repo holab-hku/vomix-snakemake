@@ -1,1 +1,0 @@
-pipeline/rules/assembly.smk

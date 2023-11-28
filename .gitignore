@@ -1,4 +1,4 @@
-pipeline/database
+workflow/database
 .snakemake
 
 tmp/*
@@ -10,10 +10,10 @@ benchmarks/
 fastq/*
 !fastq/.gitkeep
 
-output/*
+results/*
 !output/.gitkeep
 
 logs/*
 !log/.gitkeep
 
-pipeline/params
+workflow/params
