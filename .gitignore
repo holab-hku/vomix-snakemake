@@ -20,7 +20,7 @@ tmp/*
 !tmp/.gitkeep 
 
 benchmarks/*
-!benchmakrs/.gitkeep
+!benchmarks/.gitkeep
 
 fastq/*
 !fastq/.gitkeep
