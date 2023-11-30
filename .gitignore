@@ -1,10 +1,25 @@
-workflow/database
+workflow/database/*
+!workflow/database/.gitkeep
+
+workflow/params/*
+!workflow/params/.gitkeep
+
+workflow/report/*
+!workflow/report/.gitkeep
+
+workflow/database/*
+!workflow/database/.gitkeep
+
+workflow/software/*
+!workflow/software/.gitkeep
+
 .snakemake
+
 
 tmp/*
 !tmp/.gitkeep 
 
-benchmarks/
+benchmarks/*
 !benchmakrs/.gitkeep
 
 fastq/*
@@ -16,4 +31,5 @@ results/*
 logs/*
 !log/.gitkeep
 
-workflow/params
+
+qsub*
