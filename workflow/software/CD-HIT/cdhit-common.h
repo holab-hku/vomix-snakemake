@@ -46,7 +46,7 @@
 #define CDHIT_VERSION  "4.8.1"
 
 #ifndef MAX_SEQ
-#define MAX_SEQ 10000000
+#define MAX_SEQ 655360
 #endif
 
 #define MAX_AA 23

@@ -56,17 +56,17 @@ rule assembly_stats:
   input:
     expand("results/assembly/{sample_id}/output/final.contigs.fa", sample_id = samples.keys())
   output:
-    stats = "results/report/assembly/assemblystats.tsv",
-    sizedist = "results/report/assembly/assembly_size_dist.tsv"
+    stats = "workflow/report/assembly/assemblystats.tsv",
+    sizedist = "workflow/report/assembly/assembly_size_dist.tsv"
   params:
-    output_dir = "results/report/assembly",
-    names = "test"
+    script = "workflow/scripts/assembly/assemblystats.py",
+    output_dir = "workflow/report/assembly"
   log: "logs/assembly_assemblystats.log"
   conda: "../envs/utility.yml"
   shell:
     """
     mkdir -p {params.output_dir}
-    python pipeline/src/assembly/assemblystats.py -i {input} -n {params.names} --size-dist-file {output.sizedist} > {output.stats}
+    python {params.script} -i {input} --size-dist-file {output.sizedist} > {output.stats} 2> {log} 
      """
 
 

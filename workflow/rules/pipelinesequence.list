@@ -1,5 +1,6 @@
 preprocess
 assembly
+viralcontigident
 mapping
 binning
 taxonomy

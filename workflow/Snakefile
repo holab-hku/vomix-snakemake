@@ -41,8 +41,8 @@ include: "rules/viralcontigident.smk"
 
 #### Set output targets based on sample names
 preprocess = ["workflow/report/preprocess/preprocess_report.html"]
-assembly = ["results/report/assembly/assemblystats.tsv"]
-viralcontigident = "results/viralcontigident/output/checkv/viruses.fna"
+assembly = ["workflow/report/assembly/assemblystats.tsv"]
+viralcontigident = ["results/viralcontigident/output/checkv/viruses.fna"]
 
 
 

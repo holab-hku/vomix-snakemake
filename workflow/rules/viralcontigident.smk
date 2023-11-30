@@ -6,16 +6,15 @@
 ###########################
 # GENOMAD CLASSIFICATION  #
 ###########################
-
 rule genomad_classify:
   input:
     os.path.join(config['contigdir'], "{sample_id}/output/final.contigs.fa")
   output:
-    "results/viralcontigident/{sample_id}/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv"
+    "results/viralcontigident/samples/{sample_id}/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv"
   params:
     genomadparams = config['genomadparams'],
     db_dir = "workflow/database/genomad",
-    output_dir = "results/viralcontigident/{sample_id}/intermediate/genomad/",
+    output_dir = "results/viralcontigident/samples/{sample_id}/intermediate/genomad/",
     tmp_dir = "$TMPDIR/{sample_id}"
   log: "logs/viralcontigident_{sample_id}_genomad.log"
   benchmark: "benchmarks/viralcontigident_{sample_id}_genomad.log"
@@ -26,9 +25,8 @@ rule genomad_classify:
     mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
   shell:
     """
-    mkdir -p {params.output_dir}
-    rm -rf {params.tmp_dir}/*
-    mkdir -p {params.tmp_dir}
+    rm -rf {params.tmp_dir} {params.output_dir}
+    mkdir -p {params.tmp_dir} {params.output_dir}
 
     genomad end-to-end \
         --cleanup \
@@ -39,6 +37,7 @@ rule genomad_classify:
         {params.genomadparams} &> {log}
 
     mv {params.tmp_dir}/* {params.output_dir}
+    rm -rf {params.tmp_dir}
     """
 
 
@@ -52,11 +51,12 @@ rule dvf_classify:
   input:
     os.path.join(config['contigdir'], "{sample_id}/output/final.contigs.fa")
   output:
-    "results/viralcontigident/{sample_id}/intermediate/dvf/final_score.txt"
+    "results/viralcontigident/samples/{sample_id}/intermediate/dvf/final_score.txt"
   params:
+    script_path = "workflow/software/DeepVirFinder/dvf.py",
     dvfparams = config['dvfparams'], 
     model_dir = "workflow/software/DeepVirFinder/models/",
-    output_dir = "results/viralcontigident/{sample_id}/intermediate/dvf/",
+    output_dir = "results/viralcontigident/samples/{sample_id}/intermediate/dvf/",
     tmp_dir = "$TMPDIR/{sample_id}"
   log: "logs/viralcontigident_{sample_id}_dvf.log"
   benchmark: "benchmarks/viralcontigident_{sample_id}_dvf.log"
@@ -66,16 +66,17 @@ rule dvf_classify:
     mem_mb=lambda wildcards, attempt: attempt * 16 * 10**3
   shell:
     """
-    mkdir -p {params.output_dir}
-    mkdir -p {params.tmp_dir}
+    mkdir -p {params.tmp_dir} {params.output_dir}
 
-    python pipeline/bin/DeepVirFinder/dvf.py \
+    python {params.script_path} \
         -i {input} \
         -m {params.model_dir} \
+        -c {threads} \
         -o {params.tmp_dir} \
         {params.dvfparams} &> {log}
 
-    mv {params.tmp_dir}/*.txt {output}
+    mv {params.tmp_dir}/* {output}
+    rm -rf {params.tmp_dir}
     """
 
 ##############################
@@ -161,12 +162,13 @@ rule phamer_classify:
   input:
     os.path.join(config['contigdir'], "{sample_id}/output/final.contigs.fa")
   output:
-    "results/viralcontigident/{sample_id}/intermediate/phamer/out/phamer_prediction.csv"
+    "results/viralcontigident/samples/{sample_id}/intermediate/phamer/out/phamer_prediction.csv"
   params:
+    script_path = "workflow/software/PhaBOX/PhaMer_single.py",
     phamerparams = config['phamerparams'],
     db_dir = config['phamerdb'],
     params_dir = "workflow/params/phabox/",
-    output_dir = "results/viralcontigident/{sample_id}/intermediate/phamer/",
+    output_dir = "results/viralcontigident/samples/{sample_id}/intermediate/phamer/",
     script_dir = "workflow/software/PhaBOX/scripts/",
     tmp_dir = "$TMPDIR/{sample_id}"
   log: "logs/viralcontigident_{sample_id}_phamer.log"
@@ -178,10 +180,9 @@ rule phamer_classify:
   shell:
     """
     rm -rf {params.output_dir}
-    mkdir -p {params.output_dir}
-    mkdir -p {params.tmp_dir}
+    mkdir -p {params.tmp_dir} {params.output_dir}
 
-    python pipeline/bin/PhaBOX/PhaMer_single.py \
+    python {params.script_path} \
         --contigs {input} \
         --threads {threads} \
         --rootpth {params.tmp_dir} \
@@ -191,6 +192,7 @@ rule phamer_classify:
         {params.phamerparams} &> {log}
 
     mv -f {params.tmp_dir}/* {params.output_dir}
+    rm -rf {params.tmp_dir}
     """
 
 
@@ -242,24 +244,36 @@ rule phamer_classify:
 
 rule merge_outputs:
   input:
-    genomadout = "results/viralcontigident/{sample_id}/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv",
-    dvfout = "results/viralcontigident/{sample_id}/intermediate/dvf/final_score.txt", 
-    phamerout = "results/viralcontigident/{sample_id}/intermediate/phamer/out/phamer_prediction.csv"
+    genomadout = "results/viralcontigident/samples/{sample_id}/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv",
+    dvfout = "results/viralcontigident/samples/{sample_id}/intermediate/dvf/final_score.txt", 
+    phamerout = "results/viralcontigident/samples/{sample_id}/intermediate/phamer/out/phamer_prediction.csv",
   output:
-    "results/viralcontigident/{sample_id}/output/merged_scores.csv"
+    "results/viralcontigident/samples/{sample_id}/output/merged_scores.csv"
   params:
     script_path = "workflow/scripts/viralcontigident/mergeout.py",
-    out_dir = "results/viralcontigident/{sample_id}/output/",
+    genomadminlen = config['genomadminlen'],
+    dvfminlen = config['dvfminlen'], 
+    phamerminlen = config['dvfminlen'], 
+    out_dir = "results/viralcontigident/samples/{sample_id}/output/",
     tmp_dir = "$TMPDIR/{sample_id}"
   log: "logs/viralcontigident_{sample_id}_mergeoutput.log"
   conda: "../envs/utility.yml"
   threads: 1
   shell:
     """
-    mkdir -p {params.out_dir}
-    mkdir -p {params.tmp_dir}
-    python {params.script_path} {input.genomadout} {input.dvfout} {input.phamerout} --output {params.tmp_dir}/tmp.csv
+    mkdir -p {params.tmp_dir} {params.out_dir}
+
+    python {params.script_path} \
+        --genomadout {input.genomadout} \
+        --dvfout {input.dvfout} \
+        --phamerout {input.phamerout} \
+        --genomadminlen {params.genomadminlen} \
+        --dvfminleng {params.dvfminlen} \
+        --phamerminlen {params.phamerminlen} \
+        --output {params.tmp_dir}/tmp.csv &> {log}
+
     mv {params.tmp_dir}/* {output}
+    rm -rf {params.tmp_dir}
     """
     
 
@@ -270,11 +284,11 @@ rule merge_outputs:
 rule filter_outputs:
   input:
     contig_file = os.path.join(config['contigdir'], "{sample_id}/output/final.contigs.fa"),
-    merged_scrs = "results/viralcontigident/{sample_id}/output/merged_scores.csv"
+    merged_scrs = "results/viralcontigident/samples/{sample_id}/output/merged_scores.csv"
   output:
-    filtered_contigs = "results/viralcontigident/{sample_id}/output/viral.contigs.fa",
-    filtered_scrs = "results/viralcontigident/{sample_id}/output/merged_scores_filtered.csv",
-    positive_hits = "results/viralcontigident/{sample_id}/output/viralhits_list"
+    filtered_contigs = "results/viralcontigident/samples/{sample_id}/output/viral.contigs.fa",
+    filtered_scrs = "results/viralcontigident/samples/{sample_id}/output/merged_scores_filtered.csv",
+    positive_hits = "results/viralcontigident/samples/{sample_id}/output/viralhits_list"
   params:
     script_path = "workflow/scripts/viralcontigident/filtercontig_scores.py",
     genomad_cutoff = config['genomadcutoff'], 
@@ -302,25 +316,21 @@ rule filter_outputs:
     """
  
 
-##################
-# CD-HIT CLUSTER #
-##################
-
 rule cat_contigs:
   input:
-    expand("results/viralcontigident/{sample_id}/output/viral.contigs.fa", sample_id = samples.keys())
+    expand("results/viralcontigident/samples/{sample_id}/output/viral.contigs.fa", sample_id = samples.keys())
   output: 
     "results/viralcontigident/output/combined.viralcontigs.fa"
   log: "logs/viralcontigident_catcontigs.log"
   threads: 1
-  resources:
-    mem_mb = 16 * 10**3
   shell:
     """
     cat {input} > {output}
     """
 
-
+##################
+# CD-HIT CLUSTER #
+##################
 rule cdhit_derep:
   input:
     "results/viralcontigident/output/combined.viralcontigs.fa"
@@ -335,20 +345,151 @@ rule cdhit_derep:
     tmp_file = "$TMPDIR/dereplicated.viral.contigs.fa"
   log: "logs/viralcontigident_cdhitderep.log"
   benchmark: "benchmarks/viralcontigident_cdhit.log"
-  threads: 64
+  threads: 32
   resources:
     mem_mb = lambda wildcards, attempt: attempt * 72 * 10**3
   shell:
     """
-    mkdir -p {params.tmp_dir}
-    mkdir -p {params.output_dir}
+    mkdir -p {params.tmp_dir} {params.output_dir}
     
-    {params.cdhitpath}cd-hit -i {input} -o {params.tmp_file} -T {threads} {params.cdhitparams}
+    {params.cdhitpath}cd-hit -i {input} -o {params.tmp_file} -T {threads} {params.cdhitparams} &> {log}
 
     mv {params.tmp_dir}/dereplicated.viral.contigs.fa {output.fasta}
     mv {params.tmp_dir}/dereplicated.viralcontigs.fa.clstr {output.cluster}
     """
 
+
+rule makeblastdb_derep:
+  input:
+    "results/viralcontigident/output/combined.viralcontigs.fa"
+  output: 
+    expand("results/viralcontigient/intermediate/derep/db.{suffix}", 
+        suffix = ["ndb", "nin", "not", "ntf", "nhr", "njs", "nsq", "nto"])
+  params:
+    output_dir = "results/viralcontigient/intermediate/derep/", 
+    dbtype = 'nucl', 
+    tmp_dir = "$TMPDIR",
+    tmp_file_prefix = "$TMPDIR/db"
+  log: "logs/viralcontigident_makeblastdb.log"
+  conda: "../envs/checkv.yml"
+  threads: 1
+  shell:
+    """
+    rm -rf {params.tmp_dir}/* {params.output_dir}
+    mkdir -p {params.tmp_dir} {params.output_dir}
+
+    makeblastdb -in {input} -dbtype {params.dbtype} -out {params.tmp_file_prefix} 2> {log}
+
+    mv {params.tmp_dir}/* {params.output_dir}
+    rm -rf {params.tmp_dir}/*
+
+    """
+
+rule megablast_derep:
+  input:
+    fasta = "results/viralcontigident/output/combined.viralcontigs.fa", 
+    dbcheckpoints = expand("results/viralcontigient/intermediate/derep/db.{suffix}",
+                suffix = ["ndb", "nin", "not", "ntf", "nhr", "njs", "nsq", "nto"])
+  output:
+    "results/viralcontigient/intermediate/derep/blast_out.csv"
+  params:
+    db = "results/viralcontigient/intermediate/derep/db",
+    outfmt = "'6 std qlen slen'",
+    maxtargetseqs = 10000, 
+    tmp_dir = "$TMPDIR", 
+    tmp_file = "$TMPDIR/tmp.tsv"
+  log: "logs/viralcontigident_megablastpairwise.log"
+  conda: "../envs/checkv.yml"
+  threads: 64
+  shell: 
+    """
+    rm -rf {params.tmp_dir}/*
+    mkdir -p {params.tmp_dir}
+
+    blastn -query {input.fasta} \
+        -db {params.db} \
+        -outfmt {params.outfmt} \
+        -max_target_seqs {params.maxtargetseqs} \
+        -out {params.tmp_file}
+        -num_threads {threads} &> {log}
+    
+    mv {params.tmp_file} {output}
+    rm -rf {params.tmp_dir}/*
+
+    """
+  
+rule anicalc_derep:
+  input:
+    "results/viralcontigient/intermediate/derep/blast_out.csv"
+  output: 
+    "results/viralcontigient/intermediate/derep/ani.tsv"
+  params:
+    script_path = "workflow/scripts/viralcontigident/anicalc.py", 
+    tmp_dir = "$TMPDIR",
+    tmp_file = "$TMPDIR/tmp.tsv"
+  log: "logs/viralcontigident_anicalc.log"
+  conda: "../envs/checkv.yml"
+  threads: 1
+  shell:
+    """
+    rm -rf {params.tmp_dir}/* 
+    mkdir -p {params.tmp_dir}
+
+    python {params.script_path} \
+        -i {input} \
+        -o {params.tmp_file} &> {log}
+
+    mv {params.tmp_file} {output}
+    rm -rf {params.tmp_dir}/*
+    """
+
+
+rule aniclust_derep:
+  input:
+    fasta = "results/viralcontigident/output/combined.viralcontigs.fa", 
+    ani = "results/viralcontigient/intermediate/derep/ani.tsv"
+  output:
+    "results/viralcontigident/output/output/derep/clusters.tsv"
+  params:
+    script_path = "workflow/scripts/viralcontigident/aniclust.py",
+    minani = config["vOTUani"], 
+    targetcov = config["vOTUtargetcov"],
+    querycov  = config["vOTUquerycov"], 
+    tmp_dir = "$TMPDIR", 
+    tmp_file = "$TMPDIR/tmp.tsv"
+  log: "logs/viralcontigident_aniclust.log"
+  conda: "../envs/checkv.yml"
+  threads: 1
+  shell:
+    """
+    rm -rf {params.tmp_dir}/*
+    mkdir -p {params.tmp_dir}
+
+    python {params.script_path} \
+        --fna {input.fasta} \
+        --ani {input.ani} \
+        --out {params.tmp_file} \
+        --min_ani {params.minani} \
+        --min_tcov {params.targetcov} \
+        --min_qcov {params.querycov} &> {log}
+
+    mv {params.tmp_file} {output}
+    rm -rf {params.tmp_dir}/*
+    """
+
+
+#rule filtercontigs_derep:
+#  input: 
+#    fasta = "results/viralcontigident/output/combined.viralcontigs.fa", 
+#    clusters = "results/viralcontigident/output/output/derep/clusters.tsv"
+#  output:
+#  params:
+#  log: 
+#  conda: 
+#  threads:
+#  shell:
+#    """
+#    """
 
 rule checkv:
   input:
@@ -368,14 +509,13 @@ rule checkv:
   conda: "../envs/checkv.yml"
   shell:
     """
-    rm -rf {params.output_dir}/*
-    mkdir -p {params.output_dir}
-    rm -rf {params.tmp_dir}
-    mkdir -p {params.tmp_dir}
+    rm -rf {params.tmp_dir} {params.output_dir}/*
+    mkdir -p {params.tmp_dir} {params.output_dir}
 
     checkv end_to_end {input} {params.tmp_dir} -d {params.db_dir} -t {threads} {params.checkvparams}
 
     mv {params.tmp_dir}/* {params.output_dir}/
+    rm -rf {params.tmp_dir}
     """
     
     

@@ -23,22 +23,22 @@ def size_distribute(r,
 		for i, l in enumerate(lengths):
 			if len(df.loc[df.length >= l]) == 0:
 				break
-			n, s, p = len(df.loc[df.length >= l]), int(df.loc[df.length >= l].sum()), 
-			int(df.loc[df.length >= l].sum()) / float(df.sum()) * 100
+			n, s, p = len(df.loc[df.length >= l]), int(df.loc[df.length >= l].sum().iloc[0]), int(df.loc[df.length >= l].sum().iloc[0]) / float(df.sum().iloc[0]) * 100
 			
 			size_dist[name][i] = {"min_length": l, "num_contigs": n, "total_length": s, "%": p}
 
 		_ = pd.DataFrame(size_dist[name]).T
 		_ = _.assign(assembly=pd.Series([name]*len(_), index=_.index))
 		_ = _[size_dist_df.columns]
+
+		size_dist_df = pd.concat([size_dist_df.dropna(axis=1, how='all'), _], sort=True)
 	
-		size_dist_df = pd.concat([size_dist_df, _], sort=True)
 	return size_dist_df
 
 
 def calculate_n_stats(df):
 	df.sort_values("length", inplace=True, ascending=True)
-	size = int(df.sum())
+	size = int(df.sum().iloc[0])
 	N50_length = N90_length = 0
 	cumulative = 0
 	for contig in df.index:
@@ -54,7 +54,7 @@ def calculate_n_stats(df):
 def calculate_length_stats(contig_lengths):
 	df = pd.DataFrame(contig_lengths, index=["length"]).T
 	N50_length, N90_length = calculate_n_stats(df)
-	stats = {"contigs": len(df), "total_size_bp": int(df.sum()), "min_length": int(df["length"].min()),
+	stats = {"contigs": len(df), "total_size_bp": int(df.sum().iloc[0]), "min_length": int(df["length"].min()),
 			"max_length": int(df["length"].max()), "avg_length": float(df["length"].mean()),
 			"median_length": float(df["length"].median()), "N50_length": N50_length, "N90_length": N90_length}
 	return stats
@@ -73,15 +73,17 @@ def generate_stat_df(r):
 def main():
 	parser = ArgumentParser()
 	parser.add_argument("-i", "--infile", type=str, nargs="+", help="Fasta file of contigs", required=True)
-	parser.add_argument("-n", "--names", type=str, nargs="+", help="Assembly names", required=True)
+	#parser.add_argument("-n", "--names", type=str, nargs="+", help="Assembly names", required=True)
 	parser.add_argument("--size-dist-file", type=str,
 			help="Write table of size distributions for different contig lengths to file")
 	parser.add_argument("--stat-file", type=str,
                         help="Write table of general statistics (size, lengths etc) to file")
 	args = parser.parse_args()
- 	assert (len(args.names) == len(args.infile))
-
-	r = store_lengths(args.infile, args.names)
+	
+	names = [x.split("/")[-3] for x in args.infile]
+	assert (len(names) == len(args.infile))
+	
+	r = store_lengths(args.infile, names)
 	stat_df = generate_stat_df(r)
 
 	if not args.stat_file:

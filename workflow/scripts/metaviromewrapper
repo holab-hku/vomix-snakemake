@@ -23,7 +23,7 @@ if [[ "$1" == "install" ]]; then
 	!log/.gitkeep
 	pipeline/params" >> .gitignore
 
-	for direct in $(cat pipeline/rules/pipelinesequence.list); do mkdir -p output/${direct}; mkdir -p output/intermediate/${direct} ;done
+	for direct in $(cat workflow/rules/pipelinesequence.list); do mkdir -p output/${direct}; mkdir -p output/intermediate/${direct} ;done
 
 ###################
 # SETUP DATABASES #

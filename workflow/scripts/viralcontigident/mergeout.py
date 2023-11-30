@@ -4,7 +4,7 @@ import argparse
 import pandas as pd
 import numpy as np
 
-def merge_files(genomad_path, dvfout_path, phamerout_path, output_file):
+def merge_files(genomad_path, dvfout_path, phamerout_path, genomad_min_len, dvf_min_len, phamer_min_len, output_file):
 	
 	
 	# Read the input files
@@ -26,7 +26,13 @@ def merge_files(genomad_path, dvfout_path, phamerout_path, output_file):
 	except FileNotFoundError:
 		columns = ['Accession', 'Length', 'Pred', 'Score']
 		phamerout = pd.DataFrame({}, columns=columns)
-	
+
+
+	# length filtering 
+	genomadout = genomadout[genomadout['length'] >= genomad_min_len]
+	dvfout = dvfout[dvfout['len'] >= dvf_min_len]
+	phamerout = phamerout[phamerout['Length'] >= phamer_min_len]
+
 	# Add prefixes to column title
 	#vs2out['seqname'] = vs2out['seqname'].str.replace(r'\|\|.*', '')
 	genomadout['seq_name'] = genomadout['seq_name'].str.replace(r'\|provir.+$', '', regex=True)
@@ -44,6 +50,10 @@ def merge_files(genomad_path, dvfout_path, phamerout_path, output_file):
 	dvfout['sequence_id'] = dvfout['dvf_name']
 	#virbotout['sequence_id'] = virbotout['virbot_Contig_acc']
 	phamerout['sequence_id'] = phamerout['phamer_Accession']
+
+
+	# Filter based on length 
+
 
 	# Merge the files based on the 'sequence_id' column using outer join
 	merged = pd.merge(genomadout, dvfout, on='sequence_id', how='outer')
@@ -63,10 +73,11 @@ if __name__ == '__main__':
 	# Create the argument parser
 	parser = argparse.ArgumentParser(description='Merge outputs of viral contig identification')
 	parser.add_argument('genomadout', type=str, help='Path to the vs2out TSV file')
-	#parser.add_argument('vs2out', type=str, help='Path to the vs2out TSV file')
 	parser.add_argument('dvfout', type=str, help='Path to the dvfout TXT file')
-	#parser.add_argument('virbotout', type=str, help='Path to the virbotout CSV file')
 	parser.add_argument('phamerout', type=str, help='Path to the phamerout CSV file')
+	parser.add_argument('genomadminlen', type=float, help='Min length for genomad annotation')
+	parser.add_argument('dvfminlen', type=float, help='Min length for dvf annotation')
+	parser.add_argument('phamerminlen', type=float, help='Min length for phamer annotation')
 	parser.add_argument('--output', type=str, default='merged_output.csv', help='Output file name (default: merged_output.csv)')
 
 	# Parse the command-line arguments
