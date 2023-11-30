@@ -26,10 +26,10 @@ fastq/*
 !fastq/.gitkeep
 
 results/*
-!output/.gitkeep
+!results/.gitkeep
 
 logs/*
-!log/.gitkeep
+!logs/.gitkeep
 
 
 qsub*
