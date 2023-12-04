@@ -33,3 +33,4 @@ logs/*
 
 
 qsub*
+nohup.out
