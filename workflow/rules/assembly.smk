@@ -1,10 +1,9 @@
-localrules:
-  symlink_assembly
-
 ###########
 # MEGAHIT #
 ###########
 rule symlink_assembly:
+  name : "assembly.py: creating symbolic links"
+  localrule: True
   input:
     R1 = "results/preprocess/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz",
     R2 = "results/preprocess/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"
@@ -22,6 +21,7 @@ rule symlink_assembly:
 
 
 rule megahit:
+  name : "assembly.py: MEGAHIT running assembly"
   input:
     R1 = "results/assembly/{sample_id}/output/{sample_id}_R1.fastq.gz",
     R2 = "results/assembly/{sample_id}/output/{sample_id}_R2.fastq.gz"
@@ -53,6 +53,7 @@ rule megahit:
 
 
 rule assembly_stats:
+  name : "assembly.py: aggregating assembly statistics"
   input:
     expand("results/assembly/{sample_id}/output/final.contigs.fa", sample_id = samples.keys())
   output:

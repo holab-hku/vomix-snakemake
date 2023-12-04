@@ -1,6 +1,3 @@
-
-
-# a lambda function to get sample accesions 
 def retrieve_accessions(wildcards):
   try:
     acc = samples[wildcards.sample_id]['accession']
@@ -11,6 +8,7 @@ def retrieve_accessions(wildcards):
 
 
 rule download_fastq:
+  name : "preprocessing.py: download fastq from SRA"
   output:
     R1 = os.path.join(config["datadir"], "{sample_id}_1.fastq.gz"),
     R2 = os.path.join(config["datadir"], "{sample_id}_2.fastq.gz")
@@ -45,6 +43,7 @@ rule download_fastq:
 
 
 rule fastp:
+  name : "preprocessing.py: fastp preprocess"
   input: 
     R1 = os.path.join(config['datadir'], '{sample_id}_1.fastq.gz'),
     R2 = os.path.join(config['datadir'], '{sample_id}_2.fastq.gz')
@@ -85,6 +84,7 @@ rule fastp:
 
 
 rule multiqc:
+  name : "preprocessing.py: preprocess repot"
   input:
     fastplogs = expand("results/preprocess/{sample_id}/report.fastp.json", sample_id = samples.keys())
   output:

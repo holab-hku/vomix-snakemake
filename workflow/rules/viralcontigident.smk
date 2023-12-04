@@ -7,6 +7,7 @@
 # GENOMAD CLASSIFICATION  #
 ###########################
 rule genomad_classify:
+  name : "viralcontigident.py: geNomad classify" 
   input:
     os.path.join(config['contigdir'], "{sample_id}/output/final.contigs.fa")
   output:
@@ -48,6 +49,7 @@ rule genomad_classify:
 
 
 rule dvf_classify:
+  name : "viralcontigident.py: DeepVirFinder classify"
   input:
     os.path.join(config['contigdir'], "{sample_id}/output/final.contigs.fa")
   output:
@@ -159,6 +161,7 @@ rule dvf_classify:
 #########################
 
 rule phamer_classify:
+  name : "viralcontigident.py: PhaMer classify"
   input:
     os.path.join(config['contigdir'], "{sample_id}/output/final.contigs.fa")
   output:
@@ -243,6 +246,7 @@ rule phamer_classify:
 #######################
 
 rule merge_outputs:
+  name : "viralcontigident.py: merge classification outputs"
   input:
     genomadout = "results/viralcontigident/samples/{sample_id}/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv",
     dvfout = "results/viralcontigident/samples/{sample_id}/intermediate/dvf/final_score.txt", 
@@ -282,6 +286,7 @@ rule merge_outputs:
 #########################
 
 rule filter_outputs:
+  name : "viralcontigident.py: filter viral contigs"
   input:
     contig_file = os.path.join(config['contigdir'], "{sample_id}/output/final.contigs.fa"),
     merged_scrs = "results/viralcontigident/samples/{sample_id}/output/merged_scores.csv"
@@ -327,15 +332,16 @@ rule filter_outputs:
  
 
 rule cat_contigs:
+  name : "viralcontigident.py: combine viral contigs"
   input:
     fasta = expand("results/viralcontigident/samples/{sample_id}/output/viral.contigs.fa", sample_id = samples.keys()),
     scores = expand("results/viralcontigident/samples/{sample_id}/output/merged_scores_filtered.csv", sample_id = samples.keys())
   output: 
-    fasta = "results/viralcontigident/output/combined.viralcontigs.fa",
-    scores = "results/viralcontigident/output/combined.viral.scores.csv"
+    fasta = "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa",
+    scores = "results/viralcontigident/intermediate/scores/combined.viral.scores.csv"
   params:
     script_path = "workflow/scripts/viralcontigident/mergeout_scores.py", 
-    tmp_dir = "$TMPDIR/{sample_id}"
+    tmp_dir = "$TMPDIR/viralcontigident"
   log: "logs/viralcontigident_catcontigs.log"
   conda: "../envs/utility.yml"
   threads: 1
@@ -357,6 +363,7 @@ rule cat_contigs:
 # CD-HIT CLUSTER #
 ##################
 #rule cdhit_derep:
+#  name : "viralcontigident.py: CD-HIT [--clustering-sensitive]"
 #  input:
 #    "results/viralcontigident/output/combined.viralcontigs.fa"
 #  output:
@@ -385,8 +392,9 @@ rule cat_contigs:
 
 
 rule makeblastdb_derep:
+  name : "viralcontigident.py: make blast db [--clustering-fast]"
   input:
-    "results/viralcontigident/output/combined.viralcontigs.fa"
+    "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa"
   output: 
     expand("results/viralcontigident/intermediate/derep/db.{suffix}", 
         suffix = ["ndb", "nin", "not", "ntf", "nhr", "njs", "nsq", "nto"])
@@ -411,8 +419,9 @@ rule makeblastdb_derep:
     """
 
 rule megablast_derep:
+  name : "viralcontigident.py: megablast [--clustering-fast]"
   input:
-    fasta = "results/viralcontigident/output/combined.viralcontigs.fa", 
+    fasta = "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa", 
     dbcheckpoints = expand("results/viralcontigident/intermediate/derep/db.{suffix}",
                 suffix = ["ndb", "nin", "not", "ntf", "nhr", "njs", "nsq", "nto"])
   output:
@@ -446,6 +455,7 @@ rule megablast_derep:
     """
   
 rule anicalc_derep:
+  name : "viralcontigident.py: calculate ani [--clustering-fast]"
   input:
     "results/viralcontigident/intermediate/derep/blast_out.csv"
   output: 
@@ -472,8 +482,9 @@ rule anicalc_derep:
 
 
 rule aniclust_derep:
+  name : "viralcontigident.py: cluster [--clustering-fast]"
   input:
-    fasta = "results/viralcontigident/output/combined.viralcontigs.fa", 
+    fasta = "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa", 
     ani = "results/viralcontigident/intermediate/derep/ani.tsv"
   output:
     tsv =  "results/viralcontigident/output/derep/clusters.tsv",
@@ -508,8 +519,9 @@ rule aniclust_derep:
 
 
 rule filtercontigs_derep:
+  name : "viralcontigident.py: filter dereplicated viral contigs"
   input: 
-    fasta = "results/viralcontigident/output/combined.viralcontigs.fa", 
+    fasta = "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa", 
     reps = "results/viralcontigident/output/derep/cluster_representatives.txt"
   output:
     "results/viralcontigident/output/combined.viralcontigs.derep.fa"
@@ -531,14 +543,25 @@ rule filtercontigs_derep:
     rm -rf {params.tmp_dir}/*
     """
 
-rule checkv:
+rule cat_contamination:
+  name : "viralcontigident.py: CAT remove eukaryotic contamination"
   input:
-    "results/viralcontigident/output/combined.viralcontigs.derep.fa"
+    "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa"
+  output:
+    "results/viralcontigident/intermediate/decontam/combined.viralcontigs.fa"
+
+
+
+
+rule checkv:
+  name : "viralcontigident.py: CheckV on dereplicated contigs"
+  input:
+    "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa"
   output:
     "results/viralcontigident/output/checkv/viruses.fna"
   params:
     checkvparams= config['checkvparams'],
-    output_dir = "results/viralcontigident/checkv/output",
+    output_dir = "results/viralcontigident/output/checkv",
     tmp_dir = "$TMPDIR/checkv",
     db_dir = "workflow/database/checkv"
   log: "logs/viralcontigident_cdhitderep.log"
@@ -554,10 +577,13 @@ rule checkv:
 
     checkv end_to_end {input} {params.tmp_dir} -d {params.db_dir} -t {threads} {params.checkvparams} 2> {log}
 
-    rm {params.tmp_file}
-    mv {params.tmp_dir}/* {params.output_dir}/
+    mv {params.tmp_dir}/* {params.output_dir}
     rm -rf {params.tmp_dir}
     """
     
-    
+rule checkv_filter:
+  name : "viralcontigident.py: filter based on checkv results"
+  input: 
+  output: 
+  params: 
 
