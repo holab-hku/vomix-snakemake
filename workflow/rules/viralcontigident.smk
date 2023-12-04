@@ -25,8 +25,8 @@ rule genomad_classify:
     mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
   shell:
     """
-    rm -rf {params.tmp_dir} {params.output_dir}
-    mkdir -p {params.tmp_dir} {params.output_dir}
+    rm -rf {params.tmp_dir} {params.output_dir} 2> {log}
+    mkdir -p {params.tmp_dir} {params.output_dir} 2> {log}
 
     genomad end-to-end \
         --cleanup \
@@ -36,8 +36,8 @@ rule genomad_classify:
         --threads {threads} \
         {params.genomadparams} &> {log}
 
-    mv {params.tmp_dir}/* {params.output_dir}
-    rm -rf {params.tmp_dir}
+    mv {params.tmp_dir}/* {params.output_dir} 2> {log}
+    rm -rf {params.tmp_dir} 2> {log}
     """
 
 
@@ -319,7 +319,7 @@ rule filter_outputs:
     cat {params.tmp_dir}/tmplist | uniq > {output.positive_hits}
     mv {params.tmp_dir}/tmp.csv {output.filtered_scrs}
     
-    seqtk subseq {input.contig_file} {output.positive_hits} | seqtk seq -SC | sed "{params.sampleidsed}"  > {params.tmp_dir}/tmp.fa
+    seqtk subseq {input.contig_file} {output.positive_hits} | seqtk seq -SC | sed "{params.sampleidsed}"  > {params.tmp_dir}/tmp.fa 2> {log}
     mv {params.tmp_dir}/tmp.fa {output.filtered_contigs}
 
     rm -r {params.tmp_dir}
@@ -334,14 +334,23 @@ rule cat_contigs:
     fasta = "results/viralcontigident/output/combined.viralcontigs.fa",
     scores = "results/viralcontigident/output/combined.viral.scores.csv"
   params:
-    script_path = "workflow/scripts/viralcontigident/mergeout_scores.py"
+    script_path = "workflow/scripts/viralcontigident/mergeout_scores.py", 
+    tmp_dir = "$TMPDIR/{sample_id}"
   log: "logs/viralcontigident_catcontigs.log"
   conda: "../envs/utility.yml"
   threads: 1
   shell:
     """
-    python {params.script_path} {input.scores} > {output.scores} 2> {log}
-    cat {input.fasta} > {output.fasta} 2> {log}
+    rm -rf {params.tmp_dir}
+    mkdir -p {params.tmp_dir}
+
+    python {params.script_path} {input.scores} > {params.tmp_dir}/tmp.csv 2> {log}
+    cat {input.fasta} > {params.tmp_dir}/tmp.fa 2> {log}
+
+    mv {params.tmp_dir}/tmp.csv {output.scores}
+    mv {params.tmp_dir}/tmp.fa {output.fasta}
+
+    rm -rf {params.tmp_dir}
     """
 
 ##################
@@ -531,7 +540,6 @@ rule checkv:
     checkvparams= config['checkvparams'],
     output_dir = "results/viralcontigident/checkv/output",
     tmp_dir = "$TMPDIR/checkv",
-    tmp_file = "$TMPDIR/tmp.fa",
     db_dir = "workflow/database/checkv"
   log: "logs/viralcontigident_cdhitderep.log"
   benchmark: "benchmarks/viralcontigident_checkv.log"
@@ -544,9 +552,7 @@ rule checkv:
     rm -rf {params.tmp_dir} {params.output_dir}/*
     mkdir -p {params.tmp_dir} {params.output_dir}
 
-    sed '/^>/ s/[_-]//g' {input} > {params.tmp_file} 2> {log}
-
-    checkv end_to_end {params.tmp_file} {params.tmp_dir} -d {params.db_dir} -t {threads} {params.checkvparams} 2> {log}
+    checkv end_to_end {input} {params.tmp_dir} -d {params.db_dir} -t {threads} {params.checkvparams} 2> {log}
 
     rm {params.tmp_file}
     mv {params.tmp_dir}/* {params.output_dir}/
