@@ -39,20 +39,34 @@ include: "rules/preprocessing.smk"
 include: "rules/assembly.smk"
 include: "rules/viralcontigident.smk"
 
+
+# Induce modules with flags
+if 1:
+  include: "rules/clustering-fast.smk"
+else: 
+  include: "rules/clustering-sensitive.smk"
+
+
+
+
 #### Set output targets based on sample names
 preprocess = ["workflow/report/preprocess/preprocess_report.html"]
 assembly = ["workflow/report/assembly/assemblystats.tsv"]
 viralcontigident = ["results/viralcontigident/output/checkv/viruses.fna"]
+clustering = ["results/viralcontigident/output/derep/combined.viralcontigs.derep.fa"]
 
 
 
 
-### Set rule all outputs
+### Set master rules
 rule preprocess:
   input: preprocess
 rule assembly:
   input: assembly
 rule viralcontigident:
   input: viralcontigident
+rule clustering:
+  input: clustering
+
 
 

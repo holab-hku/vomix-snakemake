@@ -1,5 +1,5 @@
 rule blastp_taxonomy:
-  input:
+  input: "
   output:
   params:
   conda: "../envs/blast.yml"

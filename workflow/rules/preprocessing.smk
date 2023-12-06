@@ -8,7 +8,7 @@ def retrieve_accessions(wildcards):
 
 
 rule download_fastq:
-  name : "preprocessing.py: download fastq from SRA"
+  name : "preprocessing.py download fastq from SRA"
   output:
     R1 = os.path.join(config["datadir"], "{sample_id}_1.fastq.gz"),
     R2 = os.path.join(config["datadir"], "{sample_id}_2.fastq.gz")
@@ -43,7 +43,7 @@ rule download_fastq:
 
 
 rule fastp:
-  name : "preprocessing.py: fastp preprocess"
+  name : "preprocessing.py fastp preprocess"
   input: 
     R1 = os.path.join(config['datadir'], '{sample_id}_1.fastq.gz'),
     R2 = os.path.join(config['datadir'], '{sample_id}_2.fastq.gz')
@@ -84,7 +84,7 @@ rule fastp:
 
 
 rule multiqc:
-  name : "preprocessing.py: preprocess repot"
+  name : "preprocessing.py preprocess report"
   input:
     fastplogs = expand("results/preprocess/{sample_id}/report.fastp.json", sample_id = samples.keys())
   output:
@@ -99,14 +99,13 @@ rule multiqc:
   conda: "../envs/multiqc.yml"
   shell:
     """
-    rm -rf {params.tmp_dir}
-    rm -rf {params.output_dir}
-    mkdir -p {params.tmp_dir}
-    mkdir -p {params.output_dir}
+    rm -rf {params.tmp_dir} {params.output_dir}
+    mkdir -p {params.tmp_dir} {params.output_dir}
 
-    multiqc {params.search_dir} -f -o {params.tmp_dir} -n preprocess_report.html 
+    multiqc {params.search_dir} -f -o {params.tmp_dir} -n preprocess_report.html 2> {log}
 
     mv {params.tmp_dir}preprocess_report* {params.output_dir}
+    rm -rf {params.tmp_dir}
 
     """
 
