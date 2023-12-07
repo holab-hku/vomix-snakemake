@@ -1,3 +1,5 @@
+configfile: "config/preprocessing.yml"
+
 def retrieve_accessions(wildcards):
   try:
     acc = samples[wildcards.sample_id]['accession']

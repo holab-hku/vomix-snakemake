@@ -2,18 +2,17 @@
 # CD-HIT CLUSTER #
 ##################
 rule cdhit_derep:
-  name : "CD-HIT --clustering-sensitive [viralcontigident.py]"
+  name: "CD-HIT --clustering-sensitive [viralcontigident.py]"
   input:
     "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa"
   output:
-    fasta = "results/viralcontigident/output/derep/combined.viralcontigs.derep.fa",
-    cluster = "results/viralcontigident/output/derep/combined.viralcontigs.derep.fa.clstr"
+    fa="results/viralcontigident/output/derep/combined.viralcontigs.derep.fa",
+    clstr="results/viralcontigident/output/derep/combined.viralcontigs.derep.fa.clstr"
   params:
-    cdhitpath = config['cdhitdir'],
-    cdhitparams = config['cdhitparams'],
-    output_dir = "results/viralcontigident/output/derep",
-    tmp_dir = "$TMPDIR",
-    tmp_file = "$TMPDIR/dereplicated.viral.contigs.fa"
+    cdhitpath=config['cdhitdir'],
+    cdhitparams=config['cdhitparams'],
+    outdir="results/viralcontigident/output/derep",
+    tmpdir="$TMPDIR/cdhit",
   log: "logs/viralcontigident_cdhitderep.log"
   benchmark: "benchmarks/viralcontigident_cdhit.log"
   threads: 32
@@ -21,10 +20,10 @@ rule cdhit_derep:
     mem_mb = lambda wildcards, attempt: attempt * 72 * 10**3
   shell:
     """
-    mkdir -p {params.tmp_dir} {params.output_dir}
+    mkdir -p {params.tmpdir} {params.outdir}
    
-    {params.cdhitpath}cd-hit -i {input} -o {params.tmp_file} -T {threads} {params.cdhitparams} &> {log}
+    {params.cdhitpath}/cd-hit -i {input} -o {params.tmpdir}/tmp.fa -T {threads} {params.cdhitparams} &> {log}
 
-    mv {params.tmp_dir}/dereplicated.viral.contigs.fa {output.fasta}
-    mv {params.tmp_dir}/dereplicated.viralcontigs.fa.clstr {output.cluster}
+    mv {params.tmp_dir}/tmp.fa {output.fa}
+    mv {params.tmp_dir}/tmp.fa.clstr {output.clstr}
     """

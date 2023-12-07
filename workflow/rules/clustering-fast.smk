@@ -1,63 +1,61 @@
 rule makeblastdb_derep:
-  name : "viralcontigident.py make blast db [--clustering-fast]"
+  name: "viralcontigident.py make blast db [--clustering-fast]"
   input:
     "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa"
   output: 
     expand("results/viralcontigident/intermediate/derep/db.{suffix}", 
-        suffix = ["ndb", "nin", "not", "ntf", "nhr", "njs", "nsq", "nto"])
+        suffix=["ndb", "nin", "not", "ntf", "nhr", "njs", "nsq", "nto"])
   params:
-    output_dir = "results/viralcontigident/intermediate/derep/", 
-    dbtype = 'nucl', 
-    tmp_dir = "$TMPDIR",
-    tmp_file_prefix = "$TMPDIR/db"
+    outdir="results/viralcontigident/intermediate/derep/", 
+    dbtype='nucl', 
+    tmpdir="$TMPDIR"
   log: "logs/viralcontigident_makeblastdb.log"
   conda: "../envs/checkv.yml"
   threads: 1
   shell:
     """
-    rm -rf {params.tmp_dir}/* {params.output_dir}
-    mkdir -p {params.tmp_dir} {params.output_dir}
+    rm -rf {params.tmpdir}/* {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
 
-    makeblastdb -in {input} -dbtype {params.dbtype} -out {params.tmp_file_prefix} 2> {log}
+    makeblastdb -in {input} -dbtype {params.dbtype} -out {params.tmpdir}/db 2> {log}
 
-    mv {params.tmp_dir}/* {params.output_dir}
-    rm -rf {params.tmp_dir}/*
+    mv {params.tmpdir}/* {params.outdir}
+    rm -rf {params.tmpdir}/*
 
     """
 
 rule megablast_derep:
-  name : "viralcontigident.py megablast [--clustering-fast]"
+  name: "viralcontigident.py megablast [--clustering-fast]"
   input:
-    fasta = "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa", 
-    dbcheckpoints = expand("results/viralcontigident/intermediate/derep/db.{suffix}",
-                suffix = ["ndb", "nin", "not", "ntf", "nhr", "njs", "nsq", "nto"])
+    fasta="results/viralcontigident/intermediate/scores/combined.viralcontigs.fa", 
+    dbcheckpoints=expand("results/viralcontigident/intermediate/derep/db.{suffix}",
+                suffix=["ndb", "nin", "not", "ntf", "nhr", "njs", "nsq", "nto"])
   output:
     "results/viralcontigident/intermediate/derep/blast_out.csv"
   params:
-    db = "results/viralcontigident/intermediate/derep/db",
-    outfmt = "'6 std qlen slen'",
-    maxtargetseqs = 10000, 
-    tmp_dir = "$TMPDIR", 
-    tmp_file = "$TMPDIR/tmp.tsv"
+    db="results/viralcontigident/intermediate/derep/db",
+    outfmt="'6 std qlen slen'",
+    maxtargetseqs=10000, 
+    tmpdir="$TMPDIR"
   log: "logs/viralcontigident_megablastpairwise.log"
   conda: "../envs/checkv.yml"
   threads: 64
   resources:
-    mem_mb = lambda wildcards, input, attempt: (input.size_mb) * attempt * 100
+    mem_mb=lambda wildcards, input, attempt: (input.size_mb) * attempt * 100
   shell: 
     """
-    rm -rf {params.tmp_dir}/*
-    mkdir -p {params.tmp_dir}
+    rm -rf {params.tmpdir}/*
+    mkdir -p {params.tmpdir}
 
     blastn -query {input.fasta} \
         -db {params.db} \
         -outfmt {params.outfmt} \
         -max_target_seqs {params.maxtargetseqs} \
-        -out {params.tmp_file} \
+        -out {params.tmpdir}/tmp.tsv \
         -num_threads {threads} &> {log}
     
-    mv {params.tmp_file} {output}
-    rm -rf {params.tmp_dir}/*
+    mv {params.tmpdir}/tmp.tsv {output}
+    rm -rf {params.tmpdir}/*
 
     """
   
@@ -68,84 +66,81 @@ rule anicalc_derep:
   output: 
     "results/viralcontigident/intermediate/derep/ani.tsv"
   params:
-    script_path = "workflow/scripts/viralcontigident/anicalc.py", 
-    tmp_dir = "$TMPDIR",
-    tmp_file = "$TMPDIR/tmp.tsv"
+    script_path="workflow/scripts/viralcontigident/anicalc.py", 
+    tmpdir="$TMPDIR",
   log: "logs/viralcontigident_anicalc.log"
   conda: "../envs/checkv.yml"
   threads: 1
   shell:
     """
-    rm -rf {params.tmp_dir}/* 
-    mkdir -p {params.tmp_dir}
+    rm -rf {params.tmpdir}/* 
+    mkdir -p {params.tmpdir}
 
     python {params.script_path} \
         -i {input} \
-        -o {params.tmp_file} &> {log}
+        -o {params.tmpdir}/tmp.tsv &> {log}
 
-    mv {params.tmp_file} {output}
-    rm -rf {params.tmp_dir}/*
+    mv {params.tmpdir}/tmp.tsv {output}
+    rm -rf {params.tmpdir}/*
     """
 
 
 rule aniclust_derep:
   name : "viralcontigident.py cluster [--clustering-fast]"
   input:
-    fasta = "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa", 
-    ani = "results/viralcontigident/intermediate/derep/ani.tsv"
+    fa="results/viralcontigident/intermediate/scores/combined.viralcontigs.fa", 
+    ani="results/viralcontigident/intermediate/derep/ani.tsv"
   output:
-    tsv =  "results/viralcontigident/output/derep/clusters.tsv",
-    reps = "results/viralcontigident/output/derep/cluster_representatives.txt"
+    tsv= "results/viralcontigident/output/derep/clusters.tsv",
+    reps="results/viralcontigident/output/derep/cluster_representatives.txt"
   params:
-    script_path = "workflow/scripts/viralcontigident/aniclust.py",
-    minani = config["vOTUani"], 
-    targetcov = config["vOTUtargetcov"],
-    querycov  = config["vOTUquerycov"], 
-    tmp_dir = "$TMPDIR", 
-    tmp_file = "$TMPDIR/tmp.tsv"
+    script="workflow/scripts/viralcontigident/aniclust.py",
+    minani=config["vOTUani"], 
+    targetcov=config["vOTUtargetcov"],
+    querycov =config["vOTUquerycov"], 
+    tmpdir="$TMPDIR", 
   log: "logs/viralcontigident_aniclust.log"
   conda: "../envs/checkv.yml"
   threads: 1
   shell:
     """
-    rm -rf {params.tmp_dir}/*
-    mkdir -p {params.tmp_dir}
+    rm -rf {params.tmpdir}/*
+    mkdir -p {params.tmpdir}
 
-    python {params.script_path} \
-        --fna {input.fasta} \
+    python {params.script} \
+        --fna {input.fa} \
         --ani {input.ani} \
-        --out {params.tmp_file} \
+        --out {params.tmpdir}/tmp.tsv \
         --min_ani {params.minani} \
         --min_tcov {params.targetcov} \
         --min_qcov {params.querycov} &> {log}
-
-    mv {params.tmp_file} {output.tsv}
+    mv {params.tmpdir}/tmp.tsv {output.tsv}
     cut -f1 {output.tsv} > {output.reps}
-    rm -rf {params.tmp_dir}/*
+
+    rm -rf {params.tmpdir}/*
     """
 
 
 rule filtercontigs_derep:
-  name : "viralcontigident.py filter dereplicated viral contigs"
+  name: "viralcontigident.py filter dereplicated viral contigs"
   input: 
-    fasta = "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa", 
-    reps = "results/viralcontigident/output/derep/cluster_representatives.txt"
+    fna="results/viralcontigident/intermediate/scores/combined.viralcontigs.fa", 
+    reps="results/viralcontigident/output/derep/cluster_representatives.txt"
   output:
     "results/viralcontigident/output/derep/combined.viralcontigs.derep.fa"
   params:
-    output_dir = "results/viralcontigident/checkv/output",
-    tmp_dir = "$TMPDIR/",
-    tmp_file = "$TMPDIR/tmp.fa"
+    outdir="results/viralcontigident/checkv/output",
+    tmpdir="$TMPDIR/"
   log: "logs/viralcontigident_filterderep.log" 
   conda: "../envs/utility.yml" 
   threads: 1
   shell:
     """
-    rm -rf {params.tmp_dir}/*
-    mkdir -p {params.tmp_dir}
+    rm -rf {params.tmpdir}/*
+    mkdir -p {params.tmpdir}
 
-    seqkit grep {input.fasta} -f {input.reps} > {params.tmp_file} 2> {log}
-    mv {params.tmp_file} {output}
+    seqkit grep {input.fna} -f {input.reps} > {params.tmpdir}/tmp.fa 2> {log}
+    mv {params.tmpdir}/tmp.fa {output}
 
-    rm -rf {params.tmp_dir}/*
+    rm -rf {params.tmpdir}/*
     """

@@ -38,6 +38,7 @@ samples, assemblies = parse_sample_list(config["samplelist"], config['datadir'])
 include: "rules/preprocessing.smk"
 include: "rules/assembly.smk"
 include: "rules/viralcontigident.smk"
+include: "rules/taxonomy.smk"
 
 
 # Induce modules with flags
