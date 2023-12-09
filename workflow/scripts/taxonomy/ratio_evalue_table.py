@@ -23,6 +23,7 @@ def ratio_evalue(vphmm_df, taxa_dict, evalue):
 		(vphmm_df["target name"].isin(taxa_dict.keys())) &
 		(vphmm_df["i-Evalue"] <= evalue)
 	]
+	print(informative_df)
 
 	if len(informative_df) < 1:
 		return None
@@ -122,7 +123,7 @@ if __name__ == "__main__":
 
 	for i in range(len(tsv_df)):
 		taxa_dict["ViPhOG" + str(tsv_df["Number"][i]) + ".faa"] = tsv_df["Associated"][i]
-
+	
 	output_df = ratio_evalue(input_df, taxa_dict, float(evalue))
 
 	if output_df is None or output_df.empty:
