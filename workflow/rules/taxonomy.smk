@@ -59,6 +59,7 @@ rule pyhmmer_taxonomy:
         --hmmdb {input.db} \
         --bit_cutoff gathering \
         --cores {threads} \
+        --hmmscan \
         --domtblout {params.tmpdir}/tmpcutga.tbl &> {log}
 
     #filter low evalue>0.001 hits if cut_ga model not available 

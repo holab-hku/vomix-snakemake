@@ -13,7 +13,7 @@ from pyhmmer.hmmer import hmmscan
 
 
 
-def run_pyhmmer(proteins, hmmdb, scan, tblout, domtblout, bitcutoff, cores_n):
+def run_pyhmmer(proteins, hmmdb, scanflag, tblout, domtblout, bitcutoff, cores_n):
 	if cores_n != 0:
 		cpu_count = cores_n
 	else:
@@ -47,16 +47,22 @@ def run_pyhmmer(proteins, hmmdb, scan, tblout, domtblout, bitcutoff, cores_n):
 			else:
 				seqs = seq_file
 
-			print("\nPerforming pyhmmer hmmsearch...")
 			t1 = time.time()
-			all_hits_list = list(hmmsearch(hmms, seqs, cpus=cores_n, Z=n_hmms, bit_cutoffs=bitcutoff))
+			if scanflag:
+				print("\nPerforming pyhmmer hmmscan...")
+				all_hits_list = list(hmmscan(seqs, hmms, cpus=cores_n, bit_cutoffs=bitcutoff))
+			else:
+				print("\nPerforming pyhmmer hmmsearch...")
+				print("Using manual Z value to match results of hmmscan...")
+				all_hits_list = list(hmmsearch(hmms, seqs, cpus=cores_n, Z=n_hmms, bit_cutoffs=bitcutoff))
+
 			
 			time_in_seconds = time.time() - t1
 			hours = time_in_seconds // 3600
 			minutes = (time_in_seconds % 3600) // 60
 			seconds = (time_in_seconds % 3600) % 60
 
-			print(f"Hmmsearch of {n_hmms} HMMs on {cpu_count} CPUs took {hours} hours, {minutes} minutes, {seconds:.0} seconds")
+			print(f"Scanned {n_hmms} HMMs on {cpu_count} CPUs took {hours} hours, {minutes} minutes, {seconds.2} seconds")
 				
 			print("Writing results into output file...")
 			t1 = time.time()
