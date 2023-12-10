@@ -1,7 +1,7 @@
 # setup working directories
 contigdir : "results/assembly/" # should not end with a /
 dbdir: "workflow/database/"
-phamerdb: "workflow/database/phamer"
+phamerdb: "workflow/database/phabox"
 genomaddb: "workflow/database/genomad"
 # filter applied before viral contig identification (NOT YET IMPLEMENTED)
 # if it is higher e.g. 1000, it reduces computation time 

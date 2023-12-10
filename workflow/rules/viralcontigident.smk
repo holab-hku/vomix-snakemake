@@ -5,7 +5,6 @@ rule genomad_classify:
   name: "viralcontigident.py geNomad classify" 
   input:
     fna=os.path.join(config['contigdir'], "{sample_id}/output/final.contigs.fa"),
-    db="workflow/database/genomad/*"
   output:
     "results/viralcontigident/samples/{sample_id}/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv"
   params:
@@ -42,9 +41,7 @@ rule genomad_classify:
 rule dvf_classify:
   name : "viralcontigident.py DeepVirFinder classify"
   input:
-    fna=os.path.join(config['contigdir'], "{sample_id}/output/final.contigs.fa"), 
-    models="workflow/software/DeepVirFinder/models/*", 
-    parameters="config['dvfparams']/*"
+    fna=os.path.join(config['contigdir'], "{sample_id}/output/final.contigs.fa")
   output:
     "results/viralcontigident/samples/{sample_id}/intermediate/dvf/final_score.txt"
   params:
@@ -78,9 +75,7 @@ rule dvf_classify:
 rule phamer_classify:
   name: "viralcontigident.py PhaMer classify"
   input:
-    fna=os.path.join(config['contigdir'], "{sample_id}/output/final.contigs.fa"), 
-    db="config['phamerdb']/*", 
-    par="workflow/params/phabox/*"
+    fna=os.path.join(config['contigdir'], "{sample_id}/output/final.contigs.fa")
   output:
     "results/viralcontigident/samples/{sample_id}/intermediate/phamer/out/phamer_prediction.csv"
   params:
@@ -103,7 +98,7 @@ rule phamer_classify:
     mkdir -p {params.tmpdir} {params.outdir}
 
     python {params.script} \
-        --contigs {input.fa} \
+        --contigs {input.fna} \
         --threads {threads} \
         --rootpth {params.tmpdir} \
         --dbdir {params.dbdir} \

@@ -31,18 +31,17 @@ rule prodigalgv_taxonomy:
     """
 
 
-
 rule pyhmmer_taxonomy:
   name: "taxonomy.py PyHMMER vOTUs [ViPhOGs]"
   input:
     faa="results/taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa",
     db="workflow/database/viphogshmm/vpHMM_database_v3/vpHMM_database_v3.hmm"
   output:
-    tblcutga="results/taxonomy/viral/intermediate/VIRify/vOTUs_hmmsearch_cutga.tbl", 
-    tbl="results/taxonomy/viral/intermediate/VIRify/vOTUs_hmmscan.tbl"
+    tblcutga="results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_cutga.tbl", 
+    tbl="results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmscan.tbl"
   params:
     script="workflow/scripts/taxonomy/pyhmmer_wrapper.py", 
-    outdir="results/taxonomy/viral/intermediate/VIRify/", 
+    outdir="results/taxonomy/viral/intermediate/viphogs/", 
     tmpdir="$TMPDIR/viphogs"
   conda: "../envs/pyhmmer.yml"
   log: "logs/taxonomy_pyhmmer.log"
@@ -75,9 +74,9 @@ rule pyhmmer_taxonomy:
 rule VIRify_postprocess:
   name: "taxonomy.py VIRify post-process hmmer"
   input: 
-    "results/taxonomy/viral/intermediate/VIRify/vOTUs_hmmscan.tbl"
+    "results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmscan.tbl"
   output:
-    "results/taxonomy/viral/intermediate/VIRify/vOTUs_hmmsearch_processed.tsv"
+    "results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed.tsv"
   params:
     script="workflow/scripts/taxonomy/hmmscan_format_table.py", 
     tmpdir="$TMPDIR/viphogs"
@@ -97,14 +96,14 @@ rule VIRify_postprocess:
 rule VIRify_ratioeval:
   name: "taxonomy.py VIRify calculate evalue ratio"
   input:
-    tbl="results/taxonomy/viral/intermediate/VIRify/vOTUs_hmmsearch_processed.tsv", 
+    tbl="results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed.tsv", 
     tsv="workflow/database/viphogshmm/additional_data_vpHMMs_v4.tsv" 
   output:
-    "results/taxonomy/viral/intermediate/VIRify/vOTUs_hmmsearch_processed_modified_informative.tsv"
+    "results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed_modified_informative.tsv"
   params:
     script="workflow/scripts/taxonomy/ratio_evalue_table.py", 
     tmpdir="$TMPDIR/viphogs",
-    evalue=config['VIRifyhmmeval']
+    evalue=config['viphogshmmeval']
   conda: "../envs/taxonomy.yml"
   log: "logs/taxonomy_VIRifyratioeval.log"
   shell:
@@ -127,9 +126,9 @@ rule VIRify_annotate:
   name: "taxonomy.py VIRify annotate proteins"
   input:
     faa="results/taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa", 
-    tsv="results/taxonomy/viral/intermediate/VIRify/vOTUs_hmmsearch_processed_modified_informative.tsv"
+    tsv="results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed_modified_informative.tsv"
   output:
-    "results/taxonomy/viral/intermediate/VIRify/vOTUs_annotation.tsv"
+    "results/taxonomy/viral/intermediate/viphogs/vOTUs_annotation.tsv"
   params:
     script="workflow/scripts/taxonomy/viral_contigs_annotation.py",
     tmpdir="$TMPDIR/viphogs"
@@ -152,21 +151,21 @@ rule VIRify_annotate:
 rule VIRify_assign:
   name: "taxonomy.py VIRify assign taxonomy"
   input:
-    tsv="results/taxonomy/viral/intermediate/VIRify/vOTUs_annotation.tsv", 
+    tsv="results/taxonomy/viral/intermediate/viphogs/vOTUs_annotation.tsv", 
     db="workflow/database/ncbi/ete3ncbitax.sqlite", 
     csv="workflow/params/VIRify/viphogs_cds_per_taxon_cummulative.csv"
   output:
-    "results/taxonomy/viral/output/VIRify/taxonomy.tsv"
+    "results/taxonomy/viral/intermediate/viphogs/taxonomy.tsv"
   params:
     script="workflow/scripts/taxonomy/contig_taxonomic_assign.py",
-    outdir="results/taxonomy/viral/output/VIRify/",
-    thresh=config['VIRifyprop'], 
+    outdir="results/taxonomy/viral/intermediate/viphogs/",
+    thresh=config['viphogsprop'], 
     tmpdir="$TMPDIR/viphogs"
   conda: "../envs/taxonomy.yml"
-  log: "logs/taxonomy_VIRifyassign.log"
+  log: "logs/taxonomy_viphogassign.log"
   shell:
     """
-    rm -r {params.tmpdir} {params.outdir}
+    rm -rf {params.tmpdir} {params.outdir}
     mkdir -p {params.tmpdir} {params.outdir}
 
     python {params.script} \
@@ -180,6 +179,128 @@ rule VIRify_assign:
     rm -r {params.tmpdir}
     """
 
+
+rule genomad_taxonomy:
+  name: "taxonomy.py Parse geNomad taxonomy"
+  input:
+    "results/viralcontigident/output/classification_summary_vOTUs.csv"
+  output:
+    "results/taxonomy/viral/intermediate/genomad/taxonomy.csv"
+  params:
+    script="workflow/scripts/taxonomy/genomad_taxonomy.py",
+    outdir="results/taxonomy/viral/intermediate/genomad", 
+    tmpdir="$TMPDIR"
+  conda: "../envs/taxonomy.yml"
+  log: "logs/taxonomy_genomadparse.log"
+  shell:
+    """
+    rm -rf {params.tmpdir}/* {params.outdir}/*
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    python {params.script} \
+        --input {input}
+        --output {params.tmpdir}/tmp.csv 2> {log}
+
+    mv {params.tmpdir}/tmp.csv {output}
+    rm -rf {params.tmpdir}/*
+
+    """
+
+
+rule phagcn_taxonomy:
+  name: "taxonomy.py PhaGCN phage taxonomy"
+  input:
+    fna=os.path.join("results/viralcontigident/output/combined.final.vOTUs.fa")
+  output:
+    "results/taxonomy/viral/intermediate/phagcn/taxonomy.csv"
+  params:
+    script="workflow/software/PhaBOX/PhaGCN_single.py",
+    scriptdir="workflow/software/PhaBOX/scripts/",
+    parameters=config['phagcnparams'],
+    paramsdir="workflow/params/phabox/",
+    dbdir=config['phagcndb'],
+    outdir="results/taxonomy/viral/intermediate/phagcn",
+    tmpdir="tmp/phagcn"
+  log: "logs/taxonomy_phagcn.log"
+  conda: "../envs/phabox.yml"
+  threads: 8
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 8 * 10**3
+  shell:
+    """
+    rm -rf {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    python {params.script} \
+        --contigs {input.fna} \
+        --threads {threads} \
+        --rootpth {params.tmpdir} \
+        --dbdir {params.dbdir} \
+        --parampth {params.paramsdir} \
+        --scriptpth {params.scriptdir} \
+        {params.parameters} &> {log}
+
+    mv {params.tmpdir}/* {params.outdir}/
+    cp {params.outdir}/out/phagcn_prediction.csv {output}
+
+    rm -rf {params.tmpdir}
+    """ 
+
+
+
+rule diamond_makedb:
+  name: "taxonomy.py make NCBI-Virus Refseq proteins diamond database"
+  input:
+    "workflow/database/ncbi/ncbi-virus/ncbi.virus.RefSeq.faa"
+  output:
+    "workflow/database/diamond/ncbi.virus.Refseq.dmnd"
+  params:
+    outdir="workflow/database/diamond",
+    tmpdir="$TMPDIR"
+  log: "logs/taxonomy_diamondmakedb.log"
+  conda: "../envs/diamond.yml"
+  threads: 32
+  shell:
+    """
+    rm -rf {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    diamond makedb --in {input} --db {params.tmpdir}/tmp.dmnd --threads {threads}
+
+    mv {params.tmpdir}/tmp.dmnd {output}
+    """
+
+rule dimaond_taxonomy:
+  name: "taxonomy.py DIAMOND blastp [NCBI-Virus Refseq]"
+  input:
+    faa="results/taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa",
+    db="workflow/database/diamond/ncbi.virus.Refseq.dmnd"
+  output:
+    "results/taxonomy/viral/intermediate/diamond/diamond_out.tsv"
+  params:
+    parameters=config['diamondparams'],
+    outdir="results/taxonomy/viral/intermediate/diamond",
+    tmpdir="$TMPDIR"
+  log: "logs/taxonomy_diamond.log"
+  conda: "../envs/diamond.yml"
+  threads: 32
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 32 * 10**3
+  shell:
+    """
+    rm -rf {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    diamond blastp \
+        --db {input.db} \
+        --query {input.faa} \
+        --out {params.tmpdir}/tmp.tsv \
+        --threads {threads} \
+        {params.parameters} &> {log}
+
+    mv {params.tmpdir}/tmp.tsv {output}
+
+    """
 # rule blastp_taxonomy:
 #   input: 
 #     "results/viralcontigident/output/combined.final.vOTUs.fa"
@@ -188,40 +309,6 @@ rule VIRify_assign:
 #   params:
 #     tmpdir="$TMPDIR"
 #   conda: "../envs/blast.yml"
-#   log:
-#   threads:
-#   shell:
-#     """
-#     """
-# 
-# 
-# rule vcontact2_taxonomy:
-#   input:
-#   output:
-#   params:
-#   conda: "../envs/vcontact2.yml"
-#   log:
-#   threads:
-#   shell:
-#     """
-#     """
-# 
-# rule viphogs_taxonomy:
-#   input:
-#   output:
-#   params:
-#   conda: "../envs/viphogs.yml"
-#   log:
-#   threads:
-#   shell:
-#     """
-#     """
-# 
-# rule phagcn_taxonomy:
-#   input:
-#   output:
-#   params:
-#   conda: "../envs/phabox.yml"
 #   log:
 #   threads:
 #   shell:
