@@ -292,6 +292,7 @@ rule dimaond_taxonomy:
     mkdir -p {params.tmpdir} {params.outdir}
 
     diamond blastp \
+        --header \
         --db {input.db} \
         --query {input.faa} \
         --out {params.tmpdir}/tmp.tsv \
