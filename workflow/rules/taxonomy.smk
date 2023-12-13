@@ -300,8 +300,40 @@ rule dimaond_taxonomy:
         {params.parameters} &> {log}
 
     mv {params.tmpdir}/tmp.tsv {output}
-
     """
+
+rule diamond_parse_taxonomy:
+  name: "taxonomy.py DIAMOND taxonomic classification [NCBI-Virus Refseq]"
+  input:
+    diamondout = "results/taxonomy/viral/intermediate/diamond/diamond_out.tsv",
+    taxcsv = "workflow/database/ncbi/ncbi-virus/refseq/refseq.metadata.csv"
+  output:
+    "results/taxonomy/viral/intermediate/diamond/taxonomy.csv"
+  params:
+    script="workflow/scripts/taxonomy/diamond_taxonomy_parse.py",
+    outdir="results/taxonomy/viral/intermediate/diamond", 
+    thresh=0.7, 
+    taxcols="species,genus,family,order,class,phylum,kingdom",
+    tmpdir="$TMPDIR"
+  log: "logs/taxonomy_diamondtaxassign.log"
+  conda: "../envs/taxonomy.yml"
+  shell:
+    """
+    rm -rf {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    python {params.script} \
+        --diamondout {input.diamondout} \
+        --taxcsv {input.taxcsv} \
+        --tresh {params.thresh} \
+        --taxcolumns {params.taxcols} \
+        --outputcsv {params.tmpdir}/tmp.csv &> {log}
+
+    mv {params.tmpdir}/tmp.csv {output}
+    """
+
+
+
 # rule blastp_taxonomy:
 #   input: 
 #     "results/viralcontigident/output/combined.final.vOTUs.fa"
