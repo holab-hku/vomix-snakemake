@@ -1,20 +1,19 @@
 # setup working directories
+contigfile : "" # optional if only one sample is being process at a time
 contigdir : "results/assembly/" # should not end with a /
 dbdir: "workflow/database/"
 phamerdb: "workflow/database/phabox"
 genomaddb: "workflow/database/genomad"
-# filter applied before viral contig identification (NOT YET IMPLEMENTED)
+# filter applied BEFORE viral contig identification
 # if it is higher e.g. 1000, it reduces computation time 
 contigminlen: 0
-# filter applied after viral contig identification occurs
+# filter applied AFTER viral contig identification occurs
 # if you run metaviromwrapper with the --refilter-contigs it will be very quick 
 genomadminlen: 1000
 dvfminlen: 1500
 phamerminlen: 1500
 genomadparams: "--enable-score-calibration --min-score 0.0 --max-fdr 1.0"
 dvfparams: ""
-vs2params : "--prep-for-dramv --min-length 2500 --min-score 0 --include-groups dsDNAphage,ssDNA"
-virbotparams: ""
 phamerparams: ""
 genomadcutoff: 0.7
 dvfcutoff: 0.8
@@ -27,3 +26,7 @@ vOTUani: 95
 vOTUtargetcov: 85
 vOTUquerycov: 0
 checkvparams: ""
+
+
+vs2params : "--prep-for-dramv --min-length 2500 --min-score 0 --include-groups dsDNAphage,ssDNA"
+virbotparams: ""

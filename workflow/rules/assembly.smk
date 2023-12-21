@@ -1,16 +1,18 @@
 configfile: "config/assembly.yml"
+logdir = relpath("preprocess/logs")
+os.makedirs(logdir, exist_ok=True)
 
 rule symlink_assembly:
   name : "assembly.py create symbolic links"
   localrule: True
   input:
-    R1="results/preprocess/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz",
-    R2="results/preprocess/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"
+    R1=relpath("preprocess/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
+    R2=relpath("preprocess/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz")
   output:
-    R1= "results/assembly/{sample_id}/output/{sample_id}_R1.fastq.gz",
-    R2="results/assembly/{sample_id}/output/{sample_id}_R2.fastq.gz"
+    R1= relpath("assembly/{sample_id}/output/{sample_id}_R1.fastq.gz"),
+    R2=relpath("assembly/{sample_id}/output/{sample_id}_R2.fastq.gz")
   params:
-    outdir="results/assembly/{sample_id}/output"
+    outdir=relpath("assembly/{sample_id}/output")
   shell:
     """
     mkdir -p {params.outdir}
@@ -18,23 +20,22 @@ rule symlink_assembly:
 
     ln -s $wd/{input.R1} $wd/{output.R1}
     ln -s $wd/{input.R2} $wd/{output.R2}
-
     """
 
 rule megahit:
   name : "assembly.py MEGAHIT assembly"
   input:
-    R1="results/assembly/{sample_id}/output/{sample_id}_R1.fastq.gz",
-    R2="results/assembly/{sample_id}/output/{sample_id}_R2.fastq.gz"
+    R1=relpath("assembly/{sample_id}/output/{sample_id}_R1.fastq.gz"),
+    R2=relpath("assembly/{sample_id}/output/{sample_id}_R2.fastq.gz")
   output:
-    fasta="results/assembly/{sample_id}/output/final.contigs.fa"
+    fasta=relpath("assembly/{sample_id}/output/final.contigs.fa")
   params:
     parameters=config['megahitparams'],
     minlen=config["megahit_min_contig_len"],
-    outdir="results/assembly/{sample_id}/output/",
-    interdir="results/assembly/{sample_id}/intermediate/megahit",
+    outdir=relpath("assembly/{sample_id}/output/"),
+    interdir=relpath("assembly/{sample_id}/intermediate/megahit"),
     tmpdir="$TMPDIR/{sample_id}"
-  log: "logs/assembly_{sample_id}_megahit.log"
+  log: os.path.join(logdir, "megahit_{sample_id}.log")
   conda: "../envs/megahit.yml"
   threads: 48
   shell:
@@ -57,15 +58,15 @@ rule megahit:
 rule assembly_stats:
   name: "assembly.py aggregate assembly statistics"
   input:
-    expand("results/assembly/{sample_id}/output/final.contigs.fa", sample_id=samples.keys())
+    expand(relpath("assembly/{sample_id}/output/final.contigs.fa"), sample_id = samples.keys())
   output:
-    stats="workflow/report/assembly/assemblystats.tsv",
-    sizedist="workflow/report/assembly/assembly_size_dist.tsv"
+    stats=relpath("reports/assembly/assemblystats.tsv"),
+    sizedist=relpath("reports/assembly/assembly_size_dist.tsv")
   params:
     script="workflow/scripts/assembly/assemblystats.py",
-    outdir="workflow/report/assembly", 
-    tmpdir="$TMPDIR/{sample_id}"
-  log: "logs/assembly_assemblystats.log"
+    outdir=relpath("reports/assembly"),
+    tmpdir="$TMPDIR/"
+  log: os.path.join(logdir, "stats.log")
   conda: "../envs/utility.yml"
   shell:
     """
@@ -76,6 +77,6 @@ rule assembly_stats:
     
     mv {params.tmpdir}/tmp1.tsv {output.sizedist}
     mv {params.tmpdir}/tmp2.tsv {output.stats}
-
-     """
+    
+    """
 

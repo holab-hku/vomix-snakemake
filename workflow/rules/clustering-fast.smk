@@ -1,12 +1,14 @@
+configfile: "config/clustering.yml"
+
 rule makeblastdb_derep:
   name: "viralcontigident.py make blast db [--clustering-fast]"
   input:
-    "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa"
+    relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa")
   output: 
-    expand("results/viralcontigident/intermediate/derep/db.{suffix}", 
+    expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"), 
         suffix=["ndb", "nin", "not", "ntf", "nhr", "njs", "nsq", "nto"])
   params:
-    outdir="results/viralcontigident/intermediate/derep/", 
+    outdir=relpath("viralcontigident/intermediate/derep/"), 
     dbtype='nucl', 
     tmpdir="$TMPDIR"
   log: "logs/viralcontigident_makeblastdb.log"
@@ -27,13 +29,13 @@ rule makeblastdb_derep:
 rule megablast_derep:
   name: "viralcontigident.py megablast [--clustering-fast]"
   input:
-    fasta="results/viralcontigident/intermediate/scores/combined.viralcontigs.fa", 
-    dbcheckpoints=expand("results/viralcontigident/intermediate/derep/db.{suffix}",
+    fasta=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"), 
+    dbcheckpoints=expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"),
                 suffix=["ndb", "nin", "not", "ntf", "nhr", "njs", "nsq", "nto"])
   output:
-    "results/viralcontigident/intermediate/derep/blast_out.csv"
+    relpath("viralcontigident/intermediate/derep/blast_out.csv")
   params:
-    db="results/viralcontigident/intermediate/derep/db",
+    db=relpath("viralcontigident/intermediate/derep/db"),
     outfmt="'6 std qlen slen'",
     maxtargetseqs=10000, 
     tmpdir="$TMPDIR"
@@ -62,9 +64,9 @@ rule megablast_derep:
 rule anicalc_derep:
   name : "viralcontigident.py calculate ani [--clustering-fast]"
   input:
-    "results/viralcontigident/intermediate/derep/blast_out.csv"
+    relpath("viralcontigident/intermediate/derep/blast_out.csv")
   output: 
-    "results/viralcontigident/intermediate/derep/ani.tsv"
+    relpath("viralcontigident/intermediate/derep/ani.tsv")
   params:
     script_path="workflow/scripts/viralcontigident/anicalc.py", 
     tmpdir="$TMPDIR",
@@ -88,14 +90,14 @@ rule anicalc_derep:
 rule aniclust_derep:
   name : "viralcontigident.py cluster [--clustering-fast]"
   input:
-    fa="results/viralcontigident/intermediate/scores/combined.viralcontigs.fa", 
-    ani="results/viralcontigident/intermediate/derep/ani.tsv"
+    fa=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"), 
+    ani=relpath("viralcontigident/intermediate/derep/ani.tsv")
   output:
-    tsv= "results/viralcontigident/output/derep/clusters.tsv",
-    reps="results/viralcontigident/output/derep/cluster_representatives.txt"
+    tsv= relpath("viralcontigident/output/derep/clusters.tsv"),
+    reps=relpath("viralcontigident/output/derep/cluster_representatives.txt")
   params:
     script="workflow/scripts/viralcontigident/aniclust.py",
-    minani=config["vOTUani"], 
+    minani=config["vOTUani"],
     targetcov=config["vOTUtargetcov"],
     querycov =config["vOTUquerycov"], 
     tmpdir="$TMPDIR", 
@@ -124,12 +126,12 @@ rule aniclust_derep:
 rule filtercontigs_derep:
   name: "viralcontigident.py filter dereplicated viral contigs"
   input: 
-    fna="results/viralcontigident/intermediate/scores/combined.viralcontigs.fa", 
-    reps="results/viralcontigident/output/derep/cluster_representatives.txt"
+    fna=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"), 
+    reps=relpath("viralcontigident/output/derep/cluster_representatives.txt")
   output:
-    "results/viralcontigident/output/derep/combined.viralcontigs.derep.fa"
+    relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")
   params:
-    outdir="results/viralcontigident/checkv/output",
+    outdir=relpath("viralcontigident/checkv/output"),
     tmpdir="$TMPDIR/"
   log: "logs/viralcontigident_filterderep.log" 
   conda: "../envs/utility.yml" 

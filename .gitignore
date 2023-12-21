@@ -25,6 +25,7 @@ benchmarks/*
 fastq/*
 !fastq/.gitkeep
 
+test/*
 results/*
 !results/.gitkeep
 

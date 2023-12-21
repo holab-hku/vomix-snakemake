@@ -1,0 +1,5 @@
+# CoverM Parameters
+mapper: "minimap2-sr" # checkout coverm documentation for options https://wwood.github.io/CoverM/coverm-make.html
+makeparams: ""
+filterparams: "--min-read-percent-identity 95 --min-read-aligned-percent 75"
+contigparams: "--trim-min 10 --trim-max 90 --min-read-percent-identity 95 --min-read-aligned-percent 75"

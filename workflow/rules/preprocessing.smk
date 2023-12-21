@@ -1,27 +1,30 @@
 configfile: "config/preprocessing.yml"
+logdir = relpath("preprocess/logs")
+datadir = config["datadir"]
+os.makedirs(logdir, exist_ok=True)
+
 
 def retrieve_accessions(wildcards):
   try:
     acc=samples[wildcards.sample_id]['accession']
   except KeyError:
     acc=wildcards.sample_id
-  print(acc)
   return acc
 
 
 rule download_fastq:
   name : "preprocessing.py download fastq from SRA"
   output:
-    R1=os.path.join(config["datadir"], "{sample_id}_1.fastq.gz"),
-    R2=os.path.join(config["datadir"], "{sample_id}_2.fastq.gz")
+    R1=os.path.join(datadir, "{sample_id}_1.fastq.gz"),
+    R2=os.path.join(datadir, "{sample_id}_2.fastq.gz")
   params:
     download=config['dwnldparams'],
     pigz=config['pigzparams'],
-    logdir=os.path.join(config["datadir"], "/log"), 
+    logdir=os.path.join(datadir, "/log"), 
     accessions= lambda wildcards: retrieve_accessions(wildcards),
     tmpdir="$TMPDIR/{sample_id}"
   log:
-    os.path.join(config["datadir"], "/log/{sample_id}.log")
+    os.path.join(datadir, "/log/{sample_id}.log")
   threads: 8
   shell:
     """
@@ -47,17 +50,17 @@ rule download_fastq:
 rule fastp:
   name : "preprocessing.py fastp preprocess"
   input: 
-    R1=os.path.join(config['datadir'], '{sample_id}_1.fastq.gz'),
-    R2=os.path.join(config['datadir'], '{sample_id}_2.fastq.gz')
+    R1=os.path.join(datadir, '{sample_id}_1.fastq.gz'),
+    R2=os.path.join(datadir, '{sample_id}_2.fastq.gz')
   output:
-    R1="results/preprocess/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz",
-    R2="results/preprocess/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz", 
-    html="results/preprocess/{sample_id}/report.fastp.html", 
-    json="results/preprocess/{sample_id}/report.fastp.json"
+    R1=relpath("preprocess/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
+    R2=relpath("preprocess/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"), 
+    html=relpath("preprocess/{sample_id}/report.fastp.html"),
+    json=relpath("preprocess/{sample_id}/report.fastp.json")
   params:
     fastp=config['fastpparams'],
     tmpdir="$TMPDIR/{sample_id}"
-  log: "logs/preprocess_{sample_id}_fastp.log"
+  log: os.path.join(logdir, "fastp_{sample_id}.log")
   threads: 12
   conda: "../envs/fastp.yml"
   shell:
@@ -85,15 +88,15 @@ rule fastp:
 rule multiqc:
   name: "preprocessing.py preprocess report"
   input:
-    logs=expand("results/preprocess/{sample_id}/report.fastp.json", sample_id = samples.keys())
+    logs=expand(relpath("preprocess/{sample_id}/report.fastp.json"), sample_id = samples.keys())
   output:
-    "workflow/report/preprocess/preprocess_report.html",
-    "workflow/report/preprocess/preprocess_report_data/multiqc.log"
+    relpath("reports/preprocess/preprocess_report.html"),
+    relpath("reports/preprocess/preprocess_report_data/multiqc.log")
   params:
-    searchdir="results/preprocess/",
-    outdir="workflow/report/preprocess/",
+    searchdir=relpath("preprocess/"),
+    outdir=relpath("reports/preprocess/"),
     tmpdir="$TMPDIR/multiqc"
-  log: "logs/preprocess_multiqc.log"
+  log: os.path.join(logdir, "multiqc.log")
   threads: 1
   conda: "../envs/multiqc.yml"
   shell:

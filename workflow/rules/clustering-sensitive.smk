@@ -1,17 +1,19 @@
+configfile: "config/clustering.yml"
+
 ##################
 # CD-HIT CLUSTER #
 ##################
 rule cdhit_derep:
   name: "CD-HIT --clustering-sensitive [viralcontigident.py]"
   input:
-    "results/viralcontigident/intermediate/scores/combined.viralcontigs.fa"
+    relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa")
   output:
-    fa="results/viralcontigident/output/derep/combined.viralcontigs.derep.fa",
-    clstr="results/viralcontigident/output/derep/combined.viralcontigs.derep.fa.clstr"
+    fa=relpath("/viralcontigident/output/derep/combined.viralcontigs.derep.fa"),
+    clstr=relpath("/viralcontigident/output/derep/combined.viralcontigs.derep.fa.clstr)"
   params:
     cdhitpath=config['cdhitdir'],
     cdhitparams=config['cdhitparams'],
-    outdir="results/viralcontigident/output/derep",
+    outdir=relpath("/viralcontigident/output/derep"),
     tmpdir="$TMPDIR/cdhit",
   log: "logs/viralcontigident_cdhitderep.log"
   benchmark: "benchmarks/viralcontigident_cdhit.log"

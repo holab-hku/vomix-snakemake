@@ -3,12 +3,12 @@ configfile: "config/taxonomy.yml"
 rule prodigalgv_taxonomy:
   name: "taxonomy.py prodigal-gv vTOUs [parallelized]"
   input: 
-    "results/viralcontigident/output/combined.final.vOTUs.fa"
+    relpath("viralcontigident/output/combined.final.vOTUs.fa")
   output: 
-    "results/taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa"
+    relpath("taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa")
   params:
     script="workflow/software/prodigal-gv/parallel-prodigal-gv.py", 
-    outdir="results/taxonomy/viral/intermediate/prodigal/", 
+    outdir=relpath("taxonomy/viral/intermediate/prodigal/"),
     tmpdir="$TMPDIR/prodigal"
   conda: "../envs/prodigal-gv.yml"
   log: "logs/taxonomy_prodigalgv.log"
@@ -34,14 +34,14 @@ rule prodigalgv_taxonomy:
 rule pyhmmer_taxonomy:
   name: "taxonomy.py PyHMMER vOTUs [ViPhOGs]"
   input:
-    faa="results/taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa",
+    faa=relpath("taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa"),
     db="workflow/database/viphogshmm/vpHMM_database_v3/vpHMM_database_v3.hmm"
   output:
-    tblcutga="results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_cutga.tbl", 
-    tbl="results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmscan.tbl"
+    tblcutga=relpath("taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_cutga.tbl"), 
+    tbl=relpath("taxonomy/viral/intermediate/viphogs/vOTUs_hmmscan.tbl")
   params:
     script="workflow/scripts/taxonomy/pyhmmer_wrapper.py", 
-    outdir="results/taxonomy/viral/intermediate/viphogs/", 
+    outdir=relpath("taxonomy/viral/intermediate/viphogs/"),
     tmpdir="$TMPDIR/viphogs"
   conda: "../envs/pyhmmer.yml"
   log: "logs/taxonomy_pyhmmer.log"
@@ -74,9 +74,9 @@ rule pyhmmer_taxonomy:
 rule VIRify_postprocess:
   name: "taxonomy.py VIRify post-process hmmer"
   input: 
-    "results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmscan.tbl"
+    relpath("taxonomy/viral/intermediate/viphogs/vOTUs_hmmscan.tbl")
   output:
-    "results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed.tsv"
+    relpath("taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed.tsv")
   params:
     script="workflow/scripts/taxonomy/hmmscan_format_table.py", 
     tmpdir="$TMPDIR/viphogs"
@@ -96,10 +96,10 @@ rule VIRify_postprocess:
 rule VIRify_ratioeval:
   name: "taxonomy.py VIRify calculate evalue ratio"
   input:
-    tbl="results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed.tsv", 
+    tbl=relpath("taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed.tsv"), 
     tsv="workflow/database/viphogshmm/additional_data_vpHMMs_v4.tsv" 
   output:
-    "results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed_modified_informative.tsv"
+    relpath("taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed_modified_informative.tsv")
   params:
     script="workflow/scripts/taxonomy/ratio_evalue_table.py", 
     tmpdir="$TMPDIR/viphogs",
@@ -125,10 +125,10 @@ rule VIRify_ratioeval:
 rule VIRify_annotate:
   name: "taxonomy.py VIRify annotate proteins"
   input:
-    faa="results/taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa", 
-    tsv="results/taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed_modified_informative.tsv"
+    faa=relpath("taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa"),
+    tsv=relpath("taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed_modified_informative.tsv")
   output:
-    "results/taxonomy/viral/intermediate/viphogs/vOTUs_annotation.tsv"
+    relpath("taxonomy/viral/intermediate/viphogs/vOTUs_annotation.tsv")
   params:
     script="workflow/scripts/taxonomy/viral_contigs_annotation.py",
     tmpdir="$TMPDIR/viphogs"
@@ -151,14 +151,14 @@ rule VIRify_annotate:
 rule VIRify_assign:
   name: "taxonomy.py VIRify assign taxonomy"
   input:
-    tsv="results/taxonomy/viral/intermediate/viphogs/vOTUs_annotation.tsv", 
+    tsv=relpath("taxonomy/viral/intermediate/viphogs/vOTUs_annotation.tsv"), 
     db="workflow/database/ncbi/ete3ncbitax.sqlite", 
     csv="workflow/params/VIRify/viphogs_cds_per_taxon_cummulative.csv"
   output:
-    "results/taxonomy/viral/intermediate/viphogs/taxonomy.tsv"
+    relpath("taxonomy/viral/intermediate/viphogs/taxonomy.tsv")
   params:
     script="workflow/scripts/taxonomy/contig_taxonomic_assign.py",
-    outdir="results/taxonomy/viral/intermediate/viphogs/",
+    outdir=relpath("taxonomy/viral/intermediate/viphogs/"),
     thresh=config['viphogsprop'], 
     tmpdir="$TMPDIR/viphogs"
   conda: "../envs/taxonomy.yml"
@@ -183,12 +183,12 @@ rule VIRify_assign:
 rule genomad_taxonomy:
   name: "taxonomy.py Parse geNomad taxonomy"
   input:
-    "results/viralcontigident/output/classification_summary_vOTUs.csv"
+    relpath("viralcontigident/output/classification_summary_vOTUs.csv")
   output:
-    "results/taxonomy/viral/intermediate/genomad/taxonomy.csv"
+    relpath("taxonomy/viral/intermediate/genomad/taxonomy.csv")
   params:
     script="workflow/scripts/taxonomy/genomad_taxonomy.py",
-    outdir="results/taxonomy/viral/intermediate/genomad", 
+    outdir=relpath("taxonomy/viral/intermediate/genomad"),
     tmpdir="$TMPDIR"
   conda: "../envs/taxonomy.yml"
   log: "logs/taxonomy_genomadparse.log"
@@ -210,16 +210,16 @@ rule genomad_taxonomy:
 rule phagcn_taxonomy:
   name: "taxonomy.py PhaGCN phage taxonomy"
   input:
-    fna=os.path.join("results/viralcontigident/output/combined.final.vOTUs.fa")
+    fna=relpath("viralcontigident/output/combined.final.vOTUs.fa")
   output:
-    "results/taxonomy/viral/intermediate/phagcn/taxonomy.csv"
+    relpath("taxonomy/viral/intermediate/phagcn/taxonomy.csv")
   params:
     script="workflow/software/PhaBOX/PhaGCN_single.py",
     scriptdir="workflow/software/PhaBOX/scripts/",
     parameters=config['phagcnparams'],
     paramsdir="workflow/params/phabox/",
     dbdir=config['phagcndb'],
-    outdir="results/taxonomy/viral/intermediate/phagcn",
+    outdir=relpath("taxonomy/viral/intermediate/phagcn"),
     tmpdir="tmp/phagcn"
   log: "logs/taxonomy_phagcn.log"
   conda: "../envs/phabox.yml"
@@ -273,13 +273,13 @@ rule diamond_makedb:
 rule dimaond_taxonomy:
   name: "taxonomy.py DIAMOND blastp [NCBI-Virus Refseq]"
   input:
-    faa="results/taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa",
+    faa=relpath("taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa"),
     db="workflow/database/diamond/ncbi.virus.Refseq.dmnd"
   output:
-    "results/taxonomy/viral/intermediate/diamond/diamond_out.tsv"
+    relpath("taxonomy/viral/intermediate/diamond/diamond_out.tsv")
   params:
     parameters=config['diamondparams'],
-    outdir="results/taxonomy/viral/intermediate/diamond",
+    outdir=relpath("taxonomy/viral/intermediate/diamond"),
     tmpdir="$TMPDIR"
   log: "logs/taxonomy_diamond.log"
   conda: "../envs/diamond.yml"
@@ -302,16 +302,18 @@ rule dimaond_taxonomy:
     mv {params.tmpdir}/tmp.tsv {output}
     """
 
+
+
 rule diamond_parse_taxonomy:
   name: "taxonomy.py DIAMOND taxonomic classification [NCBI-Virus Refseq]"
   input:
-    diamondout = "results/taxonomy/viral/intermediate/diamond/diamond_out.tsv",
+    diamondout = relpath("taxonomy/viral/intermediate/diamond/diamond_out.tsv"),
     taxcsv = "workflow/database/ncbi/ncbi-virus/refseq/refseq.metadata.csv"
   output:
-    "results/taxonomy/viral/intermediate/diamond/taxonomy.csv"
+    relpath("taxonomy/viral/intermediate/diamond/taxonomy.csv")
   params:
     script="workflow/scripts/taxonomy/diamond_taxonomy_parse.py",
-    outdir="results/taxonomy/viral/intermediate/diamond", 
+    outdir=relpath("taxonomy/viral/intermediate/diamond"),
     thresh=0.7, 
     taxcols="species,genus,family,order,class,phylum,kingdom",
     tmpdir="$TMPDIR"
@@ -334,31 +336,40 @@ rule diamond_parse_taxonomy:
 
 
 
-# rule blastp_taxonomy:
-#   input: 
-#     "results/viralcontigident/output/combined.final.vOTUs.fa"
-#   output: 
-#     "results/viralcontigident/output/combined.final.vOTUs.fa"
-#   params:
-#     tmpdir="$TMPDIR"
-#   conda: "../envs/blast.yml"
-#   log:
-#   threads:
-#   shell:
-#     """
-#     """
-# 
-# rule merge_taxonomy:
-#   input:
-#   output:
-#   params:
-#   conda:
-#   log:
-#   threads:
-#   shell:
-#     """
-#     """
-# 
+rule merge_taxonomy:
+  name: "taxonomy.py merge taxonomic classifications"
+  input:
+    diamond=relpath("taxonomy/viral/intermediate/diamond/taxonomy.csv"),
+    viphogs=relpath("taxonomy/viral/intermediate/viphogs/taxonomy.tsv"),
+    phagcn=relpath("taxonomy/viral/intermediate/phagcn/taxonomy.csv"),
+    genomad=relpath("taxonomy/viral/intermediate/genomad/taxonomy.csv"),
+    contigs=relpath("viralcontigident/output/combined.final.vOTUs.fa")
+  output:
+    relpath("taxonomy/viral/output/merged_taxonomy.csv")
+  params:
+    script="workflow/scripts/taxonomy/merge_taxonomy.py",
+    outdir=relpath("taxonomy/viral/output/"),
+    tmpdir="$TMPDIR"
+  log: "logs/taxonomy_merge.log"
+  conda: "../envs/taxonomy.yml"
+  threads: 1
+  shell:
+    """
+    rm -rf {params.tmpdir}/* {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    python {params.script} \
+        --diamondout {input.diamond} \
+        --viphogsout {input.viphogs} \
+        --phagcnout {input.phagcn} \
+        --genomadout {input.genomad} \
+        --contigs {input.contigs} \
+        --output {params.tmpdir}/tmp.csv
+        
+    mv {params.tmpdir}/tmp.csv {output}
+    """
+
+
 # rule consensus_taxonomy:
 #   input:
 #   output:

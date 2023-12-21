@@ -1,3 +1,5 @@
+module: "end-to-end"
 workdir : "."
+outdir : "results/"
 samplelist : "sample_list.tsv"
 datadir : "fastq/"

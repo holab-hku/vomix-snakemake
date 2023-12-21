@@ -32,7 +32,12 @@ def merge_files(genomad_path, dvfout_path, phamerout_path, genomad_min_len, dvf_
 	# length filtering 
 	genomadout = genomadout[genomadout['length'] >= genomad_min_len]
 	dvfout = dvfout[dvfout['len'] >= dvf_min_len]
-	phamerout = phamerout[phamerout['Length'] >= phamer_min_len]
+	
+	# in some instances if all contigs are filtered for phamer, it will 
+	# not produce a length column, so we must consider that. 
+
+	if 'Length' in phamerout.columns:
+		phamerout = phamerout[phamerout['Length'] >= phamer_min_len]
 
 	# Add prefixes to column title
 	#vs2out['seqname'] = vs2out['seqname'].str.replace(r'\|\|.*', '')

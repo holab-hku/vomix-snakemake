@@ -12,13 +12,19 @@ from scripts.utility.parse_sample_list import parse_sample_list
 
 configfile: "config/config.yml"
 workdir: config["workdir"]
+outdir = config["outdir"]
 
+def relpath(f):
+  """Function to redirect to output directory. 
+  This allows the snakemake to be flexible and process 
+  multiple datasets at once"""
+  p = os.path.join(outdir, f)
+  return p
 
 ### Set temporary dir
 if not os.getenv("TMPDIR"):
   os.environ["TMPDIR"] = "tmp"
-  os.makedirs(os.environ["TMPDIR"],exist_ok=True)
-
+  os.makedirs(os.environ["TMPDIR"], exist_ok=True)
 
 
 ### Set wildcard constraints
@@ -33,41 +39,55 @@ wildcard_constraints:
 
 samples, assemblies = parse_sample_list(config["samplelist"], config['datadir'])
 
-
 ### Include rules
 include: "rules/preprocessing.smk"
 include: "rules/assembly.smk"
 include: "rules/viralcontigident.smk"
 include: "rules/taxonomy.smk"
-
+include: "rules/abundance.smk"
+include: "rules/clustering-fast.smk"
 
 # Induce modules with flags
-if 1:
-  include: "rules/clustering-fast.smk"
-else: 
-  include: "rules/clustering-sensitive.smk"
-
-
+#include: "rules/clustering-fast.smk"
+#include: "rules/clustering-sensitive.smk"
 
 
 #### Set output targets based on sample names
-preprocess = ["workflow/report/preprocess/preprocess_report.html"]
-assembly = ["workflow/report/assembly/assemblystats.tsv"]
-viralcontigident = ["results/viralcontigident/output/checkv/viruses.fna"]
-clustering = ["results/viralcontigident/output/derep/combined.viralcontigs.derep.fa"]
+preprocess = expand(relpath("preprocess/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"), sample_id = samples.keys(), i=[1, 2])
+preprocess += ["workflow/report/preprocess/preprocess_report.html"]
+assembly = expand(relpath("assembly/{sample_id}/output/{sample_id}_R{i}.fastq.gz"), sample_id = samples.keys(), i=[1, 2])
+assembly += ["workflow/report/assembly/assemblystats.tsv"]
+viralcontigident = expand(relpath("viralcontigident/samples/{sample_id}/output/viral.contigs.fa"), sample_id = sample_ids)
+viralcontigident += [relpath("viralcontigident/output/checkv/viruses.fna")]
+clustering = [relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")]
+taxonomy = [relpath("taxonomy/viral/output/merged_taxonomy.csv")]
+abundance = [relpath("abundance/output/vOTU_table_tmp.csv")] 
 
 
+### Rule all directive
+if config["module"] == "":
+  print('Please select a module using snakemake --config module="{module}" (e.g. "end-to-end", "taxonomy", "viral-contig-ident")')
+  sys.exit(1)
 
+inputs = []
+if config["module"] == "end-to-end":
+  inputs = [preprocess, assembly, viralcontigident, clustering, abundance]
+elif config["module"] == "viral-contig-ident":
+  inputs = viralcontigident
+elif config["module"] == "taxonomy":
+  inputs = taxonomy
+
+rule all:
+  input: inputs
 
 ### Set master rules
-rule preprocess:
-  input: preprocess
-rule assembly:
-  input: assembly
-rule viralcontigident:
-  input: viralcontigident
-rule clustering:
-  input: clustering
-
-
-
+#rule preprocess:
+#  input: preprocess
+#rule assembly:
+#  input: assembly
+#rule viralcontigident:
+#  input: viralcontigident
+#rule clustering:
+#  input: clustering
+#rule taxonomy:
+#  input: taxonomy
