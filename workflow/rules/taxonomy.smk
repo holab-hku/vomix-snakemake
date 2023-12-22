@@ -1,4 +1,8 @@
 configfile: "config/taxonomy.yml"
+logdir = relpath("taxonomy/logs")
+tmpd = relpath("taxonomy/tmp")
+os.makedirs(logdir, exist_ok=True)
+os.makedirs(tmpd, exist_ok=True)
 
 rule prodigalgv_taxonomy:
   name: "taxonomy.py prodigal-gv vTOUs [parallelized]"
@@ -9,9 +13,9 @@ rule prodigalgv_taxonomy:
   params:
     script="workflow/software/prodigal-gv/parallel-prodigal-gv.py", 
     outdir=relpath("taxonomy/viral/intermediate/prodigal/"),
-    tmpdir="$TMPDIR/prodigal"
+    tmpdir=os.path.join(tmpd, "prodigal")
   conda: "../envs/prodigal-gv.yml"
-  log: "logs/taxonomy_prodigalgv.log"
+  log: os.path.join(logdir, "prodigal-gv.log")
   threads: 64
   resources: 
     mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
@@ -42,9 +46,9 @@ rule pyhmmer_taxonomy:
   params:
     script="workflow/scripts/taxonomy/pyhmmer_wrapper.py", 
     outdir=relpath("taxonomy/viral/intermediate/viphogs/"),
-    tmpdir="$TMPDIR/viphogs"
+    tmpdir=os.path.join(tmpd, "viphogs")
   conda: "../envs/pyhmmer.yml"
-  log: "logs/taxonomy_pyhmmer.log"
+  log: os.path.join(logdir, "pyhmmer.log")
   threads: 32
   resources:
     mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
@@ -79,9 +83,9 @@ rule VIRify_postprocess:
     relpath("taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed.tsv")
   params:
     script="workflow/scripts/taxonomy/hmmscan_format_table.py", 
-    tmpdir="$TMPDIR/viphogs"
+    tmpdir=os.path.join(tmpd, "viphogs")
   conda: "../envs/taxonomy.yml"
-  log: "logs/taxonomy_VIRifypostprocess.log"
+  log: os.path.join(logdir, "VIRify_postprocess.log")
   shell:
     """
     rm -rf {params.tmpdir}
@@ -102,10 +106,10 @@ rule VIRify_ratioeval:
     relpath("taxonomy/viral/intermediate/viphogs/vOTUs_hmmsearch_processed_modified_informative.tsv")
   params:
     script="workflow/scripts/taxonomy/ratio_evalue_table.py", 
-    tmpdir="$TMPDIR/viphogs",
+    tmpdir=os.path.join(tmpd, "viphogs"),
     evalue=config['viphogshmmeval']
   conda: "../envs/taxonomy.yml"
-  log: "logs/taxonomy_VIRifyratioeval.log"
+  log: os.path.join(logdir, "VIRify_ratioeval.log")
   shell:
     """
     rm -rf {params.tmpdir}
@@ -131,9 +135,9 @@ rule VIRify_annotate:
     relpath("taxonomy/viral/intermediate/viphogs/vOTUs_annotation.tsv")
   params:
     script="workflow/scripts/taxonomy/viral_contigs_annotation.py",
-    tmpdir="$TMPDIR/viphogs"
+    tmpdir=os.path.join(tmpd, "viphogs")
   conda: "../envs/taxonomy.yml"
-  log: "logs/taxonomy_VIRifyannotation.log"
+  log: os.path.join(logdir, "VIRify_annotation.log")
   shell:
     """
     rm -rf {params.tmpdir}
@@ -160,9 +164,9 @@ rule VIRify_assign:
     script="workflow/scripts/taxonomy/contig_taxonomic_assign.py",
     outdir=relpath("taxonomy/viral/intermediate/viphogs/"),
     thresh=config['viphogsprop'], 
-    tmpdir="$TMPDIR/viphogs"
+    tmpdir=os.path.join(tmpd, "viphogs"
   conda: "../envs/taxonomy.yml"
-  log: "logs/taxonomy_viphogassign.log"
+  log: os.path.join(logdir, "VIRify_assign.log")
   shell:
     """
     rm -rf {params.tmpdir} {params.outdir}
@@ -189,9 +193,9 @@ rule genomad_taxonomy:
   params:
     script="workflow/scripts/taxonomy/genomad_taxonomy.py",
     outdir=relpath("taxonomy/viral/intermediate/genomad"),
-    tmpdir="$TMPDIR"
+    tmpdir=os.path.join(tmpd, "genomad")
   conda: "../envs/taxonomy.yml"
-  log: "logs/taxonomy_genomadparse.log"
+  log: os.path.join(logdir, "genomad_parse.log")
   shell:
     """
     rm -rf {params.tmpdir}/* {params.outdir}/*
@@ -221,7 +225,7 @@ rule phagcn_taxonomy:
     dbdir=config['phagcndb'],
     outdir=relpath("taxonomy/viral/intermediate/phagcn"),
     tmpdir="tmp/phagcn"
-  log: "logs/taxonomy_phagcn.log"
+  log: os.path.join(logdir, "phagcn.log")
   conda: "../envs/phabox.yml"
   threads: 8
   resources:
@@ -256,8 +260,8 @@ rule diamond_makedb:
     "workflow/database/diamond/ncbi.virus.Refseq.dmnd"
   params:
     outdir="workflow/database/diamond",
-    tmpdir="$TMPDIR"
-  log: "logs/taxonomy_diamondmakedb.log"
+    tmpdir=os.path.join(tmpd, "diamond")
+  log: os.path.join(logdir, "diamond_makedb.log")
   conda: "../envs/diamond.yml"
   threads: 32
   shell:
@@ -280,8 +284,8 @@ rule dimaond_taxonomy:
   params:
     parameters=config['diamondparams'],
     outdir=relpath("taxonomy/viral/intermediate/diamond"),
-    tmpdir="$TMPDIR"
-  log: "logs/taxonomy_diamond.log"
+    tmpdir=os.path.join(tmpd, "diamond")
+  log: os.path.join(logdir, "diamond_blastp.log")
   conda: "../envs/diamond.yml"
   threads: 32
   resources:
@@ -316,8 +320,8 @@ rule diamond_parse_taxonomy:
     outdir=relpath("taxonomy/viral/intermediate/diamond"),
     thresh=0.7, 
     taxcols="species,genus,family,order,class,phylum,kingdom",
-    tmpdir="$TMPDIR"
-  log: "logs/taxonomy_diamondtaxassign.log"
+    tmpdir=os.path.join(tmpd, "diamond")
+  log: os.path.join(logdir, "diamond_assign_taxonomy.log")
   conda: "../envs/taxonomy.yml"
   shell:
     """
@@ -349,8 +353,8 @@ rule merge_taxonomy:
   params:
     script="workflow/scripts/taxonomy/merge_taxonomy.py",
     outdir=relpath("taxonomy/viral/output/"),
-    tmpdir="$TMPDIR"
-  log: "logs/taxonomy_merge.log"
+    tmpdir=os.path.join(tmpd, "merge")
+  log: os.path.join(logdir, "merge_taxonomy.log")
   conda: "../envs/taxonomy.yml"
   threads: 1
   shell:
@@ -370,35 +374,6 @@ rule merge_taxonomy:
     """
         
 
-rule diamond_parse_taxonomy:
-  name: "taxonomy.py DIAMOND taxonomic classification [NCBI-Virus Refseq]"
-  input:
-    diamondout = "results/taxonomy/viral/intermediate/diamond/diamond_out.tsv",
-    taxcsv = "workflow/database/ncbi/ncbi-virus/refseq/refseq.metadata.csv"
-  output:
-    "results/taxonomy/viral/intermediate/diamond/taxonomy.csv"
-  params:
-    script="workflow/scripts/taxonomy/diamond_taxonomy_parse.py",
-    outdir="results/taxonomy/viral/intermediate/diamond", 
-    thresh=0.7, 
-    taxcols="species,genus,family,order,class,phylum,kingdom",
-    tmpdir="$TMPDIR"
-  log: "logs/taxonomy_diamondtaxassign.log"
-  conda: "../envs/taxonomy.yml"
-  shell:
-    """
-    rm -rf {params.tmpdir} {params.outdir}
-    mkdir -p {params.tmpdir} {params.outdir}
-
-    python {params.script} \
-        --diamondout {input.diamondout} \
-        --taxcsv {input.taxcsv} \
-        --tresh {params.thresh} \
-        --taxcolumns {params.taxcols} \
-        --outputcsv {params.tmpdir}/tmp.csv &> {log}
-
-    mv {params.tmpdir}/tmp.csv {output}
-    """
 
 # rule consensus_taxonomy:
 #   input:
