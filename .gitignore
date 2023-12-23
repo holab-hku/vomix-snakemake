@@ -1,37 +1,22 @@
-workflow/database/*
-!workflow/database/.gitkeep
+# ignore everything in the repository 
+/*
 
-workflow/params/*
+# folders and files to track
+!workflow/envs
+!workflow/rules
+!workflow/notebooks
+!workflow/scripts
+!workflow/Snakemake
+!resources
+!config
+!README.md
+!LICENSE.md
+!sample_list.tsv
+
+# empty folders to keep 
+!workflow/database/.gitkeep
 !workflow/params/.gitkeep
-
-workflow/report/*
 !workflow/report/.gitkeep
-
-workflow/database/*
 !workflow/database/.gitkeep
-
-workflow/software/*
 !workflow/software/.gitkeep
-
-.snakemake
-
-
-tmp/*
-!tmp/.gitkeep 
-
-benchmarks/*
-!benchmarks/.gitkeep
-
-fastq/*
 !fastq/.gitkeep
-
-test/*
-results/*
-!results/.gitkeep
-
-logs/*
-!logs/.gitkeep
-
-
-qsub*
-nohup.out
