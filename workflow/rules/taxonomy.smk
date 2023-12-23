@@ -1,6 +1,6 @@
 configfile: "config/taxonomy.yml"
-logdir = relpath("taxonomy/logs")
-tmpd = relpath("taxonomy/tmp")
+logdir = relpath("taxonomy/viral/logs")
+tmpd = relpath("taxonomy/viral/tmp")
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 

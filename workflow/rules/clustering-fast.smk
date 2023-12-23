@@ -1,5 +1,11 @@
 configfile: "config/clustering.yml"
 
+logdir = relpath("viralcontigident/logs")
+tmpd = relpath("viralcontigident/tmp")
+
+os.makedirs(logdir, exist_ok=True)
+os.makedirs(tmpd, exist_ok=True)
+
 rule makeblastdb_derep:
   name: "viralcontigident.py make blast db [--clustering-fast]"
   input:
@@ -10,8 +16,8 @@ rule makeblastdb_derep:
   params:
     outdir=relpath("viralcontigident/intermediate/derep/"), 
     dbtype='nucl', 
-    tmpdir="$TMPDIR"
-  log: "logs/viralcontigident_makeblastdb.log"
+    tmpdir=tmpd
+  log: os.path.join(logdir, "clustering/makeblastdb.log")
   conda: "../envs/checkv.yml"
   threads: 1
   shell:
@@ -38,12 +44,12 @@ rule megablast_derep:
     db=relpath("viralcontigident/intermediate/derep/db"),
     outfmt="'6 std qlen slen'",
     maxtargetseqs=10000, 
-    tmpdir="$TMPDIR"
-  log: "logs/viralcontigident_megablastpairwise.log"
+    tmpdir=tmpd
+  log: os.path.join(logdir, "clustering/megablastpairwise.log")
   conda: "../envs/checkv.yml"
   threads: 64
   resources:
-    mem_mb=lambda wildcards, input, attempt: (input.size_mb) * attempt * 100
+    mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
   shell: 
     """
     rm -rf {params.tmpdir}/*
@@ -69,8 +75,8 @@ rule anicalc_derep:
     relpath("viralcontigident/intermediate/derep/ani.tsv")
   params:
     script_path="workflow/scripts/viralcontigident/anicalc.py", 
-    tmpdir="$TMPDIR",
-  log: "logs/viralcontigident_anicalc.log"
+    tmpdir=tmpd
+  log: os.path.join(logdir, "clustering/anicalc.log")
   conda: "../envs/checkv.yml"
   threads: 1
   shell:
@@ -100,8 +106,8 @@ rule aniclust_derep:
     minani=config["vOTUani"],
     targetcov=config["vOTUtargetcov"],
     querycov =config["vOTUquerycov"], 
-    tmpdir="$TMPDIR", 
-  log: "logs/viralcontigident_aniclust.log"
+    tmpdir=tmpd
+  log: os.path.join(logdir, "clustering/aniclust.log")
   conda: "../envs/checkv.yml"
   threads: 1
   shell:
@@ -132,8 +138,8 @@ rule filtercontigs_derep:
     relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")
   params:
     outdir=relpath("viralcontigident/checkv/output"),
-    tmpdir="$TMPDIR/"
-  log: "logs/viralcontigident_filterderep.log" 
+    tmpdir=tmpd
+  log: os.path.join(logdir, "clustering/filterderep.log")
   conda: "../envs/utility.yml" 
   threads: 1
   shell:

@@ -1,4 +1,12 @@
+import os 
+
 configfile: "config/clustering.yml"
+
+logdir = relpath("viralcontigident/logs")
+tmpd = relpath("viralcontigident/tmp")
+
+os.makedirs(logdir, exist_ok=True)
+os.makedirs(tmpd, exist_ok=True)
 
 ##################
 # CD-HIT CLUSTER #
@@ -14,8 +22,8 @@ rule cdhit_derep:
     cdhitpath=config['cdhitdir'],
     cdhitparams=config['cdhitparams'],
     outdir=relpath("/viralcontigident/output/derep"),
-    tmpdir="$TMPDIR/cdhit",
-  log: "logs/viralcontigident_cdhitderep.log"
+    tmpdir=os.path.join(tmpd, "cdhit")
+  log: os.path.join(logdir, "clustering/cdhitderep.log")
   benchmark: "benchmarks/viralcontigident_cdhit.log"
   threads: 32
   resources:
