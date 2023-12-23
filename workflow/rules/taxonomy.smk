@@ -164,7 +164,7 @@ rule VIRify_assign:
     script="workflow/scripts/taxonomy/contig_taxonomic_assign.py",
     outdir=relpath("taxonomy/viral/intermediate/viphogs/"),
     thresh=config['viphogsprop'], 
-    tmpdir=os.path.join(tmpd, "viphogs"
+    tmpdir=os.path.join(tmpd, "viphogs")
   conda: "../envs/taxonomy.yml"
   log: os.path.join(logdir, "VIRify_assign.log")
   shell:

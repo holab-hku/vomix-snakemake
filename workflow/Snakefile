@@ -10,6 +10,7 @@ from scripts.utility.parse_sample_list import parse_sample_list
 #from snakemake.utils import min_version, validate
 #from snakemake.exceptions import WorkflowError
 
+
 configfile: "config/config.yml"
 workdir: config["workdir"]
 outdir = config["outdir"]

@@ -414,11 +414,11 @@ rule votu:
     seqkit grep {input.virusfasta} -f {input.virushits} > {params.tmpdir}/tmp2.fa 2> {log}
     seqkit grep {input.provirusfasta} -f {input.virushits} >> {params.tmpdir}/tmp2.fa 2> {log}
 
-    cat {params.tmpdir}/tmp1.fa {params.tmpdir}/tmp2.fa > {params.tmpdir}/tmp3.fa 2> {log}
+    cat {params.tmpdir}/tmp1.fa {params.tmpdir}/tmp2.fa  > {params.tmpdir}/tmp3.fa 2> {log}
 
-    mv {params.tmpdir}/tmp1.fa {output.provirus}
-    mv {params.tmpdir}/tmp2.fa {output.virus}
-    mv {params.tmpdir}/tmp3.fa {output.combined}
+    seqkit rmdup {params.tmpdir}/tmp1.fa > {output.provirus} 2> {log}
+    seqkit rmdup {params.tmpdir}/tmp2.fa > {output.virus} 2> {log}
+    seqkit rmdup {params.tmpdir}/tmp3.fa > {output.combined} 2> {log}
 
     rm -rf {params.tmpdir}/*
     """
