@@ -26,8 +26,11 @@ def validate_samples(samples):
 
 		# check if it exists in SRA if not present locally
 		acc = items['accession']
-		cmd = ['sratools', 'info', acc]
+		cmd = ['efetch', '-db', 'sra', '-id', acc, '-format', 'runinfo']
+		#cmd = ['sratools', 'info', acc]
+		print(cmd)
 		p = subprocess.run(cmd, stdout=subprocess.PIPE).stdout
+		print(p)
 		found = p.decode().split("\n")[0].split(":")[-1].lstrip()
 		if int(found) == 0:
 			sys.exit("""

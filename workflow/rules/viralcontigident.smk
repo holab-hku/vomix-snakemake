@@ -296,10 +296,14 @@ rule cat_contigs:
     """
 
 
+# This rule currently does not operate in tmpdir so that it matches the checkpoint
+# Fix this later please thanks!
+
 rule checkv:
-  name : "viralcontigident.py CheckV dereplicated contigs"
+  name: "viralcontigident.py CheckV dereplicated contigs"
   input:
-    relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")
+    checkpoint=relpath("viralcontigident/output/checkv/tmp/hmmsearch_checkpoint"),
+    fna=relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")
   output:
     relpath("viralcontigident/output/checkv/viruses.fna"),
     relpath("viralcontigident/output/checkv/proviruses.fna"), 
@@ -311,19 +315,19 @@ rule checkv:
     dbdir="workflow/database/checkv"
   log: os.path.join(logdir, "checkv.log")
   benchmark: os.path.join(benchmarks, "checkv.log")
-  threads: 64
+  threads: 32
   resources:
-    mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
+    mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3 
   conda: "../envs/checkv.yml"
   shell:
     """
-    rm -rf {params.tmpdir} {params.outdir}/*
+    rm -rf {params.tmpdir}
     mkdir -p {params.tmpdir} {params.outdir}
 
-    checkv end_to_end {input} {params.tmpdir} -d {params.dbdir} -t {threads} {params.checkvparams} 2> {log}
+    checkv end_to_end {input.fna} {params.outdir} -d {params.dbdir} -t {threads} {params.checkvparams} 2> {log}
 
-    mv {params.tmpdir}/* {params.outdir}
-    rm -rf {params.tmpdir}"""
+    rm -rf {params.tmpdir}
+    """
 
 
 rule combine_classifications:
@@ -432,6 +436,7 @@ rule votu:
 
 rule done_log:
   name: "viralcontigident.py removing tmp files"
+  localrule: True
   input:
     pseudo=relpath("viralcontigident/output/combined.final.vOTUs.fa")
   output:
@@ -442,7 +447,7 @@ rule done_log:
   log: os.path.join(logdir, "done.log")
   shell:
     """
-    rm -rf {params.filteredcontigs} {params.tmpdir} /*
+    rm -rf {params.filteredcontigs} {params.tmpdir}/*
     touch {output}
     """
 

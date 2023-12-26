@@ -13,7 +13,7 @@ from pyhmmer.hmmer import hmmscan
 
 
 
-def run_pyhmmer(proteins, hmmdb, scanflag, tblout, domtblout, bitcutoff, cores_n):
+def run_pyhmmer(proteins, hmmdb, scanflag, tblout, domtblout, bitcutoff, cores_n, e_val, zflag):
 	if cores_n != 0:
 		cpu_count = cores_n
 	else:
@@ -34,7 +34,7 @@ def run_pyhmmer(proteins, hmmdb, scanflag, tblout, domtblout, bitcutoff, cores_n
 
 	with HMMFile(hmmdb) as hmm_file:
 		hmms = list(hmm_file)
-		n_hmms = len(hmms)	
+		n_hmms = sum(1 for hmm in hmm_file)	
 
 		with SequenceFile(proteins, digital=True) as seq_file:
 			if input_size < available_memory * 0.1:
@@ -50,11 +50,14 @@ def run_pyhmmer(proteins, hmmdb, scanflag, tblout, domtblout, bitcutoff, cores_n
 			t1 = time.time()
 			if scanflag:
 				print("\nPerforming pyhmmer hmmscan...")
-				all_hits_list = list(hmmscan(seqs, hmms, cpus=cores_n, bit_cutoffs=bitcutoff))
+				all_hits_list = list(hmmscan(seqs, hmms, cpus=cores_n, bit_cutoffs=bitcutoff, E=e_val))
 			else:
 				print("\nPerforming pyhmmer hmmsearch...")
-				print("Using manual Z value to match results of hmmscan...")
-				all_hits_list = list(hmmsearch(hmms, seqs, cpus=cores_n, Z=n_hmms, bit_cutoffs=bitcutoff))
+				if zflag:
+					print("Flipping Z value to match results of hmmscan [--z_flip] ...")
+					all_hits_list = list(hmmsearch(hmms, seqs, cpus=cores_n, Z=n_hmms, bit_cutoffs=bitcutoff, E=e_val))
+				else:
+					all_hits_list = list(hmmsearch(hmms, seqs, cpus=cores_n,  bit_cutoffs=bitcutoff, E=e_val))
 
 			
 			time_in_seconds = time.time() - t1
@@ -62,25 +65,32 @@ def run_pyhmmer(proteins, hmmdb, scanflag, tblout, domtblout, bitcutoff, cores_n
 			minutes = (time_in_seconds % 3600) // 60
 			seconds = (time_in_seconds % 3600) % 60
 
-			print(f"Scanned {n_hmms} HMMs on {cpu_count} CPUs took {hours} hours, {minutes} minutes, {seconds.2} seconds")
+			print(f"Scanned {n_hmms} HMMs on {cpu_count} CPUs took {hours} hours, {minutes} minutes, {round(seconds, 2)} seconds")
 				
 			print("Writing results into output file...")
 			t1 = time.time()
-			with open(domtblout, "wb") as f:
-				all_hits_list[0].write(f, format="domains", header=True)
-			with open(domtblout, "ab") as f:
-				for hits in all_hits_list[1:]:
-					hits.write(f, format="domains", header=False)
+
+			if domtblout is not None:
+				# write headers with first hit
+				with open(domtblout, "wb") as f:
+					 all_hits_list[0].write(f, format="domains", header=True)
+				# write rest of hits without headers
+				with open(domtblout, "ab") as f:
+					for hits in all_hits_list[1:]:
+						hits.write(f, format="domains", header=False)
+
+
 			print(f"Writing the file took {time.time() - t1:.3} seconds")
 
-	
 			if tblout is not None:
-				with open(tblout, "wb") as f:
-					all_hits.write(f, format="targets", header=True)
+                                # write headers with first hit
+                                with open(tblout, "wb") as f:
+                                         all_hits_list[0].write(f, format="targets", header=True)
+                                # write rest of hits without headers
+                                with open(tblout, "ab") as f:
+                                        for hits in all_hits_list[1:]:
+                                                hits.write(f, format="targets", header=False)		
 
-		#	if domtblout is not None:
-		#		with open(domtblout, "wb") as f:
-		#			all_hits.write(f, format="domains", header=True)
 
 	
 	
@@ -128,6 +138,14 @@ if __name__ == "__main__":
                 help="if the flag is on, the program will run hmmscan instead of hmmsearch[default] and swap Z scores")
 
 	parser.add_argument(
+                "-Z",
+                "--z_flip",
+                action="store_true",
+                default=False,
+                dest="z_flip",
+                help="if the flag is on, the Z value of hmm database is flipped. To perform an hmmsearch that produces the exact same results as hmmscan but is much much faster, you can set this flag [and do not set --hmmscan flag]")
+
+	parser.add_argument(
                 "-b",
                 "--bit_cutoff",
                 dest="bit_cutoff",
@@ -142,6 +160,14 @@ if __name__ == "__main__":
                 help="Number of cores to use. By defualt is 0 which means pyhmmer chooses the optimal number.",
                 default=0)
 
+	parser.add_argument(
+                "-E",
+                "--e_value",
+                dest="e_val",
+                type=float,
+                help="Report sequences <= this E-value threshold in output [default 10.0]",
+                default=10.0)
+
 	
 	args = parser.parse_args()
 	
@@ -152,5 +178,5 @@ if __name__ == "__main__":
 		sys.exit(1)
 
 	run_pyhmmer(args.proteins_faa, args.hmm_db, args.hmm_scan, 
-		args.tbl_out, args.domtbl_out, args.bit_cutoff, args.n_cores)
+		args.tbl_out, args.domtbl_out, args.bit_cutoff, args.n_cores, args.e_val, args.z_flip)
 

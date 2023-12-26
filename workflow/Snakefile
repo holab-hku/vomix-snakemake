@@ -44,6 +44,7 @@ samples, assemblies = parse_sample_list(config["samplelist"], config['datadir'])
 include: "rules/preprocessing.smk"
 include: "rules/assembly.smk"
 include: "rules/viralcontigident.smk"
+include: "rules/checkv.smk"
 include: "rules/taxonomy.smk"
 include: "rules/abundance.smk"
 include: "rules/clustering-fast.smk"
@@ -61,6 +62,7 @@ assembly += ["workflow/report/assembly/assemblystats.tsv"]
 viralcontigident = expand(relpath("viralcontigident/samples/{sample_id}/output/viral.contigs.fa"), sample_id = sample_ids)
 viralcontigident += [relpath("viralcontigident/output/checkv/viruses.fna")]
 clustering = [relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")]
+checkv = [relpath("viralcontigident/output/checkv/tmp/hmmsearch_checkpoint")]
 taxonomy = [relpath("taxonomy/viral/output/merged_taxonomy.csv")]
 abundance = [relpath("abundance/output/vOTU_table_tmp.csv")] 
 
@@ -72,7 +74,7 @@ if config["module"] == "":
 
 inputs = []
 if config["module"] == "end-to-end":
-  inputs = [preprocess, assembly, viralcontigident, clustering, abundance]
+  inputs = [preprocess, assembly, viralcontigident, clustering, abundance, checkv]
 elif config["module"] == "viral-contig-ident":
   inputs = viralcontigident
 elif config["module"] == "taxonomy":
