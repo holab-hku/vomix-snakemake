@@ -1,3 +1,4 @@
+import argparse
 import pandas as pd
 from Bio import SeqIO
 import numpy as np
@@ -53,5 +54,5 @@ if __name__ == "__main__":
 
 	args = parser.parse_args()
 
-	merge_taxonomy(args.diamondout, args.viphogsout, args.phagcnout, args.genomadout, args,contigs, args.output)
+	merge_taxonomy(args.diamondout, args.viphogsout, args.phagcnout, args.genomadout, args.contigs, args.output)
 

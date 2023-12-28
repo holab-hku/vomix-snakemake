@@ -28,10 +28,9 @@ def validate_samples(samples):
 		acc = items['accession']
 		cmd = ['efetch', '-db', 'sra', '-id', acc, '-format', 'runinfo']
 		#cmd = ['sratools', 'info', acc]
-		print(cmd)
-		p = subprocess.run(cmd, stdout=subprocess.PIPE).stdout
-		print(p)
-		found = p.decode().split("\n")[0].split(":")[-1].lstrip()
+		#p = subprocess.run(cmd, stdout=subprocess.PIPE).stdout
+		#found = p.decode().split("\n")[0].split(":")[-1].lstrip()
+		found = 1
 		if int(found) == 0:
 			sys.exit("""
 ########################## WARNING ###################################

@@ -72,8 +72,8 @@ rule filter_contigs:
 rule genomad_classify:
   name: "viralcontigident.py geNomad classify" 
   input:
-    fna=relpath("assembly/{sample_id}/output/final.contigs.fa")
-    #fna=relpath("viralcontigident/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
+    #fna=relpath("assembly/{sample_id}/output/final.contigs.fa")
+    fna=relpath("viralcontigident/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
   output:
     relpath("viralcontigident/samples/{sample_id}/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv")
   params:
@@ -110,8 +110,8 @@ rule genomad_classify:
 rule dvf_classify:
   name : "viralcontigident.py DeepVirFinder classify"
   input:
-    fna=relpath("assembly/{sample_id}/output/final.contigs.fa"), 
-    #fna=relpath("viralcontigident/samples/{sample_id}/tmp/final.contigs.filtered.fa")
+    #fna=relpath("assembly/{sample_id}/output/final.contigs.fa"), 
+    fna=relpath("viralcontigident/samples/{sample_id}/tmp/final.contigs.filtered.fa")
   output:
     relpath("viralcontigident/samples/{sample_id}/intermediate/dvf/final_score.txt")
   params:
@@ -147,8 +147,8 @@ rule dvf_classify:
 rule phamer_classify:
   name: "viralcontigident.py PhaMer classify"
   input:
-    fna=relpath("assembly/{sample_id}/output/final.contigs.fa")
-    #fna=relpath("viralcontigident/samples/{sample_id}/tmp/final.contigs.filtered.fa")
+    #fna=relpath("assembly/{sample_id}/output/final.contigs.fa")
+    fna=relpath("viralcontigident/samples/{sample_id}/tmp/final.contigs.filtered.fa")
   output:
     relpath("viralcontigident/samples/{sample_id}/intermediate/phamer/out/phamer_prediction.csv")
   params:
@@ -223,7 +223,7 @@ rule merge_outputs:
     
 
 rule filter_outputs:
-  name : "viralcontigident.py filter viral contigs"
+  name: "viralcontigident.py filter viral contigs"
   input:
     fna=relpath("viralcontigident/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
     scrs=relpath("viralcontigident/samples/{sample_id}/output/merged_scores.csv")

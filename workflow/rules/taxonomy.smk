@@ -202,7 +202,7 @@ rule genomad_taxonomy:
     mkdir -p {params.tmpdir} {params.outdir}
 
     python {params.script} \
-        --input {input}
+        --input {input} \
         --output {params.tmpdir}/tmp.csv 2> {log}
 
     mv {params.tmpdir}/tmp.csv {output}
@@ -224,12 +224,12 @@ rule phagcn_taxonomy:
     paramsdir="workflow/params/phabox/",
     dbdir=config['phagcndb'],
     outdir=relpath("taxonomy/viral/intermediate/phagcn"),
-    tmpdir="tmp/phagcn"
+    tmpdir=os.path.join(tmpd, "phagcn.log")
   log: os.path.join(logdir, "phagcn.log")
   conda: "../envs/phabox.yml"
-  threads: 8
+  threads: 16
   resources:
-    mem_mb=lambda wildcards, attempt: attempt * 8 * 10**3
+    mem_mb=lambda wildcards, attempt: attempt * 32 * 10**3
   shell:
     """
     rm -rf {params.tmpdir} {params.outdir}
@@ -323,15 +323,17 @@ rule diamond_parse_taxonomy:
     tmpdir=os.path.join(tmpd, "diamond")
   log: os.path.join(logdir, "diamond_assign_taxonomy.log")
   conda: "../envs/taxonomy.yml"
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 32 * 10**3
   shell:
     """
-    rm -rf {params.tmpdir} {params.outdir}
+    rm -rf {params.tmpdir} {output}
     mkdir -p {params.tmpdir} {params.outdir}
 
     python {params.script} \
         --diamondout {input.diamondout} \
         --taxcsv {input.taxcsv} \
-        --tresh {params.thresh} \
+        --threshold {params.thresh} \
         --taxcolumns {params.taxcols} \
         --outputcsv {params.tmpdir}/tmp.csv &> {log}
 
@@ -342,6 +344,7 @@ rule diamond_parse_taxonomy:
 
 rule merge_taxonomy:
   name: "taxonomy.py merge taxonomic classifications"
+  localrule: True
   input:
     diamond=relpath("taxonomy/viral/intermediate/diamond/taxonomy.csv"),
     viphogs=relpath("taxonomy/viral/intermediate/viphogs/taxonomy.tsv"),

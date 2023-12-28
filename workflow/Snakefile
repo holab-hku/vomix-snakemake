@@ -43,11 +43,16 @@ samples, assemblies = parse_sample_list(config["samplelist"], config['datadir'])
 ### Include rules
 include: "rules/preprocessing.smk"
 include: "rules/assembly.smk"
-include: "rules/viralcontigident.smk"
-include: "rules/checkv.smk"
-include: "rules/taxonomy.smk"
+
+if config["module"] == "viral-contig-ident" or config["module"] == "end-to-end":
+  include: "rules/viralcontigident.smk"
+  include: "rules/checkv.smk"
+  include: "rules/clustering-fast.smk"
+
+if config["module"] == "viral-contig-ident" or config["module"] == "taxonomy":
+  include: "rules/taxonomy.smk"
+
 include: "rules/abundance.smk"
-include: "rules/clustering-fast.smk"
 
 # Induce modules with flags
 #include: "rules/clustering-fast.smk"
@@ -55,16 +60,16 @@ include: "rules/clustering-fast.smk"
 
 
 #### Set output targets based on sample names
-preprocess = expand(relpath("preprocess/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"), sample_id = samples.keys(), i=[1, 2])
-preprocess += ["workflow/report/preprocess/preprocess_report.html"]
-assembly = expand(relpath("assembly/{sample_id}/output/{sample_id}_R{i}.fastq.gz"), sample_id = samples.keys(), i=[1, 2])
-assembly += ["workflow/report/assembly/assemblystats.tsv"]
-viralcontigident = expand(relpath("viralcontigident/samples/{sample_id}/output/viral.contigs.fa"), sample_id = sample_ids)
-viralcontigident += [relpath("viralcontigident/output/checkv/viruses.fna")]
-clustering = [relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")]
-checkv = [relpath("viralcontigident/output/checkv/tmp/hmmsearch_checkpoint")]
-taxonomy = [relpath("taxonomy/viral/output/merged_taxonomy.csv")]
-abundance = [relpath("abundance/output/vOTU_table_tmp.csv")] 
+#preprocess = expand(relpath("preprocess/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"), sample_id = samples.keys(), i=[1, 2])
+#preprocess += ["workflow/report/preprocess/preprocess_report.html"]
+#assembly = expand(relpath("assembly/{sample_id}/output/{sample_id}_R{i}.fastq.gz"), sample_id = samples.keys(), i=[1, 2])
+#assembly += ["workflow/report/assembly/assemblystats.tsv"]
+#viralcontigident = expand(relpath("viralcontigident/samples/{sample_id}/output/viral.contigs.fa"), sample_id = sample_ids)
+#viralcontigident += [relpath("viralcontigident/output/checkv/viruses.fna")]
+#clustering = [relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")]
+#checkv = [relpath("viralcontigident/output/checkv/tmp/hmmsearch_checkpoint")]
+#taxonomy = [relpath("taxonomy/viral/output/merged_taxonomy.csv")]
+#abundance = [relpath("abundance/output/vOTU_table_tmp.csv")] 
 
 
 ### Rule all directive
@@ -72,16 +77,16 @@ if config["module"] == "":
   print('Please select a module using snakemake --config module="{module}" (e.g. "end-to-end", "taxonomy", "viral-contig-ident")')
   sys.exit(1)
 
-inputs = []
-if config["module"] == "end-to-end":
-  inputs = [preprocess, assembly, viralcontigident, clustering, abundance, checkv]
-elif config["module"] == "viral-contig-ident":
-  inputs = viralcontigident
-elif config["module"] == "taxonomy":
-  inputs = taxonomy
+#inputs = []
+#if config["module"] == "end-to-end":
+#  inputs = [preprocess, assembly, viralcontigident, clustering, abundance, checkv]
+#elif config["module"] == "viral-contig-ident":
+#  inputs = viralcontigident
+#elif config["module"] == "taxonomy":
+#  inputs = taxonomy
 
-rule all:
-  input: inputs
+#rule all:
+#  input: inputs
 
 ### Set master rules
 #rule preprocess:
