@@ -9,6 +9,22 @@ os.makedirs(tmpd, exist_ok=True)
 methodslist = config["covermmethods"].split()
 methods_c = ",".join(methodslist)
 
+rule done:
+  name: "abundance.py Done. removing tmp files"
+  input:
+    pseudo=expand(relpath("abundance/output/vOTU_table_{methods}.tsv"), methods = methodslist)
+  output:
+    os.path.join(logdir, "done.log")
+  params:
+    tmpdir=tmpd,
+    interdir=relpath("abundance/intermediate")
+  log: os.path.join(logdir, "done.log")
+  shell:
+    """
+    rm -rf {params.tmpdir}/* {params.interdir}/*
+    touch {output}
+    """
+
 rule coverm_endtoend:
   name: "abundance.py CoverM calculate abundance"
   input:
@@ -81,43 +97,3 @@ rule coverm_merge:
 
     rm -rf {params.tmpdir}
     """
-
-rule depth_stat:
-  name: "abundance.py calculating depth statistics"
-  localrule: True
-  input:
-    expand(relpath("abundance/samples/{sample_id}/output/{sample_id}.bam"), sample_id=samples.keys())
-  output:
-    relpath("abundance/output/depth_summary.tsv")
-  params:
-    tmpdir=os.path.join(tmpd, "coveragestat")
-  conda: "../envs/bowtie2.yml"
-  threads: 1
-  shell:
-    """
-    rm -rf {params.tmpdir}
-    mkdir -p {params.tmpdir}
-
-    samtools depth {input} > {params.tmpdir}/tmp.tsv
-    mv {params.tmpdir}/tmp.tsv {output}
-
-    rm -rf {params.tmpdir}/*
-    """
-
-
-rule done_log:
-  name: "abundance.py removing tmp files"
-  input:
-    pseudo=expand(relpath("abundance/output/vOTU_table_{methods}.tsv"), methods = methodslist)
-  output:
-    os.path.join(logdir, "done.log")
-  params:
-    tmpdir=tmpd,
-    interdir=relpath("abundance/intermediate")
-  log: os.path.join(logdir, "done.log")
-  shell:
-    """
-    rm -rf {params.tmpdir}/* {params.interdir}/*
-    touch {output}
-    """
-

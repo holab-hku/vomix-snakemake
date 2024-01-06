@@ -1,8 +1,10 @@
 configfile: "config/preprocessing.yml"
-logdir = relpath("preprocess/logs")
-datadir = config["datadir"]
-os.makedirs(logdir, exist_ok=True)
+logdir=relpath("preprocess/logs")
+tmpd = relpath("preprocess/tmp")
+datadir=config["datadir"]
 
+os.makedirs(logdir, exist_ok=True)
+os.makedirs(tmpd, exist_ok=True)
 
 def retrieve_accessions(wildcards):
   try:
@@ -12,6 +14,25 @@ def retrieve_accessions(wildcards):
   return acc
 
 
+# MASTER RULE
+
+rule done:
+    name: "preprocessing.py Done. deleting all tmp files"
+    localrule: True
+    input:
+      expand(os.path.join(datadir, "{sample_id}_{i}.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
+      expand(relpath("preprocess/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
+      relpath("reports/preprocess/preprocess_report.html")
+    output:
+      os.path.join(logdir, "done.log")
+    shell:
+      """
+      touch {output}
+      """
+
+
+# RULES
+
 rule download_fastq:
   name : "preprocessing.py download fastq from SRA"
   output:
@@ -20,26 +41,28 @@ rule download_fastq:
   params:
     download=config['dwnldparams'],
     pigz=config['pigzparams'],
-    logdir=os.path.join(datadir, "/log"), 
+    logdir=os.path.join(datadir, "log"), 
     accessions= lambda wildcards: retrieve_accessions(wildcards),
-    tmpdir="$TMPDIR/{sample_id}"
-  log:
-    os.path.join(datadir, "/log/{sample_id}.log")
+    tmpdir=os.path.join(tmpd, "download/{sample_id}")
+  log: os.path.join(datadir, "log/{sample_id}.log")
+  conda: "../envs/preprocessing.yml"
   threads: 8
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 8 * 10**3
   shell:
     """
-    mkdir -p {params.tmpdir}
-    mkdir -p {params.logdir}
+    mkdir -p {params.tmpdir} {params.logdir}
 
     fasterq-dump {params.accessions} \
         {params.download} \
         --split-3 \
         --skip-technical \
         --outdir {params.tmpdir} \
+        --temp {params.tmpdir} \
         --threads {threads} &> {log}
 
-    pigz -p {threads} -c {params.pigz} {params.tmpdir}/*_1.fastq > {output.R1}
-    pigz -p {threads} -c {params.pigz} {params.tmpdir}/*_2.fastq > {output.R2}
+    pigz -p {threads} -c {params.pigz} {params.tmpdir}/*_1.fastq > {output.R1} 2> {log}
+    pigz -p {threads} -c {params.pigz} {params.tmpdir}/*_2.fastq > {output.R2} 2> {log}
 
     rm -rf {params.tmpdir}
 
@@ -59,7 +82,7 @@ rule fastp:
     json=relpath("preprocess/{sample_id}/report.fastp.json")
   params:
     fastp=config['fastpparams'],
-    tmpdir="$TMPDIR/{sample_id}"
+    tmpdir=os.path.join(tmpd, "fastp/{sample_id}")
   log: os.path.join(logdir, "fastp_{sample_id}.log")
   threads: 12
   conda: "../envs/fastp.yml"
@@ -95,7 +118,7 @@ rule multiqc:
   params:
     searchdir=relpath("preprocess/"),
     outdir=relpath("reports/preprocess/"),
-    tmpdir="$TMPDIR/multiqc"
+    tmpdir=os.path.join(tmpd, "multiqc")
   log: os.path.join(logdir, "multiqc.log")
   threads: 1
   conda: "../envs/multiqc.yml"

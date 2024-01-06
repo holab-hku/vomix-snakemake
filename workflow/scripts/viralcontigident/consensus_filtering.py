@@ -35,7 +35,7 @@ def consensus_filtering(classification_summary, genomad_min, dvf_min, phamer_pre
 	for index, row in df.iterrows():
 		# 1) Keep if genome is set as complete 
 		if row['checkv_quality'] == 'Complete': 
-			row['type'] = 'Provirus'
+			#row['type'] = 'Provirus'
 			filtered_rows.append(row)
 		
 		# 2) If genome is high-quality, keep if at least one software supports it, or of it's a provius
@@ -99,4 +99,3 @@ if __name__ == "__main__":
 	consensus_filtering(args.classification_results, args.genomad_min_score, args.dvf_min_score, 
 			args.phamer_pred, args.summary_out, args.provirus_list, args.virus_list)
 
-	
