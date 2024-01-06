@@ -1,9 +1,9 @@
 import os 
 configfile: "config/viralcontigident.yml"
 
-logdir = relpath("viralcontigident/logs")
-benchmarks = relpath("viralcontigident/benchmarks")
-tmpd = relpath("viralcontigident/tmp")
+logdir=relpath("viralcontigident/logs")
+benchmarks=relpath("viralcontigident/benchmarks")
+tmpd=relpath("viralcontigident/tmp")
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
@@ -14,17 +14,17 @@ os.makedirs(tmpd, exist_ok=True)
 ############################
 
 if config["contigfile"] != "":
-  path = config["contigfile"]
-  cwd = os.getcwd()
-  path_full = os.path.join(cwd, path)
+  path=config["contigfile"]
+  cwd=os.getcwd()
+  path_full=os.path.join(cwd, path)
 
   if not os.path.exists(path):
     print("The contig file path provided does not exist.")
     sys.exit(1)
 
-  sample_id = os.path.basename(path).rsplit(".", 1)[0]
-  outdir_p = os.path.join(cwd, relpath("assembly/"), sample_id, "output/")
-  outfile = os.path.join(outdir_p, "final.contigs.fa")
+  sample_id=os.path.basename(path).rsplit(".", 1)[0]
+  outdir_p=os.path.join(cwd, relpath("assembly/"), sample_id, "output/")
+  outfile=os.path.join(outdir_p, "final.contigs.fa")
 
   os.makedirs(outdir_p, exist_ok=True)
 
@@ -34,14 +34,16 @@ if config["contigfile"] != "":
     print(f"Contig path already exists '{outdir}final.contigs.fa'. The existing file will be used for viral contig annotation. If needed, please delete the current contig file path and try again.")
     pass
 
-  sample_ids = [sample_id]
+  sample_ids=[sample_id]
 
 else:
-  sample_ids = samples.keys()
+  sample_ids=samples.keys()
   
 ###########################
 # Multi-sample Processing #
 ###########################
+
+### MAKE A BETTER NAMING SYSTEM FOR CONTIGS 
 
 rule filter_contigs:
   name: "viralcontigident.py filter contigs [length]"
@@ -53,7 +55,7 @@ rule filter_contigs:
   params:
     minlen=config['contigminlen'],
     outdir=relpath("viralcontigident/samples/{sample_id}/tmp"), 
-    tmpdir=os.path.join(tmpd, "{sample_id}")
+    tmpdir=os.path.join(tmpd, "contigs/{sample_id}")
   log: os.path.join(logdir, "filtercontig_{sample_id}.log")
   conda: "../envs/utility.yml"
   threads: 1
@@ -75,12 +77,12 @@ rule genomad_classify:
     #fna=relpath("assembly/{sample_id}/output/final.contigs.fa")
     fna=relpath("viralcontigident/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
   output:
-    relpath("viralcontigident/samples/{sample_id}/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv")
+    relpath("viralcontigident/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv")
   params:
     genomadparams=config['genomadparams'],
     dbdir=config['genomaddb'],
     outdir=relpath("viralcontigident/samples/{sample_id}/intermediate/genomad/"),
-    tmpdir=os.path.join(tmpd, "{sample_id}")
+    tmpdir=os.path.join(tmpd, "genomad/{sample_id}")
   log: os.path.join(logdir, "genomad_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "genomad_{sample_id}.log")
   conda: "../envs/genomad.yml"
@@ -101,8 +103,8 @@ rule genomad_classify:
         --cleanup \
         {params.genomadparams} &> {log}
 
-    mv {params.tmpdir}/* {params.outdir} 2> {log}
-    rm -rf {params.tmpdir} 2> {log}
+    mv {params.tmpdir}/* {params.outdir}
+    rm -rf {params.tmpdir}
     """
 
 
@@ -120,7 +122,7 @@ rule dvf_classify:
     parameters=config['dvfparams'], 
     modeldir="workflow/software/DeepVirFinder/models/",
     outdir=relpath("viralcontigident/samples/{sample_id}/intermediate/dvf/"),
-    tmpdir=os.path.join(tmpd, "{sample_id}")
+    tmpdir=os.path.join(tmpd, "dvf/{sample_id}")
   log: os.path.join(logdir, "dvf_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "dvf_{sample_id}.log")
   conda: "../envs/dvf.yml"
@@ -129,7 +131,7 @@ rule dvf_classify:
     mem_mb=lambda wildcards, attempt: attempt * 16 * 10**3
   shell:
     """
-    mkdir -p {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir} {params.contigtmp}
 
     python {params.script} \
         -i {input.fna} \
@@ -140,7 +142,7 @@ rule dvf_classify:
         {params.parameters} &> {log}
 
     mv {params.tmpdir}/* {output}
-    rm -rf {params.tmpdir}
+    rm -rf {params.tmpdir} {params.contigtmp}/* 
     """
 
 
@@ -159,7 +161,7 @@ rule phamer_classify:
     minlen=config['contigminlen'],
     dbdir=config['phamerdb'],
     outdir=relpath("viralcontigident/samples/{sample_id}/intermediate/phamer/"),
-    tmpdir=os.path.join(tmpd, "{sample_id}")
+    tmpdir=os.path.join(tmpd, "phamer/{sample_id}")
   log: os.path.join(logdir, "phamer_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "phamer_{sample_id}.log")
   conda: "../envs/phabox.yml"
@@ -189,7 +191,7 @@ rule phamer_classify:
 rule merge_outputs:
   name : "viralcontigident.py merge classification outputs"
   input:
-    genomadout=relpath("viralcontigident/samples/{sample_id}/intermediate/genomad/final.contigs_summary/final.contigs_virus_summary.tsv"),
+    genomadout=relpath("viralcontigident/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv"),
     dvfout=relpath("viralcontigident/samples/{sample_id}/intermediate/dvf/final_score.txt"), 
     phamerout=relpath("viralcontigident/samples/{sample_id}/intermediate/phamer/out/phamer_prediction.csv"),
   output:
@@ -200,7 +202,7 @@ rule merge_outputs:
     dvfminlen=config['dvfminlen'], 
     phamerminlen=config['dvfminlen'], 
     outdir=relpath("viralcontigident/samples/{sample_id}/output/"),
-    tmpdir=os.path.join(tmpd, "{sample_id}")
+    tmpdir=os.path.join(tmpd, "merge/{sample_id}")
   log: os.path.join(logdir, "mergeout_{sample_id}.log")
   conda: "../envs/utility.yml"
   threads: 1
@@ -238,7 +240,7 @@ rule filter_outputs:
     dvf_pvalmax=config['dvfpval'],
     phamer_cutoff=config['phamercutoff'], 
     phamer_pred=config['phamerpred'], 
-    tmpdir=os.path.join(tmpd, "{sample_id}")
+    tmpdir=os.path.join(tmpd, "filter/{sample_id}")
   log: os.path.join(logdir, "filteroutput_{sample_id}.log")
   conda: "../envs/utility.yml"
   threads: 1
@@ -270,8 +272,8 @@ rule filter_outputs:
 rule cat_contigs:
   name : "viralcontigident.py combine viral contigs"
   input:
-    fna=expand(relpath("viralcontigident/samples/{sample_id}/output/viral.contigs.fa"), sample_id = sample_ids),
-    scrs=expand(relpath("viralcontigident/samples/{sample_id}/output/merged_scores_filtered.csv"), sample_id = sample_ids)
+    fna=expand(relpath("viralcontigident/samples/{sample_id}/output/viral.contigs.fa"), sample_id=sample_ids),
+    scrs=expand(relpath("viralcontigident/samples/{sample_id}/output/merged_scores_filtered.csv"), sample_id=sample_ids)
   output: 
     fna=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"),
     scrs=relpath("viralcontigident/intermediate/scores/combined_viral_scores.csv")
@@ -442,7 +444,7 @@ rule done_log:
   output:
     os.path.join(logdir, "done.log")
   params:
-    filteredcontigs=expand(relpath("viralcontigident/samples/{sample_id}/tmp"), sample_id = sample_ids),
+    filteredcontigs=expand(relpath("viralcontigident/samples/{sample_id}/tmp"), sample_id=sample_ids),
     tmpdir=tmpd
   log: os.path.join(logdir, "done.log")
   shell:

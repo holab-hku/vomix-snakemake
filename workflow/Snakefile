@@ -41,17 +41,18 @@ wildcard_constraints:
 samples, assemblies = parse_sample_list(config["samplelist"], config['datadir'])
 
 ### Include rules
-include: "rules/preprocessing.smk"
+#include: "rules/preprocessing.smk"
 include: "rules/assembly.smk"
 
-if config["module"] == "viral-contig-ident" or config["module"] == "end-to-end":
-  include: "rules/viralcontigident.smk"
-  include: "rules/checkv.smk"
-  include: "rules/clustering-fast.smk"
+#if config["module"] == "viral-contig-ident" or config["module"] == "end-to-end":
+  #include: "rules/viralcontigident.smk"
+  #include: "rules/checkv.smk"
+  #include: "rules/clustering-fast.smk"
 
-if config["module"] == "viral-contig-ident" or config["module"] == "taxonomy":
+if config["module"] == "taxonomy" or config["module"] == "end-to-end":
   include: "rules/taxonomy.smk"
 
+include: "rules/viral-binning.smk"
 include: "rules/abundance.smk"
 
 # Induce modules with flags

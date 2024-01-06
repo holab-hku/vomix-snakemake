@@ -169,7 +169,7 @@ rule VIRify_assign:
   log: os.path.join(logdir, "VIRify_assign.log")
   shell:
     """
-    rm -rf {params.tmpdir} {params.outdir}
+    rm -rf {params.tmpdir} {output}
     mkdir -p {params.tmpdir} {params.outdir}
 
     python {params.script} \
@@ -224,7 +224,7 @@ rule phagcn_taxonomy:
     paramsdir="workflow/params/phabox/",
     dbdir=config['phagcndb'],
     outdir=relpath("taxonomy/viral/intermediate/phagcn"),
-    tmpdir=os.path.join(tmpd, "phagcn.log")
+    tmpdir=os.path.join(tmpd, "phagcn")
   log: os.path.join(logdir, "phagcn.log")
   conda: "../envs/phabox.yml"
   threads: 16
@@ -362,7 +362,7 @@ rule merge_taxonomy:
   threads: 1
   shell:
     """
-    rm -rf {params.tmpdir}/* {params.outdir}
+    rm -rf {params.tmpdir}/* {output}
     mkdir -p {params.tmpdir} {params.outdir}
 
     python {params.script} \

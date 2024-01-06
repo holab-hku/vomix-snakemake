@@ -6,7 +6,7 @@ phamerdb: "workflow/database/phabox"
 genomaddb: "workflow/database/genomad"
 # filter applied BEFORE viral contig identification
 # if it is higher e.g. 1000, it reduces computation time 
-contigminlen: 0
+contigminlen: 1000
 # filter applied AFTER viral contig identification occurs
 # if you run metaviromwrapper with the --refilter-contigs it will be very quick 
 genomadminlen: 1000
