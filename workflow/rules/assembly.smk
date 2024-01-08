@@ -1,18 +1,34 @@
 configfile: "config/assembly.yml"
-logdir = relpath("preprocess/logs")
+logdir = relpath("assembly/logs")
 os.makedirs(logdir, exist_ok=True)
+
+# MASTER RULE
+rule done:
+  name: "assembly.py Done. removing tmp files"
+  localrule: True
+  input:
+    expand(relpath("assembly/samples/{sample_id}/output/{sample_id}_R{i}.fastq.gz"), sample_id = samples.keys(), i = [1,2]),
+    expand(relpath("assembly/samples/{sample_id}/output/final.contigs.fa"),  sample_id = samples.keys()),
+    expand(relpath("assembly/reports/{summary_type}.tsv"), summary_type = ["assemblystats", "assembly_size_dist"])
+  output:
+    os.path.join(logdir, "done.log")
+  shell:
+    """
+    touch {output}
+    """
+
 
 rule symlink_assembly:
   name : "assembly.py create symbolic links"
   localrule: True
   input:
-    R1=relpath("preprocess/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
-    R2=relpath("preprocess/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz")
+    R1=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
+    R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz")
   output:
-    R1= relpath("assembly/{sample_id}/output/{sample_id}_R1.fastq.gz"),
-    R2=relpath("assembly/{sample_id}/output/{sample_id}_R2.fastq.gz")
+    R1= relpath("assembly/samples/{sample_id}/output/{sample_id}_R1.fastq.gz"),
+    R2=relpath("assembly/samples/{sample_id}/output/{sample_id}_R2.fastq.gz")
   params:
-    outdir=relpath("assembly/{sample_id}/output")
+    outdir=relpath("assembly/samples/{sample_id}/output")
   shell:
     """
     mkdir -p {params.outdir}
@@ -25,15 +41,15 @@ rule symlink_assembly:
 rule megahit:
   name : "assembly.py MEGAHIT assembly"
   input:
-    R1=relpath("assembly/{sample_id}/output/{sample_id}_R1.fastq.gz"),
-    R2=relpath("assembly/{sample_id}/output/{sample_id}_R2.fastq.gz")
+    R1=relpath("assembly/samples/{sample_id}/output/{sample_id}_R1.fastq.gz"),
+    R2=relpath("assembly/samples/{sample_id}/output/{sample_id}_R2.fastq.gz")
   output:
-    fasta=relpath("assembly/{sample_id}/output/final.contigs.fa")
+    fasta=relpath("assembly/samples/{sample_id}/output/final.contigs.fa")
   params:
     parameters=config['megahitparams'],
     minlen=config["megahit_min_contig_len"],
-    outdir=relpath("assembly/{sample_id}/output/"),
-    interdir=relpath("assembly/{sample_id}/intermediate/megahit"),
+    outdir=relpath("assembly/samples/{sample_id}/output/"),
+    interdir=relpath("assembly/samples/{sample_id}/intermediate/megahit"),
     tmpdir="$TMPDIR/{sample_id}"
   log: os.path.join(logdir, "megahit_{sample_id}.log")
   conda: "../envs/megahit.yml"
@@ -58,14 +74,14 @@ rule megahit:
 rule assembly_stats:
   name: "assembly.py aggregate assembly statistics"
   input:
-    expand(relpath("assembly/{sample_id}/output/final.contigs.fa"), sample_id = samples.keys())
+    expand(relpath("assembly/samples/{sample_id}/output/final.contigs.fa"), sample_id = samples.keys())
   output:
-    stats=relpath("reports/assembly/assemblystats.tsv"),
-    sizedist=relpath("reports/assembly/assembly_size_dist.tsv")
+    stats=relpath("assembly/reports/assemblystats.tsv"),
+    sizedist=relpath("assembly/reports/assembly_size_dist.tsv")
   params:
     script="workflow/scripts/assembly/assemblystats.py",
-    outdir=relpath("reports/assembly"),
-    tmpdir="$TMPDIR/"
+    outdir=relpath("assembly/reports"),
+    tmpdir=os.path.join(tmpd, "report")
   log: os.path.join(logdir, "stats.log")
   conda: "../envs/utility.yml"
   shell:

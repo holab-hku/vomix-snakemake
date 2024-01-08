@@ -13,7 +13,6 @@ def retrieve_accessions(wildcards):
     acc=wildcards.sample_id
   return acc
 
-
 # MASTER RULE
 
 rule done:
@@ -21,7 +20,7 @@ rule done:
     localrule: True
     input:
       expand(os.path.join(datadir, "{sample_id}_{i}.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
-      expand(relpath("preprocess/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
+      expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
       relpath("reports/preprocess/preprocess_report.html")
     output:
       os.path.join(logdir, "done.log")
@@ -41,10 +40,10 @@ rule download_fastq:
   params:
     download=config['dwnldparams'],
     pigz=config['pigzparams'],
-    logdir=os.path.join(datadir, "log"), 
+    logdir=os.path.join(datadir, ".log"), 
     accessions= lambda wildcards: retrieve_accessions(wildcards),
-    tmpdir=os.path.join(tmpd, "download/{sample_id}")
-  log: os.path.join(datadir, "log/{sample_id}.log")
+    tmpdir=os.path.join(datadir, ".tmp/{sample_id}")
+  log: os.path.join(datadir, ".log/{sample_id}.log")
   conda: "../envs/preprocessing.yml"
   threads: 8
   resources:
@@ -76,10 +75,10 @@ rule fastp:
     R1=os.path.join(datadir, '{sample_id}_1.fastq.gz'),
     R2=os.path.join(datadir, '{sample_id}_2.fastq.gz')
   output:
-    R1=relpath("preprocess/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
-    R2=relpath("preprocess/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"), 
-    html=relpath("preprocess/{sample_id}/report.fastp.html"),
-    json=relpath("preprocess/{sample_id}/report.fastp.json")
+    R1=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
+    R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"), 
+    html=relpath("preprocess/samples/{sample_id}/report.fastp.html"),
+    json=relpath("preprocess/samples/{sample_id}/report.fastp.json")
   params:
     fastp=config['fastpparams'],
     tmpdir=os.path.join(tmpd, "fastp/{sample_id}")
@@ -111,7 +110,7 @@ rule fastp:
 rule multiqc:
   name: "preprocessing.py preprocess report"
   input:
-    logs=expand(relpath("preprocess/{sample_id}/report.fastp.json"), sample_id = samples.keys())
+    logs=expand(relpath("preprocess/samples/{sample_id}/report.fastp.json"), sample_id = samples.keys())
   output:
     relpath("reports/preprocess/preprocess_report.html"),
     relpath("reports/preprocess/preprocess_report_data/multiqc.log")

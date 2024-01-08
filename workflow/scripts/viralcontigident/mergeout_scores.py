@@ -3,7 +3,6 @@ import os
 import pandas as pd
 
 
-
 def merge_csv_files(files):
 	merged_data = pd.DataFrame()
 	data_frames = []

@@ -3,3 +3,11 @@ workdir : "."
 outdir : "results/"
 samplelist : "sample_list.tsv"
 datadir : "fastq/"
+
+
+# Flags
+clusteringfast: True
+genomadonly: False
+viralbinning: False
+prokaryotic: False
+hostprok: False

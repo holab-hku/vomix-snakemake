@@ -1,0 +1,47 @@
+# setup working directories
+contigfile : ""
+contigdir : "results/assembly/" 
+dbdir: "workflow/database/"
+phamerdb: "workflow/database/phabox"
+genomaddb: "workflow/database/genomad"
+
+### PRE-FILTERING 
+
+# filter applied BEFORE viral contig identification
+# if it is higher e.g. 1000, it reduces computation time 
+
+contigminlen: 1000
+
+### PRIMARY FILTERING 
+
+# Primary filtering determines which contigs are likely viral from the raw assembly
+# Hits are used for downstream viral-binning or clustering analysis. This filter is usually less stringent 
+# if you run metaviromwrapper with the --refilter-contigs it will be very quick 
+
+genomadminlen: 1000
+dvfminlen: 1500
+phamerminlen: 1500
+
+genomadparams: "--enable-score-calibration --min-score 0.0 --max-fdr 1.0"
+dvfparams: ""
+phamerparams: ""
+
+genomadcutoff_p: 0.7
+dvfcutoff_p: 0.8
+dvfpval_p: 0.05
+phamercutoff_p: 0.9
+phamerpred_p: "phage"
+
+### SECONDARY FILTERING 
+
+# The min score to be considered a "hit" by the consensus viral filtering algorithm
+# This score is usually more stringent than primary filtering since it determines whether
+# "Low-completion" and "Not-determined" CheckV sequences are in fact viral. 
+# Use vomix viral-contigident `--viral-binning` flag to reduce number of shorter contigs
+
+genomadcutoff_s: 0.9
+phamercutoff_s: 0.9
+dvfcutoff_s: 0.9
+
+### CHECKV
+checkvparams: ""

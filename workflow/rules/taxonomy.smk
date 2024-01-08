@@ -4,6 +4,30 @@ tmpd = relpath("taxonomy/viral/tmp")
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
+
+
+### MASTER RULE 
+rule done_log:
+  name: "taxonomy.py Done. removing tmp files"
+  localrule: True
+  input:
+    relpath("taxonomy/viral/output/merged_taxonomy.csv")
+  output:
+    os.path.join(logdir, "done.log")
+  params:
+    tmpdir=tmpd
+  log: os.path.join(logdir, "done.log")
+  shell:
+    """
+    rm -rf {params.tmpdir}/*
+    touch {output}
+    """
+
+
+
+
+### RULES
+
 rule prodigalgv_taxonomy:
   name: "taxonomy.py prodigal-gv vTOUs [parallelized]"
   input: 

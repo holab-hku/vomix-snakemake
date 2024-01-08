@@ -4,7 +4,9 @@ import os
 import sys 
 import subprocess
 import argparse
-import json 
+import json
+import time
+from io import StringIO
 
 import pandas as pd
 from rich.console import Console
@@ -33,8 +35,9 @@ def validate_samples(samples):
 
 			# check if files exist locally
 			if os.path.exists(samples[sample]["R1"]) and os.path.exists(samples[sample]["R2"]):
-				console.print("[dim] {} validated".format(sample))
+				console.print("[dim] {} pre-downloaded".format(sample))
 				progress.update(task, advance=1)
+				time.sleep(0.5)
 				continue
 
 			# check if it exists in SRA if not present locally
@@ -57,9 +60,13 @@ def validate_samples(samples):
 			""".format(acc))
 
 			else:
-				console.print("[dim] {} validated".format(acc))
+				csvstring = StringIO(p.decode())
+				runinfo = pd.read_csv(csvstring, sep=",")
+				sizegb = round(int(runinfo.loc[0, "size_MB"]) /1024, 2)
+				console.print("[dim] {accs} validated \[{size_gb}GB][/dim]".format(accs=acc, size_gb=sizegb))
 
 			progress.update(task, advance=1)
+			time.sleep(0.5)
 
 		progress.stop_task(task)
 
@@ -197,7 +204,7 @@ def parse_sample_list(f, datadir, outdir):
 		with open(samplejson, "r") as sampleold:
 			samples_old = json.load(sampleold)
 			if samples_old == samples:
-				console.print("[dim]{json} already exists and is identical to the sample list provided [{fi}]. Skipping validation.".format(json = samplejson, fi=f))
+				console.print("""[bold]Warning[/bold]: [dim]{json} already exists and is identical to the sample list provided {fi}.\nSkipping validation. If you would like to redo validation, run rm `{json}`""".format(json = samplejson, fi=f))
 				return samples, assembly
 				sys.exit()
 

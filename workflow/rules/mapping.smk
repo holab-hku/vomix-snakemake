@@ -8,7 +8,7 @@ os.makedirs(tmpd, exist_ok=True)
 
 rule bowtie_build:
   input:
-    "output/assembly/{sample_id}/output/final.contigs.fa"
+    "output/assembly/samples/{sample_id}/output/final.contigs.fa"
   output:
     expand("output/mapping/{sample_id}/output/final.contigs.fa.{index}.bt2l", index=range(1,5))
   params:
@@ -26,18 +26,18 @@ rule symlink_bowtie_index:
   input: 
     expand("output/mapping/{sample_id}/output/final.contigs.fa.{index}.bt2l", index=range(1,5))
   output:
-    expand("output/assembly/{sample_id}/output/final.contigs.fa.{index}.bt2l", index=range(1,5))
+    expand("output/assembly/samples/{sample_id}/output/final.contigs.fa.{index}.bt2l", index=range(1,5))
   params:
-    output_dir="output/assembly/{sample_id}/output/"
+    output_dir="output/assembly/samples/{sample_id}/output/"
   shell: "ln -s {input} {params.output_dir}"
 
 
 
 rule bowtie2:
   input:
-    R1= "output/assembly/{sample_id}/output/{sample_id}_R1.fastq.gz",
-    R2="output/assembly/{sample_id}/output/{sample_id}_R2.fastq.gz",
-    bowtie=expand("output/assembly/{sample_id}/output/final.contigs.fa.{index}.bt2l", index=range(1,5))
+    R1= "output/assembly/samples/{sample_id}/output/{sample_id}_R1.fastq.gz",
+    R2="output/assembly/samples/{sample_id}/output/{sample_id}_R2.fastq.gz",
+    bowtie=expand("output/assembly/samples/{sample_id}/output/final.contigs.fa.{index}.bt2l", index=range(1,5))
   output:
     "results/mapping/{sample_id}/output/{sample_id}.bam"
   params:

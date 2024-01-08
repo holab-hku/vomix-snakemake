@@ -9,8 +9,11 @@ os.makedirs(tmpd, exist_ok=True)
 methodslist = config["covermmethods"].split()
 methods_c = ",".join(methodslist)
 
+# MASTER RULE 
+
 rule done:
   name: "abundance.py Done. removing tmp files"
+  localrule: True
   input:
     pseudo=expand(relpath("abundance/output/vOTU_table_{methods}.tsv"), methods = methodslist)
   output:
@@ -21,16 +24,18 @@ rule done:
   log: os.path.join(logdir, "done.log")
   shell:
     """
-    rm -rf {params.tmpdir}/* {params.interdir}/*
+    rm -rf {params.tmpdir}/*
     touch {output}
     """
+
+# RULES
 
 rule coverm_endtoend:
   name: "abundance.py CoverM calculate abundance"
   input:
     vOTUs=relpath("viralcontigident/output/combined.final.vOTUs.fa"),
-    R1=relpath("preprocess/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
-    R2=relpath("preprocess/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz")
+    R1=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
+    R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz")
   output:
     tsv=relpath("abundance/samples/{sample_id}/output/vOTU_table.tsv"),
     bam=relpath("abundance/samples/{sample_id}/output/{sample_id}.bam")

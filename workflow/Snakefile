@@ -6,36 +6,42 @@ import pandas as pd
 import snakemake
 import json
 
-#from snakemake import glob_wildcards
 from scripts.utility.parse_sample_list import parse_sample_list
-#from snakemake.utils import min_version, validate
-#from snakemake.exceptions import WorkflowError
 
 
 configfile: "config/config.yml"
 workdir: config["workdir"]
 outdir = config["outdir"]
 
-# Create & format relative output directory
-if not (os.path.exists(outdir) and os.path.exists(os.path.join(outdir, ".vomix"))):
-  os.makedirs(os.path.join(outdir, ".vomix"), exist_ok=True)
-if outdir.endswith(os.sep):
-  outdir = outdir.rstrip(os.sep)
+# Important utility functions
 
+def cleanpath(f):
+  """Function to clean the backlash at the end of directory path.
+  Makes sure that all 'os.path.join's are consistent"""
+  if f.endswith(os.sep):
+    fi = f.rstrip(os.sep)
+    return fi 
+  else:
+    return f 
 
 def relpath(f):
   """Function to redirect to output directory. 
   This allows the snakemake to be flexible and process 
-  multiple datasets at once"""
+  multiple datasets at once""" 
   p = os.path.join(outdir, f)
   return p
+
+# Create & format relative output directory
+outdir = cleanpath(outdir) 
+if not (os.path.exists(outdir) and os.path.exists(os.path.join(outdir, ".vomix"))):
+  os.makedirs(os.path.join(outdir, ".vomix"), exist_ok=True)
+
 
 ### Set temporary dir
 #if not os.getenv("TMPDIR"):
 #  os.environ["TMPDIR"] = "tmp"
 #  os.makedirs(os.environ["TMPDIR"], exist_ok=True)
 
-### Make .vomix config directory 
 
 ### Set wildcard constraints
 wildcard_constraints:
@@ -47,27 +53,84 @@ wildcard_constraints:
 #                                               'R2': 'path to R2',
 #                                               'accession': 'accession id'}
 
+# FUTURE ENHANCEMENT: MAKE WRAPPER PYTHON SCRIPTS TAKE DIFFERENT INPUTS PER MODEL 
+# AND CREATE SAMPLES AND ASSEMBLIES DICTIONARIES BASED ON THE MODULE
+
 samples, assemblies = parse_sample_list(config["samplelist"], config['datadir'], outdir)
 
-### Include rules
-include: "rules/preprocessing.smk"
-include: "rules/assembly.smk"
+###################
+# Include Modules #
+###################
 
-if config["module"] == "viral-contig-ident" or config["module"] == "end-to-end":
-  include: "rules/viralcontigident.smk"
+targets = []
+
+# END-TO-END
+if config["module"] == "end-to-end":
+  include: "rules/preprocessing.smk"
+  targets += [relpath("preprocess/logs/done.log")]
+  include: "rules/assembly.smk"
+  targets += [relpath("assembly/logs/done.log")]
+
+  if config["genomadonly"]:
+    include: "rules/genomad-only.smk"
+  else:
+    include: "rules/viral-contigident.smk"
+  if config["viralbinning"]:
+    include: "rules/viral-binning.smk"
   include: "rules/checkv.smk"
-  include: "rules/clustering-fast.smk"
+  if config["clusteringfast"]:
+    include: "rules/clustering-fast.smk"
+  else:
+    include: "rules/clustering-sensitive.smk"
+  targets += [relpath("viralcontigident/logs/done.log")]
 
-if config["module"] == "taxonomy" or config["module"] == "end-to-end":
   include: "rules/taxonomy.smk"
+  targets += [relpath("taxonomy/viral/logs/done.log")]
+  include: "rules/abundance.smk"
+  targets += [relpath("abundance/logs/done.log")]
 
-include: "rules/viral-binning.smk"
-include: "rules/abundance.smk"
+# PRE-PROCESS
+if config["module"] == "preprocess":
+  include: "rules/preprocessing.smk"
+
+# ASSEMBLY
+if config["module"] == "assembly":
+  include: "rules/assembly.smk"
+
+# VIRAL-CONTIGIDENT
+if config["module"] == "viral-contigident":
+  if config["genomadonly"]:
+    include: "rules/genomad-only.smk"
+  else:
+    include: "rules/viral-contigident.smk"
+  if config["viralbinning"]:
+    include: "rules/viral-binning.smk"
+  include: "rules/checkv.smk"
+  if config["clusteringfast"]:
+    include: "rules/clustering-fast.smk"
+  else:
+    include: "rules/clustering-sensitive.smk"
+
+# ABUNDANCE
+if config["module"] == "abundance":
+  include: "rules/abundance.smk"
+
+# PROKARYOTIC
+if config["prokaryotic"]:
+  include: "rules/prokaryotic.smk"
+
+# HOST 
+if config["module"] == "abundance":
+  if config["hostprok"]:
+    include: "rules/host-prok.smk"
+  else:
+    include: "rules/host.smk"
 
 
+###############
+# MASTER RULE #
+###############
+rule all:
+  input: targets
 
-### Rule all directive
-if config["module"] == "":
-  print('Please select a module using snakemake --config module="{module}" (e.g. "end-to-end", "taxonomy", "viral-contig-ident")')
-  sys.exit(1)
 
