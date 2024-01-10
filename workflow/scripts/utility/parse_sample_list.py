@@ -9,8 +9,12 @@ import time
 from io import StringIO
 
 import pandas as pd
+
 from rich.console import Console
 from rich.progress import Progress
+from rich.layout import Layout
+from rich.panel import Panel
+
 
 
 console = Console()
@@ -26,8 +30,7 @@ def validate_samples(samples):
       	 If a file has no paired {2} label, it is assumed to be single-end.
 
     	"""
-	console.print("[bold]Validating availability of local and remote SRA raw sequences:\n")
-
+	console.print(Panel.fit("""[dim italic]Validating availability of local and remote SRA raw sequences.\n\nIf you are using local files, you can either:\n1) Provide full file paths in the R1 and R2 columns of sample_list.tsv [only R1 if single-end]\n2) Place the fastq files in the config['datadir'] path with <sample>_{1,2}.fastq.gz naming format.\nCo-assemblies and mix-assemblie scan be setup by writing the same <assembly> column for different samples.\n""", title="Sample Validation", subtitle="In Progress..."))
 	with Progress(transient=True) as progress:
 		task = progress.add_task("[cyan]Validating...", total=len(samples))
 
@@ -93,6 +96,7 @@ def parse_sample_list(f, datadir, outdir):
 	###################
 
 	df = pd.read_csv(f, comment='#', header=0, sep='\t', index_col=None, dtype=str)
+	df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x) # strip white space
 	df = df.replace(r'^\s*$', float('nan'), regex=True)
 	if 'assembly' not in df.columns:
 		    df['assembly'] = float('nan')
@@ -198,25 +202,24 @@ def parse_sample_list(f, datadir, outdir):
 	# presumed to be identical
 
 	samplejson = os.path.join(outdir, ".vomix/samples.json")
-	assemblyjson = os.path.join(outdir, ".vomix/assembly.json")
+	assemblyjson = os.path.join(outdir, ".vomix/assemblies.json")
 	
 	if os.path.exists(samplejson):
 		with open(samplejson, "r") as sampleold:
 			samples_old = json.load(sampleold)
 			if samples_old == samples:
-				console.print("""[bold]Warning[/bold]: [dim]{json} already exists and is identical to the sample list provided {fi}.\nSkipping validation. If you would like to redo validation, run rm `{json}`""".format(json = samplejson, fi=f))
-				return samples, assembly
+				console.print(Panel.fit("""[bold]Warning[/bold]: [dim]{json} already exists and is identical to the sample list provided {fi}. Skipping validation. If you would like to redo sample validation, run 'rm {json}' and try again.""".format(json = samplejson, fi=f), title="Warning", subtitle="Sample List JSON"))
+				return samples, assemblies
 				sys.exit()
 
 				
-	
 	# If not exited already, validate and write
 	validate_samples(samples)
 		
 	with open(samplejson, "w") as sampleout:
 		json.dump(samples, sampleout)
 	with open(assemblyjson, "w") as assemblyout:
-		json.dump(assembly, assemblyout)
-
-	return samples, assembly
+		json.dump(assemblies, assemblyout)
+	
+	return samples, assemblies
 

@@ -81,13 +81,17 @@ rule fastp:
     json=relpath("preprocess/samples/{sample_id}/report.fastp.json")
   params:
     fastp=config['fastpparams'],
+    outdir=relpath("preprocess/samples/{sample_id}/"),
     tmpdir=os.path.join(tmpd, "fastp/{sample_id}")
   log: os.path.join(logdir, "fastp_{sample_id}.log")
   threads: 12
+  resources:
+    mem_mb = lambda wildcards, input, attempt: attempt * max(10 * input.size_mb, 4000)
   conda: "../envs/fastp.yml"
   shell:
     """
-    mkdir -p {params.tmpdir}
+    rm -rf {params.tmpdir}/*
+    mkdir -p {params.tmpdir} {params.outdir}
 
     fastp -i {input.R1} -I {input.R2} \
         -o {params.tmpdir}/R1.fastq.gz \

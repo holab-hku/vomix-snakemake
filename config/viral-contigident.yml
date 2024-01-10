@@ -10,7 +10,7 @@ genomaddb: "workflow/database/genomad"
 # filter applied BEFORE viral contig identification
 # if it is higher e.g. 1000, it reduces computation time 
 
-contigminlen: 1000
+contigminlen: 0
 
 ### PRIMARY FILTERING 
 
@@ -18,16 +18,16 @@ contigminlen: 1000
 # Hits are used for downstream viral-binning or clustering analysis. This filter is usually less stringent 
 # if you run metaviromwrapper with the --refilter-contigs it will be very quick 
 
-genomadminlen: 1000
-dvfminlen: 1500
-phamerminlen: 1500
+genomadminlen: 0
+dvfminlen: 0
+phamerminlen: 0
 
 genomadparams: "--enable-score-calibration --min-score 0.0 --max-fdr 1.0"
 dvfparams: ""
 phamerparams: ""
 
 genomadcutoff_p: 0.7
-dvfcutoff_p: 0.8
+dvfcutoff_p: 0.7
 dvfpval_p: 0.05
 phamercutoff_p: 0.9
 phamerpred_p: "phage"

@@ -3,7 +3,7 @@ import argparse
 import pandas as pd 
 
 
-def consensus_filtering(classification_summary, genomad_min, dvf_min, phamer_pred, summary_out, provirus_out, virus_out):
+def consensus_filtering(classification_summary, genomad_min, dvf_min, phamer_min, summary_out, provirus_out, virus_out):
 
 	df = pd.read_csv(classification_summary, index_col=0)
 
@@ -13,7 +13,7 @@ def consensus_filtering(classification_summary, genomad_min, dvf_min, phamer_pre
 	df['hit-score'] = 0
 	df.loc[(df['genomad_virus_score'] > genomad_min), 'hit-score'] += 1
 	df.loc[(df['dvf_score'] > dvf_min), 'hit-score'] += 1
-	df.loc[(df['phamer_Pred'] == phamer_pred), 'hit-score'] += 1
+	df.loc[(df['phamer_Score'] == phamer_min), 'hit-score'] += 1
 	
 	df['provirus-hit-score'] = 0
 	df.loc[(df['checkv_provirus'] == 'Yes'), 'provirus-hit-score'] += 1
@@ -89,7 +89,7 @@ if __name__ == "__main__":
 	parser.add_argument('--classification_results', type=str, help='Path to final combined classification summary')
 	parser.add_argument('--genomad_min_score', type=float, help='Minimum threshold for geNomad to be considered as a hit')
 	parser.add_argument('--dvf_min_score', type=float, help='Minimum threshold for DeepVirFinder to be considered as a hit')
-	parser.add_argument('--phamer_pred', type=str, help='Classification type  to be considered as a hit for PhaMer')
+	parser.add_argument('--phamer_min_score', type=str, help='Minimum threshold for PhaMer to be considered as a hit')
 	parser.add_argument('--summary_out', type=str, help='Output file path to final filtered summary of vOTUs')
 	parser.add_argument('--provirus_list', type=str, help='Output file path to be list of proviral sequences')
 	parser.add_argument('--virus_list', type=str, help='Output file path to be list of viral (non-proviral) sequences')
@@ -97,5 +97,5 @@ if __name__ == "__main__":
 	args = parser.parse_args()
 
 	consensus_filtering(args.classification_results, args.genomad_min_score, args.dvf_min_score, 
-			args.phamer_pred, args.summary_out, args.provirus_list, args.virus_list)
+			args.phamer_min_score, args.summary_out, args.provirus_list, args.virus_list)
 

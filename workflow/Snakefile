@@ -62,65 +62,62 @@ samples, assemblies = parse_sample_list(config["samplelist"], config['datadir'],
 # Include Modules #
 ###################
 
+#include: "rules/preprocessing.smk"
+#include: "rules/assembly.smk"
+if config["genomadonly"]:
+  include: "rules/genomad-only.smk"
+else:
+  include: "rules/viral-contigident.smk"
+if config["viralbinning"]:
+  include: "rules/viral-binning.smk"
+include: "rules/checkv.smk"
+if config["clusteringfast"]:
+  include: "rules/clustering-fast.smk"
+else:
+  include: "rules/clustering-sensitive.smk"
+include: "rules/taxonomy.smk"
+include: "rules/abundance.smk"
+if config["prokaryotic"]:
+  include: "rules/prokaryotic.smk"
+if config["module"] == "host":
+  if config["hostprok"]:
+    include: "rules/host-prok.smk"
+  else:
+    include: "rules/host.smk"
+
+
+##########################
+# Add Targets Per Module #
+##########################
+
 targets = []
 
-# END-TO-END
 if config["module"] == "end-to-end":
-  include: "rules/preprocessing.smk"
   targets += [relpath("preprocess/logs/done.log")]
-  include: "rules/assembly.smk"
   targets += [relpath("assembly/logs/done.log")]
-
-  if config["genomadonly"]:
-    include: "rules/genomad-only.smk"
-  else:
-    include: "rules/viral-contigident.smk"
-  if config["viralbinning"]:
-    include: "rules/viral-binning.smk"
-  include: "rules/checkv.smk"
-  if config["clusteringfast"]:
-    include: "rules/clustering-fast.smk"
-  else:
-    include: "rules/clustering-sensitive.smk"
   targets += [relpath("viralcontigident/logs/done.log")]
-
-  include: "rules/taxonomy.smk"
   targets += [relpath("taxonomy/viral/logs/done.log")]
-  include: "rules/abundance.smk"
   targets += [relpath("abundance/logs/done.log")]
 
-# PRE-PROCESS
 if config["module"] == "preprocess":
-  include: "rules/preprocessing.smk"
+  targets += [relpath("preprocess/logs/done.log")]
 
-# ASSEMBLY
 if config["module"] == "assembly":
-  include: "rules/assembly.smk"
+  targets += [relpath("assembly/logs/done.log")]
 
-# VIRAL-CONTIGIDENT
 if config["module"] == "viral-contigident":
-  if config["genomadonly"]:
-    include: "rules/genomad-only.smk"
-  else:
-    include: "rules/viral-contigident.smk"
-  if config["viralbinning"]:
-    include: "rules/viral-binning.smk"
-  include: "rules/checkv.smk"
-  if config["clusteringfast"]:
-    include: "rules/clustering-fast.smk"
-  else:
-    include: "rules/clustering-sensitive.smk"
+  targets += [relpath("viralcontigident/logs/done.log")]
 
-# ABUNDANCE
+if config["module"] == "taxonomy":
+  targets += [relpath("taxonomy/viral/logs/done.log")]
+
 if config["module"] == "abundance":
-  include: "rules/abundance.smk"
+  targets += [relpath("abundance/logs/done.log")]
 
-# PROKARYOTIC
 if config["prokaryotic"]:
   include: "rules/prokaryotic.smk"
 
-# HOST 
-if config["module"] == "abundance":
+if config["module"] == "host":
   if config["hostprok"]:
     include: "rules/host-prok.smk"
   else:

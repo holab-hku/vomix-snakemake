@@ -7,7 +7,7 @@ os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
 rule makeblastdb_derep:
-  name: "viralcontigident.py make blast db [--clustering-fast]"
+  name: "viral-contigident.py make blast db [--clustering-fast]"
   input:
     relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa")
   output: 
@@ -33,7 +33,7 @@ rule makeblastdb_derep:
     """
 
 rule megablast_derep:
-  name: "viralcontigident.py megablast [--clustering-fast]"
+  name: "viral-contigident.py megablast [--clustering-fast]"
   input:
     fasta=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"), 
     dbcheckpoints=expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"),
@@ -68,7 +68,7 @@ rule megablast_derep:
     """
   
 rule anicalc_derep:
-  name : "viralcontigident.py calculate ani [--clustering-fast]"
+  name : "viral-contigident.py calculate ani [--clustering-fast]"
   input:
     relpath("viralcontigident/intermediate/derep/blast_out.csv")
   output: 
@@ -94,7 +94,7 @@ rule anicalc_derep:
 
 
 rule aniclust_derep:
-  name : "viralcontigident.py cluster [--clustering-fast]"
+  name : "viral-contigident.py cluster [--clustering-fast]"
   input:
     fa=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"), 
     ani=relpath("viralcontigident/intermediate/derep/ani.tsv")
@@ -130,7 +130,7 @@ rule aniclust_derep:
 
 
 rule filtercontigs_derep:
-  name: "viralcontigident.py filter dereplicated viral contigs"
+  name: "viral-contigident.py filter dereplicated viral contigs"
   input: 
     fna=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"), 
     reps=relpath("viralcontigident/output/derep/cluster_representatives.txt")

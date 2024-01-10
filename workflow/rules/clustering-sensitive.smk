@@ -12,7 +12,7 @@ os.makedirs(tmpd, exist_ok=True)
 # CD-HIT CLUSTER #
 ##################
 rule cdhit_derep:
-  name: "CD-HIT --clustering-sensitive [viralcontigident.py]"
+  name: "CD-HIT --clustering-sensitive [viral-contigident.py]"
   input:
     relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa")
   output:
