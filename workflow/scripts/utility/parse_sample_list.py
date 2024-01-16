@@ -14,9 +14,6 @@ from rich.console import Console
 from rich.progress import Progress
 from rich.layout import Layout
 from rich.panel import Panel
-
-
-
 console = Console()
 
 def validate_samples(samples):
@@ -95,13 +92,12 @@ def parse_sample_list(f, datadir, outdir):
 	# PARSE SAMPLE DF #
 	###################
 
-	df = pd.read_csv(f, comment='#', header=0, sep='\t', index_col=None, dtype=str)
+	df = pd.read_csv(f, comment='#', header=0, sep='\t', index_col=False, dtype=str)
 	df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x) # strip white space
 	df = df.replace(r'^\s*$', float('nan'), regex=True)
 	if 'assembly' not in df.columns:
 		    df['assembly'] = float('nan')
 	
-
 	# iterate through df and if sample_id is missing, replace is with SRA accession
 	# also add assembly as sample_id if no assembly is given (single-sample assembly)
 	for i, row in df.iterrows():
@@ -113,19 +109,17 @@ def parse_sample_list(f, datadir, outdir):
 	
 	# if there are no assemblies set, make it the same as sample_id (single sample assembly)
 	df['assembly'] = [row['assembly'] if not pd.isna(row['assembly']) else row['sample_id'] for _, row in df.iterrows()]
-	
 	# if there are no R1 or R2s, generate them
 	df['R1'] = [row['R1'] if not pd.isna(row['R1']) else '{dir}{s}_1.fastq.gz'.format(dir= datadir, s=row['sample_id']) for _, row in df.iterrows()]
 	df['R2'] = [row['R2'] if not pd.isna(row['R2']) else '{dir}{s}_2.fastq.gz'.format(dir = datadir, s=row['sample_id']) for _, row in df.iterrows()]
 		
 	df.fillna('', inplace=True)
-	
 	# set unique names for the file index
-	try:
-		df.set_index('sample_id', inplace=True)
-	except ValueError:
-		print("sample_id error. Values in the sample_id column may be non-unique")
-
+	df.set_index('sample_id', inplace=True)
+	if df.index.duplicated().any():
+		print(df[df.index.duplicated()])
+		console.print(Panel.fit("ValueError on df.set_index('sample_id'). Values in the sample_id column may be non-unique. Please check {}".format(f), title="Value Error", subtitle="Duplicate 'sample_id' Names"))
+		raise ValueError()
 
 	# If it's just a one-column file, expand it by assuming that the
 	# SRA accessions are in the first column
@@ -136,12 +130,15 @@ def parse_sample_list(f, datadir, outdir):
 	
 	# Remove duplicates rows and throw a warning
 	duplicaterow = df[df.duplicated()]
-	duplicateid = df[df['accession'].duplicated()]
+	duplicateid = df[df.duplicated(subset = ['accession'], keep = False)]
+
 	if not (duplicaterow.empty and duplicateid.empty):
 
 		duprow = duplicaterow.index.tolist()
 		dupid = duplicateid.index.tolist()
 		duplist = duprow + dupid
+
+		print(df.duplicated(subset = ['accession'], keep = False))
 
 		sys.exit("""
 		########################## WARNING ###################################

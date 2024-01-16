@@ -8,6 +8,11 @@ import json
 
 from scripts.utility.parse_sample_list import parse_sample_list
 
+from rich.console import Console
+from rich.progress import Progress
+from rich.layout import Layout
+from rich.panel import Panel
+console = Console()
 
 configfile: "config/config.yml"
 workdir: config["workdir"]
@@ -25,9 +30,9 @@ def cleanpath(f):
     return f 
 
 def relpath(f):
-  """Function to redirect to output directory. 
+  """Function to redirect all output to a relative path.
   This allows the snakemake to be flexible and process 
-  multiple datasets at once""" 
+  multiple datasets at once without locking.""" 
   p = os.path.join(outdir, f)
   return p
 
@@ -56,21 +61,23 @@ wildcard_constraints:
 # FUTURE ENHANCEMENT: MAKE WRAPPER PYTHON SCRIPTS TAKE DIFFERENT INPUTS PER MODEL 
 # AND CREATE SAMPLES AND ASSEMBLIES DICTIONARIES BASED ON THE MODULE
 
-samples, assemblies = parse_sample_list(config["samplelist"], config['datadir'], outdir)
+datadir = cleanpath(config['datadir']) 
+os.makedirs(datadir, exist_ok=True)
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
 
 ###################
 # Include Modules #
 ###################
 
-#include: "rules/preprocessing.smk"
-#include: "rules/assembly.smk"
+include: "rules/preprocessing.smk"
+include: "rules/assembly.smk"
 if config["genomadonly"]:
   include: "rules/genomad-only.smk"
 else:
   include: "rules/viral-contigident.smk"
 if config["viralbinning"]:
   include: "rules/viral-binning.smk"
-include: "rules/checkv.smk"
+include: "rules/checkv-pyhmmer.smk"
 if config["clusteringfast"]:
   include: "rules/clustering-fast.smk"
 else:

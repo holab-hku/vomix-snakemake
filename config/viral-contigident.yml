@@ -16,7 +16,6 @@ contigminlen: 0
 
 # Primary filtering determines which contigs are likely viral from the raw assembly
 # Hits are used for downstream viral-binning or clustering analysis. This filter is usually less stringent 
-# if you run metaviromwrapper with the --refilter-contigs it will be very quick 
 
 genomadminlen: 0
 dvfminlen: 0
@@ -36,7 +35,7 @@ phamerpred_p: "phage"
 
 # The min score to be considered a "hit" by the consensus viral filtering algorithm
 # This score is usually more stringent than primary filtering since it determines whether
-# "Low-completion" and "Not-determined" CheckV sequences are in fact viral. 
+# "Low-completion" and "Not-determined" CheckV sequences should be classified as viral.
 # Use vomix viral-contigident `--viral-binning` flag to reduce number of shorter contigs
 
 genomadcutoff_s: 0.9
