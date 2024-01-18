@@ -113,3 +113,65 @@
 #  output:
 #    "test.txt"
 #  shell: "touch {output}"
+
+
+rule bowtie2_build:
+  name: "viral-binning.py bowtie2 build viral contig index"
+  input:
+    relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa")
+  output:
+    expand(relpath("binning/viral/intermediate/combined.viralcontigs.fa.{i}.bt2l"), i=range(1,5))
+  params:
+    parameters=config["bowtiebuildparams"],
+    outdir=relpath("binning/viral/intermediate"), 
+    tmpdir=os.path.join(tmpd, "build")
+  log: os.path.join(logdir, "bowtie2build.log")
+  conda: "../envs/bowtie2.yml"
+  threads: 32 
+  shell:
+    """
+    rm -rf {params.tmpdir}/* {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    bowtie2-build \
+        --large-index \
+        --threads {threads} \
+        {params.parameters} \
+        {input} \
+        {params.tmpdir}/combined.viralcontigs.fa &> {log}
+
+    mv {params.tmpdir}/combined.viralcontigs.fa.*.bt2l {params.outdir}
+    
+    rm -rf {params.tmpdir}/*
+    """
+
+rule bowtie2:
+  name: "viral-binning.py bowtie2 map viral contigs"
+  input:
+    R1=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
+    R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"),
+    bowtie=expand(relpath("binning/viral/intermediate/combined.viralcontigs.fa.{i}.bt2l"), i=range(1,5))
+  output:
+    relpath("binning/viral/samples/{sample_id}/intermediate/{sample_id}.bam")
+  params:
+    bowtie2params=config["bowtie2params"],
+    prefix=relpath("binning/viral/intermediate/combined.viralcontigs.fa"),
+    outdir=relpath("binning/viral/samples/{sample_id}/intermediate"),
+    tmpdir=os.path.join(tmpd, "bowtie2/{sample_id}")
+  log: os.path.join(logdir, "bowtie2_{sample_id}.log")
+  conda: "../envs/bowtie2.yml"
+  threads: 8
+  resources:
+  shell:
+    """
+    rm -rf {params.tmpdir} {output}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    bowtie2 \
+        -1 {input.R1} -2 {input.R2} \
+        -p {threads} \
+        -x {params.prefix} \
+        {params.bowtie2params}  2> {log} | samtools view -hb - 2> {log} | samtools sort - -o {params.tmpdir}/tmp.bam 2> {log}
+    
+    mv {params.tmpdir}/tmp.bam {output}
+    """

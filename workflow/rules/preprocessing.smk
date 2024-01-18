@@ -29,7 +29,6 @@ rule done:
       touch {output}
       """
 
-
 # RULES
 
 rule download_fastq:

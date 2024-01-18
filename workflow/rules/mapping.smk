@@ -57,7 +57,7 @@ rule bowtie2:
         -1 {input.R1} -2 {input.R2} \
         -p {threads} \
         -x {params.prefix} \
-        {params.bowtie2params}  2>{log} | samtools view -h -b -o | samtools sort - -o {params.tmp_out} 2> {log}
+        {params.bowtie2params}  2>{log} | samtools view -bSu - | samtools sort - -o {params.tmp_out} 2> {log}
     
     mv {params.tmp_out} {output}
     """
