@@ -19,6 +19,8 @@ rule done:
     name: "preprocessing.py Done. deleting all tmp files"
     localrule: True
     input:
+      expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"), sample_id=samples.keys()),
+      expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R2.fastq.gz"), sample_id=samples.keys()),
       expand(os.path.join(datadir, "{sample_id}_{i}.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
       expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
       relpath("reports/preprocess/preprocess_report.html")
@@ -85,7 +87,7 @@ rule fastp:
   log: os.path.join(logdir, "fastp_{sample_id}.log")
   threads: 12
   resources:
-    mem_mb = lambda wildcards, input, attempt: attempt * max(10 * input.size_mb, 4000)
+    mem_mb = lambda wildcards, input, attempt: attempt * max(5 * input.size_mb, 4000)
   conda: "../envs/fastp.yml"
   shell:
     """
@@ -110,9 +112,28 @@ rule fastp:
     """
 
 
+rule symlink:
+  name: "preprocessing.py creating symbolic links"
+  localrule: True
+  input:
+    R1=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
+    R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz")
+  output:
+    R1=relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
+    R2=relpath("preprocess/samples/{sample_id}/{sample_id}_R2.fastq.gz")
+  shell:
+    """
+    ln -s $(pwd)/{input.R1} $(pwd)/{output.R1}
+    ln -s $(pwd)/{input.R2} $(pwd)/{output.R2}
+    """
+
+
+
 rule multiqc:
   name: "preprocessing.py preprocess report"
   input:
+    R1s=expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"), sample_id = samples.keys()), 
+    R2s=expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"), sample_id = samples.keys()),
     logs=expand(relpath("preprocess/samples/{sample_id}/report.fastp.json"), sample_id = samples.keys())
   output:
     relpath("reports/preprocess/preprocess_report.html"),

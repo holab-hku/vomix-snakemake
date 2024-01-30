@@ -10,16 +10,16 @@ genomaddb: "workflow/database/genomad"
 # filter applied BEFORE viral contig identification
 # if it is higher e.g. 1000, it reduces computation time 
 
-contigminlen: 0
+contigminlen: 1000
 
 ### PRIMARY FILTERING 
 
 # Primary filtering determines which contigs are likely viral from the raw assembly
 # Hits are used for downstream viral-binning or clustering analysis. This filter is usually less stringent 
 
-genomadminlen: 0
-dvfminlen: 0
-phamerminlen: 0
+genomadminlen: 1000
+dvfminlen: 1000
+phamerminlen: 2000
 
 genomadparams: "--enable-score-calibration --min-score 0.0 --max-fdr 1.0"
 dvfparams: ""

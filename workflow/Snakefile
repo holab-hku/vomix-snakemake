@@ -69,7 +69,11 @@ samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
 # Include Modules #
 ###################
 
-include: "rules/preprocessing.smk"
+
+if config["decontamhost"]:
+  include: "rules/preprocessing-decontam.smk"
+else:
+  include: "rules/preprocessing.smk"
 include: "rules/assembly.smk"
 if config["genomadonly"]:
   include: "rules/genomad-only.smk"
@@ -91,7 +95,7 @@ if config["module"] == "host":
     include: "rules/host-prok.smk"
   else:
     include: "rules/host.smk"
-
+include: "rules/metaphlan.smk"
 
 ##########################
 # Add Targets Per Module #
@@ -130,11 +134,12 @@ if config["module"] == "host":
   else:
     include: "rules/host.smk"
 
+if config["module"] == "community":
+  targets += [relpath("community/metaphlan/logs/done.log")]
 
 ###############
 # MASTER RULE #
 ###############
 rule all:
   input: targets
-
 

@@ -6,6 +6,7 @@ datadir : "fastq/"
 
 
 # Flags
+decontamhost: False 
 clusteringfast: True
 genomadonly: False
 viralbinning: False

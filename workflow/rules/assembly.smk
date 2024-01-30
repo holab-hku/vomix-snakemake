@@ -1,7 +1,10 @@
 configfile: "config/assembly.yml"
 logdir = relpath("assembly/logs")
 tmpd = relpath("assembly/tmp")
+benchmarks = relpath("assembly/benchmarks")
+
 os.makedirs(logdir, exist_ok=True)
+os.makedirs(benchmarks, exist_ok=True)
 
 
 
@@ -35,10 +38,11 @@ rule megahit:
     interdir=relpath("assembly/samples/{assembly_id}/intermediate/megahit"),
     tmpdir=os.path.join(tmpd, "megahit")
   log: os.path.join(logdir, "megahit_{assembly_id}.log")
+  benchmark: os.path.join(benchmarks, "megahit_{assembly_id}.log")
   conda: "../envs/megahit.yml"
-  threads: 48
+  threads: 24
   resources:
-    mem_mb = lambda wildcards, attempt: attempt * 16 * 10**3
+    mem_mb = lambda wildcards, attempt, threads, input: max(attempt * input.size_mb * 3, 2000)
   shell:
     """
     rm -rf {params.tmpdir}/{wildcards.assembly_id} {params.interdir} {params.outdir}/*

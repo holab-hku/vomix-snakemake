@@ -27,15 +27,22 @@ def validate_samples(samples):
       	 If a file has no paired {2} label, it is assumed to be single-end.
 
     	"""
-	console.print(Panel.fit("""[dim italic]Validating availability of local and remote SRA raw sequences.\n\nIf you are using local files, you can either:\n1) Provide full file paths in the R1 and R2 columns of sample_list.tsv [only R1 if single-end]\n2) Place the fastq files in the config['datadir'] path with <sample>_{1,2}.fastq.gz naming format.\nCo-assemblies and mix-assemblie scan be setup by writing the same <assembly> column for different samples.\n""", title="Sample Validation", subtitle="In Progress..."))
+	console.print(Panel.fit("""[dim italic]Validating availability of local and remote SRA raw sequences.\n\nIf you are using local files, you can either:\n1) Provide full file paths in the R1 and R2 columns of sample_list.tsv [only R1 if single-end]\n2) Place the fastq files in the config['datadir'] path with <sample>_{1,2}.fastq.gz naming format.\nCo-assemblies and mix-assemblies can be setup by writing the same <assembly> column for different samples.\n""", title="Sample Validation", subtitle="In Progress..."))
 	with Progress(transient=True) as progress:
 		task = progress.add_task("[cyan]Validating...", total=len(samples))
 
 		for sample, items in samples.items():
 
 			# check if files exist locally
-			if os.path.exists(samples[sample]["R1"]) and os.path.exists(samples[sample]["R2"]):
-				console.print("[dim] {} pre-downloaded".format(sample))
+			R1path = samples[sample]["R1"]
+			R2path = samples[sample]["R2"]
+			if os.path.exists(R1path) and os.path.exists(R2path):
+				R1size = os.path.getsize(R1path) / (1024 ** 3)
+				R2size = os.path.getsize(R2path) / (1024 ** 3)
+
+				sizegb = round((R1size + R2size), 2)
+
+				console.print("[dim] {accs} pre-downloaded \[{size_gb}GB][/dim]".format(accs=sample, size_gb=sizegb))
 				progress.update(task, advance=1)
 				time.sleep(0.5)
 				continue
@@ -116,8 +123,8 @@ def parse_sample_list(f, datadir, outdir):
 	df.fillna('', inplace=True)
 	# set unique names for the file index
 	df.set_index('sample_id', inplace=True)
+	
 	if df.index.duplicated().any():
-		print(df[df.index.duplicated()])
 		console.print(Panel.fit("ValueError on df.set_index('sample_id'). Values in the sample_id column may be non-unique. Please check {}".format(f), title="Value Error", subtitle="Duplicate 'sample_id' Names"))
 		raise ValueError()
 
@@ -130,7 +137,8 @@ def parse_sample_list(f, datadir, outdir):
 	
 	# Remove duplicates rows and throw a warning
 	duplicaterow = df[df.duplicated()]
-	duplicateid = df[df.duplicated(subset = ['accession'], keep = False)]
+	duplicateid = df[df.index.duplicated()]
+	
 
 	if not (duplicaterow.empty and duplicateid.empty):
 
@@ -138,7 +146,6 @@ def parse_sample_list(f, datadir, outdir):
 		dupid = duplicateid.index.tolist()
 		duplist = duprow + dupid
 
-		print(df.duplicated(subset = ['accession'], keep = False))
 
 		sys.exit("""
 		########################## WARNING ###################################

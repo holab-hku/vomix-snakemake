@@ -12,7 +12,7 @@ rule makeblastdb_derep:
     relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa")
   output: 
     expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"), 
-        suffix=["ndb", "nin", "not", "ntf", "nhr", "njs", "nsq", "nto"])
+        suffix=["ntf", "nhr", "nto"])
   params:
     outdir=relpath("viralcontigident/intermediate/derep/"), 
     dbtype='nucl', 
@@ -37,7 +37,7 @@ rule megablast_derep:
   input:
     fasta=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"), 
     dbcheckpoints=expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"),
-                suffix=["ndb", "nin", "not", "ntf", "nhr", "njs", "nsq", "nto"])
+        suffix=["ntf", "nhr", "nto"])
   output:
     relpath("viralcontigident/intermediate/derep/blast_out.csv")
   params:
