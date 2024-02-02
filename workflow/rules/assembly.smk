@@ -27,8 +27,10 @@ rule done:
 rule megahit:
   name : "assembly.py MEGAHIT assembly"
   input:
-    R1s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"), sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
-    R2s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"), sample_id = assemblies[wildcards.assembly_id]["sample_id"])
+    R1s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
+        sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
+    R2s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
+        sample_id = assemblies[wildcards.assembly_id]["sample_id"])
   output:
     fasta=relpath("assembly/samples/{assembly_id}/output/final.contigs.fa")
   params:

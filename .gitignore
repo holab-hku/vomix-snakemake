@@ -7,6 +7,8 @@
 !workflow/notebooks
 !workflow/scripts
 !workflow/Snakemake
+
+!docs
 !resources
 !config
 !README.md

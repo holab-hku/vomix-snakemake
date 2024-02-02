@@ -88,8 +88,7 @@ else:
   include: "rules/clustering-sensitive.smk"
 include: "rules/taxonomy.smk"
 include: "rules/abundance.smk"
-if config["prokaryotic"]:
-  include: "rules/prokaryotic.smk"
+include: "rules/prokaryotic.smk"
 if config["module"] == "host":
   if config["hostprok"]:
     include: "rules/host-prok.smk"
@@ -125,8 +124,8 @@ if config["module"] == "taxonomy":
 if config["module"] == "abundance":
   targets += [relpath("abundance/logs/done.log")]
 
-if config["prokaryotic"]:
-  include: "rules/prokaryotic.smk"
+if config["module"] == "prokaryote":
+  targets += [relpath("binning/prokaryotic/logs/done.log")]
 
 if config["module"] == "host":
   if config["hostprok"]:

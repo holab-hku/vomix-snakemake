@@ -69,6 +69,8 @@ rule coverm_endtoend:
     rm -rf {params.tmpdir}
     """
 
+
+
 rule coverm_merge:
   name:  "abundance.py merge vOTU tables"
   input:

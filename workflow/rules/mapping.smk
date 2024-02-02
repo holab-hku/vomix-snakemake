@@ -29,7 +29,7 @@ rule symlink_bowtie_index:
     expand("output/assembly/samples/{sample_id}/output/final.contigs.fa.{index}.bt2l", index=range(1,5))
   params:
     output_dir="output/assembly/samples/{sample_id}/output/"
-  shell: "ln -s {input} {params.output_dir}"
+  shell: "ln -s $(pwd)/{input} $(pwd)/{params.output_dir}"
 
 
 

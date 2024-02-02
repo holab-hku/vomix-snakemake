@@ -10,5 +10,4 @@ decontamhost: False
 clusteringfast: True
 genomadonly: False
 viralbinning: False
-prokaryotic: False
 hostprok: False
