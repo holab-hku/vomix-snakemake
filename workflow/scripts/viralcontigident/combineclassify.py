@@ -13,7 +13,6 @@ def merge_classifications(classify_csv, checkv_tsv, output_file):
 	# add checkv to the column names 
 	checkvdf.columns = ['checkv_' + col if not col.startswith("checkv") else col for col in checkvdf.columns]
 	
-
 	# merge the two results
 	merged = checkvdf.merge(classifydf, how='left', left_index=True, right_index=True)
 

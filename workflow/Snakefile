@@ -36,6 +36,7 @@ def relpath(f):
   p = os.path.join(outdir, f)
   return p
 
+
 # Create & format relative output directory
 outdir = cleanpath(outdir) 
 if not (os.path.exists(outdir) and os.path.exists(os.path.join(outdir, ".vomix"))):
