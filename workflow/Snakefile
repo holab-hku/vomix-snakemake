@@ -149,7 +149,7 @@ rule all:
 
 
 ### SAVE CONFIG FILE
-os.makedirs(relpath(".vomix", exist_ok=True))
+os.makedirs(relpath(".vomix"), exist_ok=True)
 with open(relpath(".vomix/.config"), "w") as configf:
     json.dump(config, configf)
 
