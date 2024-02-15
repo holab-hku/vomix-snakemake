@@ -1,13 +1,150 @@
+#########################
+# GENERAL CONFIGURATION #
+#########################
+
 module: "end-to-end"
 workdir : "."
 outdir : "results/"
 samplelist : "sample_list.tsv"
 datadir : "fastq/"
 
-
-# Flags
 decontamhost: False 
 clusteringfast: True
 genomadonly: False
 viralbinning: False
 hostprok: False
+
+#########################
+# PRE-PROCESSING MODULE #
+#########################
+
+preprocess:
+        dwnldparams : ""
+        pigzparams: ""
+        fastpparams: ""
+
+        hostileparams: ""
+        hostilealigner: "minimap2" # minimap2 or bowtie2 for long reads
+        alignerparams: "-x sr" # parameters to pass to aligner [-x sr for minimap is for short reads]
+        indexpath: "workflow/database/hostile/human-t2t-hla.fa.gz" # visit https://github.com/bede/hostile to find out how to make your own custom host index
+
+###################
+# ASSEMBLY MODULE #
+###################
+
+assembly:
+        megahit_min_contig_len: 300
+        megahitparams: "--prune-level 3"
+
+
+######################################
+# VIRAL CONTIG IDENTIFICATION MODULE #
+######################################
+
+viral-contigident:
+        # setup working directories
+        contigfile : ""
+        contigdir : "results/assembly/"
+        dbdir: "workflow/database/"
+        phamerdb: "workflow/database/phabox"
+        genomaddb: "workflow/database/genomad"
+
+        ### PRE-FILTERING 
+        
+        # filter applied BEFORE viral contig identification
+        # if it is higher e.g. 1000, it reduces computation time 
+        
+        contigminlen: 500
+        
+        ### PRIMARY FILTERING 
+        
+        # Primary filtering determines which contigs are likely viral from the raw assembly
+        # Hits are used for downstream viral-binning or clustering analysis. This filter is usually less stringent 
+        
+        genomadminlen: 0
+        dvfminlen: 1000
+        phamerminlen: 2000
+        
+        genomadparams: "--enable-score-calibration --relaxed"
+        dvfparams: ""
+        phamerparams: ""
+        
+        genomadcutoff_p: 0.7
+        dvfcutoff_p: 0.7
+        dvfpval_p: 0.05
+        phamercutoff_p: 0.9
+        phamerpred_p: "phage"
+        
+        ### SECONDARY FILTERING 
+        
+        # The min score to be considered a "hit" by the consensus viral filtering algorithm
+        # This score is usually more stringent than primary filtering since it determines whether
+        # "Low-completion" and "Not-determined" CheckV sequences should be classified as viral.
+        # Use vomix viral-contigident `--viral-binning` flag to reduce number of shorter contigs
+        
+        genomadcutoff_s: 0.8
+        phamercutoff_s: 0.9
+        dvfcutoff_s: 0.9
+        
+        ### CHECKV-PYHMMER
+        checkv-pyhmmer:
+                checkvinput: "" # if only using CheckV PyHMMER module, use this to indicate input file
+                checkvparams: ""
+
+        ### CLUSTERING
+        clustering:
+                cdhitparams: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
+                vOTUani: 95
+                vOTUtargetcov: 85
+                vOTUquerycov: 0
+
+        ### VIRAL BINNING
+        viral-binning:
+                minimap2params: "-x sr"
+                vrhymeparams: "-m 1000"
+                vrhymeminlen: 2000 # WARNING: cannot be set bellow 2000
+
+
+
+###################
+# TAXONOMY MODULE #
+###################
+
+taxonomy:
+        viphogshmmeval: 0.01
+        viphogsprop: 0.6  # Minimum proportion of annotated genes required for taxonomic assignment (default: 0.6)
+        
+        phagcndb: "workflow/database/phabox"
+        phagcnminlen: 2000 # the minimum tested
+        phagcnparams: ""
+
+        diamondparams: "--query-cover 50 --subject-cover 50 --evalue 1e-5 --max-target-seqs 1000" # strongly recommend not changing this as it has been extensively tested by https://doi.org/10.1038/s41564-021-00928-6
+
+
+####################
+# ABUNDANCE MODULE #
+####################
+
+abundance:
+        # checkout coverm documentation for options https://wwood.github.io/CoverM/coverm-make.html
+        covermparams: "--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90"
+        covermmethods : "tpm rpkm" # a space delimited list from coverm options
+
+####################
+# COMMUNITY MODULE #
+####################
+
+community:
+        mpaparams: "--ignore_eukaryotes"
+        mpaindex_v: "mpa_vOct22_CHOCOPhlAnSGB_202212"
+
+######################
+# PROKARYOTIC MODULE #
+######################
+
+prokaryote:
+        minimapparams: ""
+        semibin2params: "--environment human_gut --self-supervised --random-seed 123 --min-len 1000"
+
+ 
+

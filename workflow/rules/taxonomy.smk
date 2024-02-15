@@ -1,9 +1,8 @@
-configfile: "config/taxonomy.yml"
+configdict = config['taxonomy']
 logdir = relpath("taxonomy/viral/logs")
 tmpd = relpath("taxonomy/viral/tmp")
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
-
 
 
 ### MASTER RULE 
@@ -22,9 +21,6 @@ rule done_log:
     rm -rf {params.tmpdir}/*
     touch {output}
     """
-
-
-
 
 ### RULES
 
@@ -131,7 +127,7 @@ rule VIRify_ratioeval:
   params:
     script="workflow/scripts/taxonomy/ratio_evalue_table.py", 
     tmpdir=os.path.join(tmpd, "viphogs"),
-    evalue=config['viphogshmmeval']
+    evalue=configdict['viphogshmmeval']
   conda: "../envs/taxonomy.yml"
   log: os.path.join(logdir, "VIRify_ratioeval.log")
   shell:
@@ -187,7 +183,7 @@ rule VIRify_assign:
   params:
     script="workflow/scripts/taxonomy/contig_taxonomic_assign.py",
     outdir=relpath("taxonomy/viral/intermediate/viphogs/"),
-    thresh=config['viphogsprop'], 
+    thresh=configdict['viphogsprop'], 
     tmpdir=os.path.join(tmpd, "viphogs")
   conda: "../envs/taxonomy.yml"
   log: os.path.join(logdir, "VIRify_assign.log")
@@ -244,9 +240,9 @@ rule phagcn_taxonomy:
   params:
     script="workflow/software/PhaBOX/PhaGCN_single.py",
     scriptdir="workflow/software/PhaBOX/scripts/",
-    parameters=config['phagcnparams'],
+    parameters=configdict['phagcnparams'],
     paramsdir="workflow/params/phabox/",
-    dbdir=config['phagcndb'],
+    dbdir=configdict['phagcndb'],
     outdir=relpath("taxonomy/viral/intermediate/phagcn"),
     tmpdir=os.path.join(tmpd, "phagcn")
   log: os.path.join(logdir, "phagcn.log")
@@ -306,7 +302,7 @@ rule dimaond_taxonomy:
   output:
     relpath("taxonomy/viral/intermediate/diamond/diamond_out.tsv")
   params:
-    parameters=config['diamondparams'],
+    parameters=configdict['diamondparams'],
     outdir=relpath("taxonomy/viral/intermediate/diamond"),
     tmpdir=os.path.join(tmpd, "diamond")
   log: os.path.join(logdir, "diamond_blastp.log")

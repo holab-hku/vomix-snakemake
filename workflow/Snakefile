@@ -75,7 +75,7 @@ if config["decontamhost"]:
   include: "rules/preprocessing-decontam.smk"
 else:
   include: "rules/preprocessing.smk"
-include: "rules/assembly.smk"
+#include: "rules/assembly.smk"
 if config["genomadonly"]:
   include: "rules/genomad-only.smk"
 else:
@@ -119,6 +119,9 @@ if config["module"] == "assembly":
 if config["module"] == "viral-contigident":
   targets += [relpath("viralcontigident/logs/done.log")]
 
+if config["module"] == "checkv-pyhmmer":
+  targets += [relpath("viralcontigident/logs/checkv-done.log")]
+
 if config["module"] == "taxonomy":
   targets += [relpath("taxonomy/viral/logs/done.log")]
 
@@ -142,4 +145,12 @@ if config["module"] == "community":
 ###############
 rule all:
   input: targets
+
+
+
+### SAVE CONFIG FILE
+os.makedirs(relpath(".vomix", exist_ok=True))
+with open(relpath(".vomix/.config"), "w") as configf:
+    json.dump(config, configf)
+
 

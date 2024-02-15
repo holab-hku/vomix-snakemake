@@ -1,4 +1,4 @@
-configfile: "config/preprocessing.yml"
+configdict = config['preprocess']
 logdir=relpath("preprocess/logs")
 tmpd = relpath("preprocess/tmp")
 datadir=config["datadir"]
@@ -39,8 +39,8 @@ rule download_fastq:
     R1=os.path.join(datadir, "{sample_id}_1.fastq.gz"),
     R2=os.path.join(datadir, "{sample_id}_2.fastq.gz")
   params:
-    download=config['dwnldparams'],
-    pigz=config['pigzparams'],
+    download=configdict['dwnldparams'],
+    pigz=configdict['pigzparams'],
     logdir=os.path.join(datadir, ".log"), 
     accessions= lambda wildcards: retrieve_accessions(wildcards),
     tmpdir=os.path.join(datadir, ".tmp/{sample_id}")
@@ -81,7 +81,7 @@ rule fastp:
     html=relpath("preprocess/samples/{sample_id}/report.fastp.html"),
     json=relpath("preprocess/samples/{sample_id}/report.fastp.json")
   params:
-    fastp=config['fastpparams'],
+    fastp=configdict['fastpparams'],
     outdir=relpath("preprocess/samples/{sample_id}/"),
     tmpdir=os.path.join(tmpd, "fastp/{sample_id}")
   log: os.path.join(logdir, "fastp_{sample_id}.log")

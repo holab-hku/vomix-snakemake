@@ -1,4 +1,4 @@
-configfile: "config/assembly.yml"
+configdict = config['assembly']
 logdir = relpath("assembly/logs")
 tmpd = relpath("assembly/tmp")
 benchmarks = relpath("assembly/benchmarks")
@@ -34,8 +34,8 @@ rule megahit:
   output:
     fasta=relpath("assembly/samples/{assembly_id}/output/final.contigs.fa")
   params:
-    parameters=config['megahitparams'],
-    minlen=config["megahit_min_contig_len"],
+    parameters=configdict['megahitparams'],
+    minlen=configdict["megahit_min_contig_len"],
     outdir=relpath("assembly/samples/{assembly_id}/output"),
     interdir=relpath("assembly/samples/{assembly_id}/intermediate/megahit"),
     tmpdir=os.path.join(tmpd, "megahit")

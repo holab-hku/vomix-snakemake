@@ -1,7 +1,6 @@
 import os 
 
-configfile: "config/clustering.yml"
-
+configdict = config['viral-contigident']['clustering']
 logdir = relpath("viralcontigident/logs")
 tmpd = relpath("viralcontigident/tmp")
 
@@ -19,8 +18,8 @@ rule cdhit_derep:
     fa=relpath("/viralcontigident/output/derep/combined.viralcontigs.derep.fa"),
     clstr=relpath("/viralcontigident/output/derep/combined.viralcontigs.derep.fa.clstr)"
   params:
-    cdhitpath=config['cdhitdir'],
-    cdhitparams=config['cdhitparams'],
+    cdhitpath=configdict['cdhitdir'],
+    cdhitparams=configdict['cdhitparams'],
     outdir=relpath("/viralcontigident/output/derep"),
     tmpdir=os.path.join(tmpd, "cdhit")
   log: os.path.join(logdir, "clustering/cdhitderep.log")

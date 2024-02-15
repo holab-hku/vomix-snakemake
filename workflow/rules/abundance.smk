@@ -1,12 +1,12 @@
 import os
 
-configfile: "config/abundance.yml"
+configdict = config['abundance']
 logdir = relpath("abundance/logs")
 tmpd = relpath("abundance/tmp")
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
-methodslist = config["covermmethods"].split()
+methodslist = configdict["covermmethods"].split()
 methods_c = ",".join(methodslist)
 
 # MASTER RULE 
@@ -40,8 +40,8 @@ rule coverm_endtoend:
     tsv=relpath("abundance/samples/{sample_id}/output/vOTU_table.tsv"),
     bam=relpath("abundance/samples/{sample_id}/output/{sample_id}.bam")
   params:
-    parameters=config["covermparams"], 
-    methods=config["covermmethods"],
+    parameters=configdict["covermparams"], 
+    methods=configdict["covermmethods"],
     outdir=relpath("abundance/samples/{sample_id}/output"),
     bamdir=os.path.join(tmpd, "coverm/{sample_id}/bam"),
     tmpdir=os.path.join(tmpd, "coverm/{sample_id}")

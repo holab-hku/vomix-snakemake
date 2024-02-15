@@ -1,10 +1,13 @@
-configfile: "config/clustering.yml"
-
+configdict = config['viral-contigident']['clustering']
 logdir = relpath("viralcontigident/logs")
 tmpd = relpath("viralcontigident/tmp")
+benchmarks=relpath("viralcontigident/benchmarks")
+
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
+os.makedirs(benchmarks, exist_ok=True)
+
 
 rule makeblastdb_derep:
   name: "viral-contigident.py make blast db [--clustering-fast]"
@@ -12,12 +15,13 @@ rule makeblastdb_derep:
     relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa")
   output: 
     expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"), 
-        suffix=["ntf", "nhr", "nto"])
+        suffix=["ntf", "ndb"])
   params:
     outdir=relpath("viralcontigident/intermediate/derep/"), 
     dbtype='nucl', 
     tmpdir=tmpd
   log: os.path.join(logdir, "clustering/makeblastdb.log")
+  benchmark: os.path.join(benchmarks, "clustering/makeblastdb.log")
   conda: "../envs/checkv.yml"
   threads: 1
   shell:
@@ -37,7 +41,7 @@ rule megablast_derep:
   input:
     fasta=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"), 
     dbcheckpoints=expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"),
-        suffix=["ntf", "nhr", "nto"])
+        suffix=["ntf", "ndb"])
   output:
     relpath("viralcontigident/intermediate/derep/blast_out.csv")
   params:
@@ -46,6 +50,7 @@ rule megablast_derep:
     maxtargetseqs=10000, 
     tmpdir=tmpd
   log: os.path.join(logdir, "clustering/megablastpairwise.log")
+  benchmark: os.path.join(benchmarks, "clustering/megablastpairwise.log")
   conda: "../envs/checkv.yml"
   threads: 64
   resources:
@@ -77,6 +82,7 @@ rule anicalc_derep:
     script_path="workflow/scripts/viralcontigident/anicalc.py", 
     tmpdir=tmpd
   log: os.path.join(logdir, "clustering/anicalc.log")
+  benchmark: os.path.join(benchmarks, "clustering/anicalc.log")
   conda: "../envs/checkv.yml"
   threads: 1
   shell:
@@ -103,9 +109,9 @@ rule aniclust_derep:
     reps=relpath("viralcontigident/output/derep/cluster_representatives.txt")
   params:
     script="workflow/scripts/viralcontigident/aniclust.py",
-    minani=config["vOTUani"],
-    targetcov=config["vOTUtargetcov"],
-    querycov =config["vOTUquerycov"], 
+    minani=configdict["vOTUani"],
+    targetcov=configdict["vOTUtargetcov"],
+    querycov =configdict["vOTUquerycov"], 
     tmpdir=tmpd
   log: os.path.join(logdir, "clustering/aniclust.log")
   conda: "../envs/checkv.yml"
