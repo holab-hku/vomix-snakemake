@@ -64,10 +64,10 @@ rule megablast_derep:
         -db {params.db} \
         -outfmt {params.outfmt} \
         -max_target_seqs {params.maxtargetseqs} \
-        -out {params.tmpdir}/tmp.tsv \
+        -out {params.tmpdir}/tmp.csv \
         -num_threads {threads} &> {log}
     
-    mv {params.tmpdir}/tmp.tsv {output}
+    mv {params.tmpdir}/tmp.csv {output}
     rm -rf {params.tmpdir}/*
 
     """

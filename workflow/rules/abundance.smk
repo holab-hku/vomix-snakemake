@@ -86,6 +86,8 @@ rule coverm_merge:
   log: os.path.join(logdir, "coverm_merge.log")
   conda: "../envs/taxonomy.yml"
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: input.size_mb * 5 * attempt
   shell:
     """
     rm -rf {params.tmpdir} {params.outdir}

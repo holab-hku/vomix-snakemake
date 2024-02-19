@@ -54,14 +54,14 @@ viral-contigident:
         # filter applied BEFORE viral contig identification
         # if it is higher e.g. 1000, it reduces computation time 
         
-        contigminlen: 500
+        contigminlen: 1000
         
         ### PRIMARY FILTERING 
         
         # Primary filtering determines which contigs are likely viral from the raw assembly
         # Hits are used for downstream viral-binning or clustering analysis. This filter is usually less stringent 
         
-        genomadminlen: 0
+        genomadminlen: 1000
         dvfminlen: 1000
         phamerminlen: 2000
         
@@ -72,7 +72,7 @@ viral-contigident:
         genomadcutoff_p: 0.7
         dvfcutoff_p: 0.7
         dvfpval_p: 0.05
-        phamercutoff_p: 0.9
+        phamercutoff_p: 0.7
         phamerpred_p: "phage"
         
         ### SECONDARY FILTERING 

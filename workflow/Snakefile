@@ -70,23 +70,23 @@ samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
 # Include Modules #
 ###################
 
-
+include: "rules/symlink.smk"
 if config["decontamhost"]:
   include: "rules/preprocessing-decontam.smk"
 else:
   include: "rules/preprocessing.smk"
-#include: "rules/assembly.smk"
-if config["genomadonly"]:
-  include: "rules/genomad-only.smk"
-else:
-  include: "rules/viral-contigident.smk"
-if config["viralbinning"]:
-  include: "rules/viral-binning.smk"
-include: "rules/checkv-pyhmmer.smk"
-if config["clusteringfast"]:
-  include: "rules/clustering-fast.smk"
-else:
-  include: "rules/clustering-sensitive.smk"
+include: "rules/assembly.smk"
+#if config["genomadonly"]:
+#  include: "rules/genomad-only.smk"
+#else:
+#  include: "rules/viral-contigident.smk"
+#if config["viralbinning"]:
+#  include: "rules/viral-binning.smk"
+#include: "rules/checkv-pyhmmer.smk"
+#if config["clusteringfast"]:
+  #include: "rules/clustering-fast.smk"
+#else:
+#  include: "rules/clustering-sensitive.smk"
 include: "rules/taxonomy.smk"
 include: "rules/abundance.smk"
 include: "rules/prokaryotic.smk"
@@ -102,6 +102,9 @@ include: "rules/metaphlan.smk"
 ##########################
 
 targets = []
+
+if config["module"] == "symlink":
+  targets = [relpath(".vomix/log/symlink_done.log")]
 
 if config["module"] == "end-to-end":
   targets += [relpath("preprocess/logs/done.log")]

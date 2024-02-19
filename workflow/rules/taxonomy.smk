@@ -1,9 +1,12 @@
 configdict = config['taxonomy']
+
 logdir = relpath("taxonomy/viral/logs")
 tmpd = relpath("taxonomy/viral/tmp")
+benchmarks = relpath("taxonomy/viral/benchmarks")
+
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
-
+os.makedirs(benchmarks, exist_ok=True)
 
 ### MASTER RULE 
 rule done_log:
@@ -36,6 +39,7 @@ rule prodigalgv_taxonomy:
     tmpdir=os.path.join(tmpd, "prodigal")
   conda: "../envs/prodigal-gv.yml"
   log: os.path.join(logdir, "prodigal-gv.log")
+  benchmark: os.path.join(benchmarks, "prodigal-gv.log")
   threads: 64
   resources: 
     mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
@@ -69,6 +73,7 @@ rule pyhmmer_taxonomy:
     tmpdir=os.path.join(tmpd, "viphogs")
   conda: "../envs/pyhmmer.yml"
   log: os.path.join(logdir, "pyhmmer.log")
+  benchmark: os.path.join(benchmarks, "pyhmmer.log")
   threads: 32
   resources:
     mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
@@ -106,6 +111,7 @@ rule VIRify_postprocess:
     tmpdir=os.path.join(tmpd, "viphogs")
   conda: "../envs/taxonomy.yml"
   log: os.path.join(logdir, "VIRify_postprocess.log")
+  benchmark: os.path.join(benchmarks, "VIRify_postprocess.log")
   shell:
     """
     rm -rf {params.tmpdir}
@@ -130,6 +136,7 @@ rule VIRify_ratioeval:
     evalue=configdict['viphogshmmeval']
   conda: "../envs/taxonomy.yml"
   log: os.path.join(logdir, "VIRify_ratioeval.log")
+  benchmark: os.path.join(benchmarks, "VIRify_ratioeval.log")
   shell:
     """
     rm -rf {params.tmpdir}
@@ -158,6 +165,7 @@ rule VIRify_annotate:
     tmpdir=os.path.join(tmpd, "viphogs")
   conda: "../envs/taxonomy.yml"
   log: os.path.join(logdir, "VIRify_annotation.log")
+  benchmark: os.path.join(benchmarks, "VIRify_annotation.log")
   shell:
     """
     rm -rf {params.tmpdir}
@@ -187,6 +195,7 @@ rule VIRify_assign:
     tmpdir=os.path.join(tmpd, "viphogs")
   conda: "../envs/taxonomy.yml"
   log: os.path.join(logdir, "VIRify_assign.log")
+  benchmark: os.path.join(benchmarks, "VIRify_assign.log")
   shell:
     """
     rm -rf {params.tmpdir} {output}
@@ -216,6 +225,7 @@ rule genomad_taxonomy:
     tmpdir=os.path.join(tmpd, "genomad")
   conda: "../envs/taxonomy.yml"
   log: os.path.join(logdir, "genomad_parse.log")
+  benchmark: os.path.join(benchmarks, "genomad_parse.log")
   shell:
     """
     rm -rf {params.tmpdir}/* {params.outdir}/*
@@ -246,6 +256,7 @@ rule phagcn_taxonomy:
     outdir=relpath("taxonomy/viral/intermediate/phagcn"),
     tmpdir=os.path.join(tmpd, "phagcn")
   log: os.path.join(logdir, "phagcn.log")
+  benchmark: os.path.join(benchmarks, "phagcn.log")
   conda: "../envs/phabox.yml"
   threads: 16
   resources:
@@ -282,6 +293,7 @@ rule diamond_makedb:
     outdir="workflow/database/diamond",
     tmpdir=os.path.join(tmpd, "diamond")
   log: os.path.join(logdir, "diamond_makedb.log")
+  benchmark: os.path.join(benchmarks, "diamond_makedb.log")
   conda: "../envs/diamond.yml"
   threads: 32
   shell:
@@ -306,6 +318,7 @@ rule dimaond_taxonomy:
     outdir=relpath("taxonomy/viral/intermediate/diamond"),
     tmpdir=os.path.join(tmpd, "diamond")
   log: os.path.join(logdir, "diamond_blastp.log")
+  benchmark: os.path.join(benchmarks, "diamond_blastp.log")
   conda: "../envs/diamond.yml"
   threads: 32
   resources:
@@ -342,6 +355,7 @@ rule diamond_parse_taxonomy:
     taxcols="species,genus,family,order,class,phylum,kingdom",
     tmpdir=os.path.join(tmpd, "diamond")
   log: os.path.join(logdir, "diamond_assign_taxonomy.log")
+  benchmark: os.path.join(benchmarks, "diamond_assign_taxonomy.log")
   conda: "../envs/taxonomy.yml"
   resources:
     mem_mb=lambda wildcards, attempt: attempt * 32 * 10**3
@@ -378,6 +392,7 @@ rule merge_taxonomy:
     outdir=relpath("taxonomy/viral/output/"),
     tmpdir=os.path.join(tmpd, "merge")
   log: os.path.join(logdir, "merge_taxonomy.log")
+  benchmark: os.path.join(logdir, "merge_taxonomy.log")
   conda: "../envs/taxonomy.yml"
   threads: 1
   shell:
