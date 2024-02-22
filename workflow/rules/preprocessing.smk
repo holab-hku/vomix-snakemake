@@ -82,7 +82,7 @@ rule fastp:
     json=relpath("preprocess/samples/{sample_id}/report.fastp.json")
   params:
     fastp=configdict['fastpparams'],
-    outdir=relpath("preprocess/samples/{sample_id}/"),
+    outdir=relpath("preprocess/samples/{sample_id}/output"),
     tmpdir=os.path.join(tmpd, "fastp/{sample_id}")
   log: os.path.join(logdir, "fastp_{sample_id}.log")
   threads: 12

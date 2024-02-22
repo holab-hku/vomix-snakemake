@@ -70,7 +70,6 @@ samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
 # Include Modules #
 ###################
 
-include: "rules/symlink.smk"
 if config["decontamhost"]:
   include: "rules/preprocessing-decontam.smk"
 else:
@@ -104,6 +103,7 @@ include: "rules/metaphlan.smk"
 targets = []
 
 if config["module"] == "symlink":
+  include: "rules/symlink.smk"
   targets = [relpath(".vomix/log/symlink_done.log")]
 
 if config["module"] == "end-to-end":
