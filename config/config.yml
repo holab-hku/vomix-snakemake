@@ -54,15 +54,15 @@ viral-contigident:
         # filter applied BEFORE viral contig identification
         # if it is higher e.g. 1000, it reduces computation time 
         
-        contigminlen: 1000
+        contigminlen: 1500
         
         ### PRIMARY FILTERING 
         
         # Primary filtering determines which contigs are likely viral from the raw assembly
         # Hits are used for downstream viral-binning or clustering analysis. This filter is usually less stringent 
         
-        genomadminlen: 1000
-        dvfminlen: 1000
+        genomadminlen: 1500
+        dvfminlen: 1500
         phamerminlen: 2000
         
         genomadparams: "--enable-score-calibration --relaxed"
@@ -82,7 +82,7 @@ viral-contigident:
         # "Low-completion" and "Not-determined" CheckV sequences should be classified as viral.
         # Use vomix viral-contigident `--viral-binning` flag to reduce number of shorter contigs
         
-        genomadcutoff_s: 0.8
+        genomadcutoff_s: 0.7
         phamercutoff_s: 0.9
         dvfcutoff_s: 0.9
         

@@ -75,17 +75,17 @@ if config["decontamhost"]:
 else:
   include: "rules/preprocessing.smk"
 include: "rules/assembly.smk"
-#if config["genomadonly"]:
-#  include: "rules/genomad-only.smk"
-#else:
-#  include: "rules/viral-contigident.smk"
-#if config["viralbinning"]:
-#  include: "rules/viral-binning.smk"
-#include: "rules/checkv-pyhmmer.smk"
-#if config["clusteringfast"]:
-  #include: "rules/clustering-fast.smk"
-#else:
-#  include: "rules/clustering-sensitive.smk"
+if config["genomadonly"]:
+  include: "rules/genomad-only.smk"
+else:
+  include: "rules/viral-contigident.smk"
+if config["viralbinning"]:
+  include: "rules/viral-binning.smk"
+include: "rules/checkv-pyhmmer.smk"
+if config["clusteringfast"]:
+  include: "rules/clustering-fast.smk"
+else:
+  include: "rules/clustering-sensitive.smk"
 include: "rules/taxonomy.smk"
 include: "rules/abundance.smk"
 include: "rules/prokaryotic.smk"
