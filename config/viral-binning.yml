@@ -1,4 +1,0 @@
-minimap2params: "-x sr"
-
-vrhymeparams: "-m 1000"
-vrhymeminlen: 2000 # WARNING: cannot be set bellow 2000

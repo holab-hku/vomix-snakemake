@@ -11,8 +11,12 @@ datadir : "fastq/"
 decontamhost: False 
 clusteringfast: True
 genomadonly: False
+checkvoriginal: False
+virsorter2: False
 viralbinning: False
 hostprok: False
+contigfile : ""
+cores: 4
 
 #########################
 # PRE-PROCESSING MODULE #
@@ -64,16 +68,19 @@ viral-contigident:
         genomadminlen: 1500
         dvfminlen: 1500
         phamerminlen: 2000
+        vs2minlen: 1500
         
         genomadparams: "--enable-score-calibration --relaxed"
         dvfparams: ""
         phamerparams: ""
+        vs2params: ""
         
         genomadcutoff_p: 0.7
         dvfcutoff_p: 0.7
         dvfpval_p: 0.05
         phamercutoff_p: 0.7
         phamerpred_p: "phage"
+        vs2cutoff_p: 0.7
         
         ### SECONDARY FILTERING 
         
@@ -85,6 +92,7 @@ viral-contigident:
         genomadcutoff_s: 0.7
         phamercutoff_s: 0.9
         dvfcutoff_s: 0.9
+        vs2cutoff_s: 0.9
         
         ### CHECKV-PYHMMER
         checkv-pyhmmer:
@@ -93,6 +101,7 @@ viral-contigident:
 
         ### CLUSTERING
         clustering:
+                cdhitpath: "/home/eshekar/pipeline/vomix/workflow/software/cdhit/cd-hit"
                 cdhitparams: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
                 vOTUani: 95
                 vOTUtargetcov: 85
@@ -146,5 +155,12 @@ prokaryote:
         minimapparams: ""
         semibin2params: "--environment human_gut --self-supervised --random-seed 123 --min-len 1000"
 
- 
+
+
+##################                
+# MERGE DATASETS #
+##################
+
+merge:
+        inputdirs: ["hi", "hello", "hellooo"]
 

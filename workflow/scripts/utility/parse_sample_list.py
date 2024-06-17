@@ -47,6 +47,7 @@ def validate_samples(samples):
 				time.sleep(0.5)
 				continue
 
+			print(R1path)
 			# check if it exists in SRA if not present locally
 			acc = items['accession']
 			cmd = ['efetch', '-db', 'sra', '-id', acc, '-format', 'runinfo']

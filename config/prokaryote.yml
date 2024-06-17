@@ -1,3 +1,0 @@
-minimapparams: ""
-semibin2params: "--environment human_gut --self-supervised --random-seed 123 --min-len 1000"
-

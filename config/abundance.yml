@@ -1,3 +1,0 @@
-covermparams: "--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90"
-covermmethods : "tpm rpkm" # a space delimited list from coverm options
-# checkout coverm documentation for options https://wwood.github.io/CoverM/coverm-make.html

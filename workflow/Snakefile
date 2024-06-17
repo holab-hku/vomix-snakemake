@@ -70,18 +70,23 @@ samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
 # Include Modules #
 ###################
 
-if config["decontamhost"]:
-  include: "rules/preprocessing-decontam.smk"
-else:
-  include: "rules/preprocessing.smk"
-include: "rules/assembly.smk"
+#if config["decontamhost"]:
+#  include: "rules/preprocessing-decontam.smk"
+#else:
+#  include: "rules/preprocessing.smk"
+#include: "rules/assembly.smk"
 if config["genomadonly"]:
   include: "rules/genomad-only.smk"
+elif config["virsorter2"]:
+  include: "rules/virsorter2.smk"
 else:
   include: "rules/viral-contigident.smk"
 if config["viralbinning"]:
   include: "rules/viral-binning.smk"
-include: "rules/checkv-pyhmmer.smk"
+if config["checkvoriginal"]:
+  include: "rules/checkv.smk"
+else: 
+  include: "rules/checkv-pyhmmer.smk"
 if config["clusteringfast"]:
   include: "rules/clustering-fast.smk"
 else:

@@ -1,8 +1,0 @@
-dwnldparams : ""
-pigzparams: ""
-fastpparams: ""
-
-hostileparams: "" 
-hostilealigner: "minimap2" # minimap2 or bowtie2 for long reads
-alignerparams: "-x sr" # parameters to pass to aligner [-x sr for minimap is for short reads]
-indexpath: "workflow/database/hostile/human-t2t-hla.fa.gz" # visit https://github.com/bede/hostile to find out how to make your own custom host index

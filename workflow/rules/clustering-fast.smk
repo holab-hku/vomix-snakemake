@@ -9,6 +9,13 @@ os.makedirs(tmpd, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 
 
+if isinstance(config['cores'], int):
+ n_cores = config['cores']
+else:
+  console.print(Panel.fit(f"config['cores'] is not an integer: {config['cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['cores'] not integer"))
+  sys.exit(1)
+
+
 rule makeblastdb_derep:
   name: "viral-contigident.py make blast db [--clustering-fast]"
   input:
@@ -52,7 +59,7 @@ rule megablast_derep:
   log: os.path.join(logdir, "clustering/megablastpairwise.log")
   benchmark: os.path.join(benchmarks, "clustering/megablastpairwise.log")
   conda: "../envs/checkv.yml"
-  threads: 64
+  threads: min(64, n_cores)
   resources:
     mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
   shell: 
