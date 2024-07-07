@@ -14,8 +14,9 @@ genomadonly: False
 checkvoriginal: False
 virsorter2: False
 viralbinning: False
-hostprok: False
+hostprok: False # Flag to include your own prokaryotic genomes
 contigfile : ""
+contigfolder: ""
 cores: 4
 
 #########################
@@ -138,6 +139,16 @@ abundance:
         # checkout coverm documentation for options https://wwood.github.io/CoverM/coverm-make.html
         covermparams: "--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90"
         covermmethods : "tpm rpkm" # a space delimited list from coverm options
+
+
+####################
+# ABUNDANCE MODULE #
+####################
+
+host:
+        iphopdbdir: "workflow/database/iphop/Aug_2023_pub_rw"
+        iphopcutoff: 90
+        iphopparams: ""
 
 ####################
 # COMMUNITY MODULE #

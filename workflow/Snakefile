@@ -66,94 +66,90 @@ datadir = cleanpath(config['datadir'])
 os.makedirs(datadir, exist_ok=True)
 samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
 
-###################
-# Include Modules #
-###################
 
-#if config["decontamhost"]:
-#  include: "rules/preprocessing-decontam.smk"
-#else:
-#  include: "rules/preprocessing.smk"
-#include: "rules/assembly.smk"
-if config["genomadonly"]:
-  include: "rules/genomad-only.smk"
-elif config["virsorter2"]:
-  include: "rules/virsorter2.smk"
-else:
-  include: "rules/viral-contigident.smk"
-if config["viralbinning"]:
-  include: "rules/viral-binning.smk"
-if config["checkvoriginal"]:
-  include: "rules/checkv.smk"
-else: 
-  include: "rules/checkv-pyhmmer.smk"
-if config["clusteringfast"]:
-  include: "rules/clustering-fast.smk"
-else:
-  include: "rules/clustering-sensitive.smk"
-include: "rules/taxonomy.smk"
-include: "rules/abundance.smk"
-include: "rules/prokaryotic.smk"
-if config["module"] == "host":
-  if config["hostprok"]:
-    include: "rules/host-prok.smk"
-  else:
-    include: "rules/host.smk"
-include: "rules/metaphlan.smk"
-
-##########################
-# Add Targets Per Module #
-##########################
+####################################
+# Include & Add Targets Per Module #
+####################################
 
 targets = []
 
+# fix symlink
 if config["module"] == "symlink":
   include: "rules/symlink.smk"
   targets = [relpath(".vomix/log/symlink_done.log")]
 
-if config["module"] == "end-to-end":
-  targets += [relpath("preprocess/logs/done.log")]
-  targets += [relpath("assembly/logs/done.log")]
-  targets += [relpath("viralcontigident/logs/done.log")]
-  targets += [relpath("taxonomy/viral/logs/done.log")]
-  targets += [relpath("abundance/logs/done.log")]
-
-if config["module"] == "preprocess":
+# pre-process
+if config["module"] == "preprocess" or config["module"] == "end-to-end":
+  if config["decontamhost"]:
+    include: "rules/preprocessing-decontam.smk"
+  else:
+    include: "rules/preprocessing.smk"
   targets += [relpath("preprocess/logs/done.log")]
 
-if config["module"] == "assembly":
+# assembly 
+if config["module"] == "assembly" or config["module"] == "end-to-end":
+  include: "rules/assembly.smk"
   targets += [relpath("assembly/logs/done.log")]
 
-if config["module"] == "viral-contigident":
+
+# viral contig ident
+if config["module"] == "viral-contigident" or config["module"] == "end-to-end":
+  if config["genomadonly"]:
+    include: "rules/genomad-only.smk"
+  elif config["virsorter2"]:
+    include: "rules/virsorter2.smk"
+  else:
+    include: "rules/viral-contigident.smk"
+  if config["viralbinning"]:
+    include: "rules/viral-binning.smk"
+  if config["checkvoriginal"]:
+    include: "rules/checkv.smk"
+  else:
+    include: "rules/checkv-pyhmmer.smk"
+  if config["clusteringfast"]:
+    include: "rules/clustering-fast.smk"
+  else:
+    include: "rules/clustering-sensitive.smk"
   targets += [relpath("viralcontigident/logs/done.log")]
 
-if config["module"] == "checkv-pyhmmer":
+# checkv-pyhmmer
+if config["module"] == "checkv-pyhmmer" or config["module"] == "end-to-end":
   targets += [relpath("viralcontigident/logs/checkv-done.log")]
 
-if config["module"] == "taxonomy":
+# taxonomy
+if config["module"] == "taxonomy" or config["module"] == "end-to-end":
+  include: "rules/taxonomy.smk"
   targets += [relpath("taxonomy/viral/logs/done.log")]
 
-if config["module"] == "abundance":
+# abundance (viral)
+if config["module"] == "abundance" or config["module"] == "end-to-end":
+  include: "rules/abundance.smk"
   targets += [relpath("abundance/logs/done.log")]
 
-if config["module"] == "prokaryote":
+# prokaryote
+if config["module"] == "prokaryote" or config["module"] == "end-to-end":
+  include: "rules/prokaryotic.smk"
   targets += [relpath("binning/prokaryotic/logs/done.log")]
 
-if config["module"] == "host":
+# host 
+if config["module"] == "host" or config["module"] == "end-to-end":
+  targets += [relpath("host/logs/done.log")]
   if config["hostprok"]:
     include: "rules/host-prok.smk"
   else:
     include: "rules/host.smk"
 
+# community (prokaryotic)
 if config["module"] == "community":
+  include: "rules/metaphlan.smk"
   targets += [relpath("community/metaphlan/logs/done.log")]
+
 
 ###############
 # MASTER RULE #
 ###############
 rule all:
   input: targets
-
 
 
 ### SAVE CONFIG FILE

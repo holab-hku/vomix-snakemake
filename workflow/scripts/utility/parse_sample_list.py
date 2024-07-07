@@ -125,6 +125,7 @@ def parse_sample_list(f, datadir, outdir):
 	# set unique names for the file index
 	df.set_index('sample_id', inplace=True)
 	
+	df.index[df.index.duplicated()]	
 	if df.index.duplicated().any():
 		console.print(Panel.fit("ValueError on df.set_index('sample_id'). Values in the sample_id column may be non-unique. Please check {}".format(f), title="Value Error", subtitle="Duplicate 'sample_id' Names"))
 		raise ValueError()

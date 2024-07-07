@@ -24,5 +24,12 @@ if __name__ == '__main__':
 	parser.add_argument('--csvs', type=str, help='CSV output files of merged viral contig identification tools')
 	
 	args = parser.parse_args()
-	merge_csv_files(args.names.split(), args.csvs.split())
+
+	with open(args.names, "r") as namesfile:
+		namestring = namesfile.read()
+	
+	with open(args.csvs, "r") as pathsfile:
+		csvstring = pathsfile.read()
+
+	merge_csv_files(namestring.split(), csvstring.split())
 
