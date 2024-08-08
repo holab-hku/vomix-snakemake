@@ -149,6 +149,10 @@ host:
         iphopdbdir: "workflow/database/iphop/Aug_2023_pub_rw"
         iphopcutoff: 90
         iphopparams: ""
+        CHERRYdb: "workflow/database/phabox"
+        CHERRYparams: ""
+        PhaTYPdb: "workflow/database/phabox"
+        PhaTYPparams: ""
 
 ####################
 # COMMUNITY MODULE #
