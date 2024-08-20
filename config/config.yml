@@ -7,6 +7,8 @@ workdir : "."
 outdir : "results/"
 samplelist : "sample_list.tsv"
 datadir : "fastq/"
+fasta: ""
+inputdir: ""
 
 decontamhost: False 
 clusteringfast: True

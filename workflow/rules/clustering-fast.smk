@@ -16,13 +16,69 @@ else:
   sys.exit(1)
 
 
+############################
+# Single-Sample Processing #
+############################
+
+if config['fasta']!="":
+
+  fastap = config['fasta']
+  _, extension = os.path.splitext(fastap)
+
+  console.print(f"\n[dim]The config['fasta'] parameter is not empty, using '{fastap}' as input.")
+
+  if extension.lower() not in ['.fa', '.fasta', '.fna']:
+    console.print(Panel.fit("File path does not end with .fa, .fasta, or .fna", title = "Error", subtitle="Input not fasta file"))
+    sys.exit(1)
+
+  cwd = os.getcwd()
+  fasta_path = os.path.join(cwd, fastap)
+
+  if not os.path.exists(fastap):
+    console.print(Panel.fit("The fasta file path provided does not exist.", title="Error", subtitle="Contig File Path"))
+    sys.exit(1)
+
+  outdir_p = os.path.join(cwd, relpath("viralcontigident/output/derep/"))
+  console.print(f"[dim]Output file will be written to the '{outdir_p}' directory.\n")
+  
+  try:
+    if len(os.listdir(outdir_p)) > 0:
+      console.print(Panel.fit(f"Output directory '{outdir_p}' already exists and is not empty.", title = "Warning", subtitle="Output Directory Not Empty"))
+  except Exception:
+    pass
+
+  sample_id = os.path.splitext(os.path.basename(fastap))[0]
+
+else:
+  fasta_path = relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa")
+
+
+### MASTER RULE
+
+rule done_log:
+  name: "clustering-fast.py Done. removing tmp files"
+  localrule: True
+  input:
+    expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"), suffix=["ntf", "ndb"]), 
+    relpath("viralcontigident/intermediate/derep/blast_out.csv"), 
+    relpath("viralcontigident/intermediate/derep/ani.tsv"), 
+    relpath("viralcontigident/output/derep/clusters.tsv"),
+    relpath("viralcontigident/output/derep/cluster_representatives.txt"),
+    relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")
+  output:
+    os.path.join(logdir, "clustering-fast-done.log")
+  shell: "touch {output}"
+
+
+
+### RULES
+
 rule makeblastdb_derep:
   name: "viral-contigident.py make blast db [--clustering-fast]"
-  input:
-    relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa")
+  input: 
+    fasta_path
   output: 
-    expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"), 
-        suffix=["ntf", "ndb"])
+    expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"), suffix=["ntf", "ndb"])
   params:
     outdir=relpath("viralcontigident/intermediate/derep/"), 
     dbtype='nucl', 
@@ -46,9 +102,8 @@ rule makeblastdb_derep:
 rule megablast_derep:
   name: "viral-contigident.py megablast [--clustering-fast]"
   input:
-    fasta=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"), 
-    dbcheckpoints=expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"),
-        suffix=["ntf", "ndb"])
+    fasta=fasta_path, 
+    dbcheckpoints=expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"), suffix=["ntf", "ndb"])
   output:
     relpath("viralcontigident/intermediate/derep/blast_out.csv")
   params:
@@ -109,7 +164,7 @@ rule anicalc_derep:
 rule aniclust_derep:
   name : "viral-contigident.py cluster [--clustering-fast]"
   input:
-    fa=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"), 
+    fa=fasta_path, 
     ani=relpath("viralcontigident/intermediate/derep/ani.tsv")
   output:
     tsv= relpath("viralcontigident/output/derep/clusters.tsv"),
@@ -145,7 +200,7 @@ rule aniclust_derep:
 rule filtercontigs_derep:
   name: "viral-contigident.py filter dereplicated viral contigs"
   input: 
-    fna=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"), 
+    fna=fasta_path, 
     reps=relpath("viralcontigident/output/derep/cluster_representatives.txt")
   output:
     relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")

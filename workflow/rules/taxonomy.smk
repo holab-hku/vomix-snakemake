@@ -8,7 +8,51 @@ os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 
+if isinstance(config['cores'], int):
+ n_cores = config['cores']
+else:
+  console.print(Panel.fit(f"config['cores'] is not an integer: {config['cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['cores'] not integer"))
+  sys.exit(1)
+
+############################
+# Single-Sample Processing #
+############################
+
+if config['fasta']!="":
+
+  fastap = config['fasta']
+  _, extension = os.path.splitext(fastap)
+
+  console.print(f"\n[dim]The config['fasta'] parameter is not empty, using '{fastap}' as input.")
+
+  if extension.lower() not in ['.fa', '.fasta', '.fna']:
+    console.print(Panel.fit("File path does not end with .fa, .fasta, or .fna", title = "Error", subtitle="Input not fasta file"))
+    sys.exit(1)
+
+  cwd = os.getcwd()
+  fasta_path = os.path.join(cwd, fastap)
+
+  if not os.path.exists(fastap):
+    console.print(Panel.fit("The fasta file path provided does not exist.", title="Error", subtitle="Contig File Path"))
+    sys.exit(1)
+
+  outdir_p = os.path.join(cwd, relpath("taxonomy/viral/output/"))
+  console.print(f"[dim]Output file will be written to the '{outdir_p}' directory.\n")
+
+  try:
+    if len(os.listdir(outdir_p)) > 0:
+      console.print(Panel.fit(f"Output directory '{outdir_p}' already exists and is not empty.", title = "Warning", subtitle="Output Directory Not Empty"))
+  except Exception:
+    pass
+
+  sample_id = os.path.splitext(os.path.basename(fastap))[0]
+
+else:
+  fasta_path = relpath("viralcontigident/output/combined.final.vOTUs.fa")
+
+
 ### MASTER RULE 
+
 rule done_log:
   name: "taxonomy.py Done. removing tmp files"
   localrule: True
@@ -30,7 +74,7 @@ rule done_log:
 rule prodigalgv_taxonomy:
   name: "taxonomy.py prodigal-gv vTOUs [parallelized]"
   input: 
-    relpath("viralcontigident/output/combined.final.vOTUs.fa")
+    fasta_path
   output: 
     relpath("taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa")
   params:
@@ -244,7 +288,7 @@ rule genomad_taxonomy:
 rule phagcn_taxonomy:
   name: "taxonomy.py PhaGCN phage taxonomy"
   input:
-    fna=relpath("viralcontigident/output/combined.final.vOTUs.fa")
+    fna=fasta_path
   output:
     relpath("taxonomy/viral/intermediate/phagcn/taxonomy.csv")
   params:
@@ -384,7 +428,7 @@ rule merge_taxonomy:
     viphogs=relpath("taxonomy/viral/intermediate/viphogs/taxonomy.tsv"),
     phagcn=relpath("taxonomy/viral/intermediate/phagcn/taxonomy.csv"),
     genomad=relpath("taxonomy/viral/intermediate/genomad/taxonomy.csv"),
-    contigs=relpath("viralcontigident/output/combined.final.vOTUs.fa")
+    contigs=fasta_path
   output:
     relpath("taxonomy/viral/output/merged_taxonomy.csv")
   params:
