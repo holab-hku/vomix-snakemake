@@ -175,3 +175,68 @@ rule bowtie2:
     
     mv {params.tmpdir}/tmp.bam {output}
     """
+
+
+rule bowtie2_build:
+  name: "prokaryote.smk Bowtie2 build insex"
+  input:
+    relpath("output/assembly/samples/{assembly_id}/output/final.contigs.fa")
+  output:
+    expand(relpath("binning/prokaryotic/samples/{assembly_id}/{assembly_id}.fa.{i}.bt2l"), i=range(1,5))
+  params:
+    parameters=configdict["bowtiebuildparams"],
+    outdir=relpath("binning/prokaryotic/samples/{assembly_id}"),
+    tmpdir=os.path.join(tmpd, "bowtie2_build")
+  log: os.path.join(logdir, "{assembly_id}_bowtie2build.log")
+  conda: "../envs/bowtie2.yml"
+  threads: 8
+  shell:
+    """
+    rm -rf {params.tmpdir}/* {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    bowtie2-build \
+        --large-index \
+        --threads {threads} \
+        {params.parameters} \
+        {input} \
+        {params.tmpdir}/combined.viralcontigs.fa &> {log}
+
+    mv {params.tmpdir}/combined.viralcontigs.fa.*.bt2l {params.outdir}
+    
+    rm -rf {params.tmpdir}/*
+    """
+
+rule mapping_bowtie2:
+  name: "prokaryote.smk Bowtie2 mapping"
+  input:
+    R1s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
+        sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
+    R2s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
+        sample_id = assemblies[wildcards.assembly_id]["sample_id"])
+    fasta=relpath("assembly/samples/{assembly_id}/output/final.contigs.fa")
+    index=expand(relpath("binning/prokaryotic/samples/{assembly_id}/{assembly_id}.fa.{i}.bt2l"), i=range(1,5))
+  output:
+    bam=relpath("results/prokaryote/samples/{assembly_id}/{assembly_id}.bam")
+  params:
+    bowtie2params=configdict["bowtie2params"],
+    prefix=relpath("assembly/samples/{assembly_id}/output/final.contigs.fa"),
+    tmp_dir=os.path.join(tmpd, "bowtie2"),
+  log: os.path.join(logdir, "bowtie2_{assembly_id}.log")
+  conda: "../envs/bowtie2.yml"
+  threads: 8
+  shell:
+    """
+    rm -rf {params.tmp_dir}
+    mkdir -p {params.tmp_dir}
+
+    bowtie2 \
+        -1 $(echo "{input.R1s}" | tr ' ' ',') \
+        -2 $(echo "{input.R2s}" | tr ' ' ',') \
+        -p {threads} \
+        -x {params.prefix} \
+        {params.bowtie2params}  2>{log} | samtools view -bSu - | samtools sort - -o {params.tmp_out} 2> {log}
+    
+    mv {params.tmp_out} {output}
+    """
+

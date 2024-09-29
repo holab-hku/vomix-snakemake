@@ -96,10 +96,10 @@ if config["module"] == "assembly" or config["module"] == "end-to-end":
 
 # viral contig ident
 if config["module"] == "viral-contigident" or config["module"] == "end-to-end":
+  if config["samplelist"] != "":
+    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
   if config["genomadonly"]:
     include: "rules/genomad-only.smk"
-  elif config["virsorter2"]:
-    include: "rules/virsorter2.smk"
   else:
     include: "rules/viral-contigident.smk"
   if config["viralbinning"]:
@@ -114,18 +114,47 @@ if config["module"] == "viral-contigident" or config["module"] == "end-to-end":
     include: "rules/clustering-sensitive.smk"
   targets += [relpath("viralcontigident/logs/done.log")]
 
-# checkv-pyhmmer
-if config["module"] == "checkv-pyhmmer":
-  include: "rules/checkv-pyhmmer.smk"
-  targets += [relpath("viralcontigident/logs/checkv-done.log")]
+# viral refilter
+if config["module"] == "refilter":
+  if config["samplelist"] != "":
+    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+  if config["genomadonly"]:
+    include: "rules/refilter-genomad.smk"
+  else:
+    include: "rules/refilter.smk"
+  if config["viralbinning"]:
+    include: "rules/viral-binning.smk"
+  if config["checkvoriginal"]:
+    include: "rules/checkv.smk"
+  else:
+    include: "rules/checkv-pyhmmer.smk"
+  if config["clusteringfast"]:
+    include: "rules/clustering-fast.smk"
+  else:
+    include: "rules/clustering-sensitive.smk"
+  targets += [relpath("viralcontigident/logs/done.log")]
 
 # checkv-pyhmmer
+if config["module"] == "checkv-pyhmmer":
+  if config["samplelist"] != "":
+    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+  if config["checkvoriginal"]:
+    include: "rules/checkv.smk"
+  else:
+    include: "rules/checkv-pyhmmer.smk"
+  targets += [relpath("viralcontigident/logs/checkv-done.log")]
+
+# cluster fast
 if config["module"] == "cluster-fast":
+  if config["samplelist"] != "":
+    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
   include: "rules/clustering-fast.smk"
   targets += [relpath("viralcontigident/logs/clustering-fast-done.log")]
 
 # taxonomy
 if config["module"] == "taxonomy" or config["module"] == "end-to-end":
+  if config["samplelist"] != "":
+    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
   include: "rules/taxonomy.smk"
   targets += [relpath("taxonomy/viral/logs/done.log")]
 
@@ -136,18 +165,20 @@ if config["module"] == "abundance" or config["module"] == "end-to-end":
   targets += [relpath("abundance/logs/done.log")]
 
 # prokaryote
-if config["module"] == "prokaryote" or config["module"] == "end-to-end":
+if config["module"] == "binning" or config["module"] == "end-to-end":
   samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
-  include: "rules/prokaryotic.smk"
+  include: "rules/binning.smk"
   targets += [relpath("binning/prokaryotic/logs/done.log")]
 
 # host 
 if config["module"] == "host" or config["module"] == "end-to-end":
+  if config["samplelist"] != "":
+    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
   targets += [relpath("host/logs/done.log")]
   if config["hostprok"]:
     include: "rules/host-prok.smk"
   else:
-    include: "rules/host.smk"
+    include: "rules/host-cherry.smk"
 
 # community (prokaryotic)
 if config["module"] == "community":

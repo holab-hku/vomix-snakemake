@@ -3,12 +3,27 @@ import argparse
 import pandas as pd
 
 
-
-
 def extract_taxonomy(input_f, output_f):
 
-	df = pd.read_csv(input_f, index_col=0)
-	taxdf = df.loc[:, ['genomad_taxonomy']]
+	_, extension = os.path.splitext(input_f)
+	if extension.lower() == ".tsv":
+		delimiter = "\t"
+	elif extension.lower() == ".csv":
+		delimiter = ","
+	else:
+		raise ValueError(f"Unsupported file extension: {extension}")
+
+
+	df = pd.read_csv(input_f, index_col=0, delimiter=delimiter)
+	try:
+		taxdf = df.loc[:, ['genomad_taxonomy', 'genomad_virus_score']]
+	except KeyError:
+		try:
+			print(df)
+			taxdf = df.loc[:, ['taxonomy', 'virus_score']]
+			taxdf.rename(columns={'taxonomy': 'genomad_taxonomy', 'virus_score': 'genomad_virus_score'}, inplace=True)
+		except KeyError:
+			raise ValueError("Neither 'genomad_taxonomy' nor 'taxonomy' column exists in the DataFrame.")
 	taxdf['genomad_taxonomy'] = taxdf['genomad_taxonomy'].replace('Unclassified', 'Unassigned')
 
 	# Assuming your DataFrame is called df

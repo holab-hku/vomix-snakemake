@@ -14,6 +14,15 @@ else:
   console.print(Panel.fit(f"config['cores'] is not an integer: {config['cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['cores'] not integer"))
   sys.exit(1)
 
+
+### Check if geNomad is run already 
+if os.path.exists(relpath("viralcontigident/output/classification_summary_vOTUs.csv")):
+  genomad_out = relpath("viralcontigident/output/classification_summary_vOTUs.csv")
+else:
+  genomad_out = relpath("taxonomy/viral/intermediate/genomad/taxonomy.tsv")
+
+
+
 ############################
 # Single-Sample Processing #
 ############################
@@ -257,10 +266,46 @@ rule VIRify_assign:
     """
 
 
-rule genomad_taxonomy:
-  name: "taxonomy.py Parse geNomad taxonomy"
+rule genomad_classify:
+  name: "taxonomy.py geNomad classify"
   input:
-    relpath("viralcontigident/output/classification_summary_vOTUs.csv")
+    fna=fasta_path
+  output:
+    genomad=genomad_out
+  params:
+    genomadparams=configdict['genomadparams'],
+    dbdir=configdict['genomaddb'],
+    outdir=relpath("taxonomy/viral/intermediate/genomad/"),
+    tmpdir=os.path.join(tmpd, "genomad/")
+  log: os.path.join(logdir, "genomad_taxonomy.log")
+  benchmark: os.path.join(benchmarks, "genomad_taxonomy.log")
+  conda: "../envs/genomad.yml"
+  threads: min(64, n_cores)
+  resources:
+    mem_mb=lambda wildcards, attempt, input: 24 * 10**3 * attempt
+  shell:
+    """
+    rm -rf {params.tmpdir} {params.outdir} 2> {log}
+    mkdir -p {params.tmpdir} {params.outdir} 2> {log}
+
+    genomad end-to-end \
+        {input.fna} \
+        {params.tmpdir} \
+        {params.dbdir} \
+        --threads {threads} \
+        --cleanup \
+        {params.genomadparams} &> {log}
+
+    mv {params.tmpdir}/* {params.outdir}
+    cp {params.outdir}/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv {output.genomad}
+    rm -rf {params.tmpdir}
+    """
+
+
+rule genomad_taxonomy:
+  name: "taxonomy.py geNomad parse taxonomy"
+  input:
+    genomad_out
   output:
     relpath("taxonomy/viral/intermediate/genomad/taxonomy.csv")
   params:
@@ -382,7 +427,6 @@ rule dimaond_taxonomy:
 
     mv {params.tmpdir}/tmp.tsv {output}
     """
-
 
 
 rule diamond_parse_taxonomy:

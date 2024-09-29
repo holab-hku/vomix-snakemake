@@ -198,9 +198,16 @@ def parse_sample_list(f, datadir, outdir):
 		else:
 			accession = ''
 
+		try:
+			assemblyid = df.loc[sample_id, 'assembly']
+		except KeyError:
+			print(f"Error: sample_id '{sample_id}' not found in the DataFrame.")
+			sys.exit()
+
 		samples[sample_id] = {'R1': R1,
 				'R2': R2,
-				'accession': accession}
+				'accession': accession, 
+				'assembly': assemblyid}
 	
 
 	# check if samples.json already exists or has changed

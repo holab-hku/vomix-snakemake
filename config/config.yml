@@ -5,7 +5,7 @@
 module: "end-to-end"
 workdir : "."
 outdir : "results/"
-samplelist : "sample_list.tsv"
+samplelist : ""
 datadir : "fastq/"
 fasta: ""
 inputdir: ""
@@ -131,6 +131,9 @@ taxonomy:
         phagcnparams: ""
 
         diamondparams: "--query-cover 50 --subject-cover 50 --evalue 1e-5 --max-target-seqs 1000" # strongly recommend not changing this as it has been extensively tested by https://doi.org/10.1038/s41564-021-00928-6
+        genomaddb: "workflow/database/genomad"        
+        genomadparams: "--enable-score-calibration --relaxed"
+
 
 
 ####################
@@ -168,8 +171,11 @@ community:
 # PROKARYOTIC MODULE #
 ######################
 
-prokaryote:
-        minimapparams: ""
+binning:
+        strobealignparams: ""
+        jgi_summarize_bam_contig_depths_params: "--percentIdentity 97"
+        metabat2params: "-m 1500"
+        COMEBinparams: ""
         semibin2params: "--environment human_gut --self-supervised --random-seed 123 --min-len 1000"
 
 
