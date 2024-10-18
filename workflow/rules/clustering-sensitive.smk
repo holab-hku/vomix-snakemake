@@ -20,7 +20,7 @@ else:
 # CD-HIT CLUSTER #
 ##################
 rule cdhit_derep:
-  name: "CD-HIT --clustering-sensitive [viral-contigident.py]"
+  name: "CD-HIT --clustering-sensitive [clustering-sensitive.smk]"
   input:
     relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa")
   output:

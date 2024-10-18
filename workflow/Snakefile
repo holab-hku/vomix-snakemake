@@ -98,10 +98,10 @@ if config["module"] == "assembly" or config["module"] == "end-to-end":
 if config["module"] == "viral-contigident" or config["module"] == "end-to-end":
   if config["samplelist"] != "":
     samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
-  if config["genomadonly"]:
-    include: "rules/genomad-only.smk"
+  if config["multitool"]:
+    include: "rules/viral-multitool.smk"
   else:
-    include: "rules/viral-contigident.smk"
+    include: "rules/viral-genomad.smk"
   if config["viralbinning"]:
     include: "rules/viral-binning.smk"
   if config["checkvoriginal"]:
@@ -115,13 +115,13 @@ if config["module"] == "viral-contigident" or config["module"] == "end-to-end":
   targets += [relpath("viralcontigident/logs/done.log")]
 
 # viral refilter
-if config["module"] == "refilter":
+if config["module"] == "primary-refilter":
   if config["samplelist"] != "":
     samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
-  if config["genomadonly"]:
-    include: "rules/refilter-genomad.smk"
+  if config["multitool"]:
+    include: "rules/genomad-refilter.smk"
   else:
-    include: "rules/refilter.smk"
+    include: "rules/primary-refilter.smk"
   if config["viralbinning"]:
     include: "rules/viral-binning.smk"
   if config["checkvoriginal"]:
@@ -132,7 +132,9 @@ if config["module"] == "refilter":
     include: "rules/clustering-fast.smk"
   else:
     include: "rules/clustering-sensitive.smk"
-  targets += [relpath("viralcontigident/logs/done.log")]
+  targets += [relpath("viralcontigident/logs/done.log"), 
+      relpath("viralcontigident/logs/clustering-fast-done.log"), 
+      relpath("viralcontigident/logs/checkv-done.log")]
 
 # checkv-pyhmmer
 if config["module"] == "checkv-pyhmmer":
@@ -164,7 +166,7 @@ if config["module"] == "abundance" or config["module"] == "end-to-end":
   include: "rules/abundance.smk"
   targets += [relpath("abundance/logs/done.log")]
 
-# prokaryote
+# binning (prokaryotic)
 if config["module"] == "binning" or config["module"] == "end-to-end":
   samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
   include: "rules/binning.smk"

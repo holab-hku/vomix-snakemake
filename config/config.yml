@@ -12,7 +12,7 @@ inputdir: ""
 
 decontamhost: False 
 clusteringfast: True
-genomadonly: False
+multitool: False
 checkvoriginal: False
 virsorter2: False
 viralbinning: False
@@ -61,7 +61,7 @@ viral-contigident:
         # filter applied BEFORE viral contig identification
         # if it is higher e.g. 1000, it reduces computation time 
         
-        contigminlen: 1500
+        contigminlen: 0
         
         ### PRIMARY FILTERING 
         
@@ -85,17 +85,19 @@ viral-contigident:
         phamerpred_p: "phage"
         vs2cutoff_p: 0.7
         
-        ### SECONDARY FILTERING 
+        ### SECONDARY FILTERING (Optional)
+        # Secondary filtering is turned OFF by default by setting all thresholds to 0 
+        # If you would like to do secondary filtering, you may change the parameters
         
         # The min score to be considered a "hit" by the consensus viral filtering algorithm
         # This score is usually more stringent than primary filtering since it determines whether
         # "Low-completion" and "Not-determined" CheckV sequences should be classified as viral.
         # Use vomix viral-contigident `--viral-binning` flag to reduce number of shorter contigs
         
-        genomadcutoff_s: 0.7
-        phamercutoff_s: 0.9
-        dvfcutoff_s: 0.9
-        vs2cutoff_s: 0.9
+        genomadcutoff_s: 0
+        phamercutoff_s: 0
+        dvfcutoff_s: 0
+        vs2cutoff_s: 0
         
         ### CHECKV-PYHMMER
         checkv-pyhmmer:
@@ -174,8 +176,12 @@ community:
 binning:
         strobealignparams: ""
         jgi_summarize_bam_contig_depths_params: "--percentIdentity 97"
-        metabat2params: "-m 1500"
+        MetaBAT2params: "-m 1500"
+        MaxBin2params: "-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9"
+        CONCOCTparams: ""
         COMEBinparams: ""
+        VAMBparams: "-m 100"
+        DASToolparams: ""
         semibin2params: "--environment human_gut --self-supervised --random-seed 123 --min-len 1000"
 
 

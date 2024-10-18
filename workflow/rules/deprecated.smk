@@ -240,3 +240,69 @@ rule mapping_bowtie2:
     mv {params.tmp_out} {output}
     """
 
+
+rule comebin:
+  name: "prokaryote.smk COMEBin binning"
+  input:
+    bams=lambda wildcards: expand(relpath("binning/prokaryotic/samples/{sample_id}/strobealign/{sample_id}.sorted.bam"),
+        sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
+    fasta=relpath("assembly/samples/{assembly_id}/output/final.contigs.fa")
+  output:
+    relpath("binning/prokaryotic/assemblies/{assembly_id}/COMEBin/comebin_res/comebin_res.tsv")
+  params:
+    parameters=configdict["COMEBinparams"],
+    outdir=relpath("binning/prokaryotic/assemblies/{assembly_id}/COMEBin"),
+    tmpdir=os.path.join(tmpd, "COMEBin/{assembly_id}")
+  log: os.path.join(logdir, "COMEBin_{assembly_id}.log")
+  conda: "../envs/comebin.yml"
+  threads: 8
+  resources:
+    mem_mb=lambda wildcards, attempt, input: 20 * 10**3 * attempt
+  shell:
+    """
+    rm -rf {params.tmpdir}
+    mkdir -p {params.tmpdir}/bams 
+  
+    cp {input.bams} {params.tmpdir}/bams
+
+    run_comebin.sh \
+        -a {input.fasta} \
+        -p {params.tmpdir}/bams \
+        -o {params.tmpdir} \
+        -t {threads} \
+        {params.parameters} 2> {log}
+    
+    rm -rf {params.tmpdir}/bams
+    mv {params.tmpdir}/* {params.outdir}
+    """
+
+rule vamb:
+  name: "prokaryote.smk VAMB binning"
+  input:
+    jgi=relpath("binning/prokaryotic/assemblies/{assembly_id}/MetaBAT2/depthfile.txt"),
+    fasta=relpath("assembly/samples/{assembly_id}/output/final.contigs.fa")
+  output:
+    relpath("binning/prokaryotic/assemblies/{assembly_id}/VAMB/vae_clusters_unsplit.tsv")
+  params:
+    parameters=configdict["VAMBparams"],
+    outdir=relpath("binning/prokaryotic/samples/{assembly_id}/VAMB/bins"),
+    tmpdir=os.path.join(tmpd, "VAMB/{assembly_id}")
+  log: os.path.join(logdir, "VAMB_{assembly_id}.log")
+  benchmark: os.path.join(benchmarks, "MaxBin2_{assembly_id}.log")
+  conda: "../envs/vamb.yml"
+  threads: min(8, n_cores)
+  resources:
+    mem_mb=lambda wildcards, attempt, input: 20 * 10**3 * attempt
+  shell:
+    """
+    rm -rf {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir}
+
+    vamb \
+        --outdir {params.outdir} \
+        --fasta {input.fasta} \
+        --jgi {input.jgi} \
+        {params.parameters} 2> {log}
+
+    mv {params.tmpdir}/* {params.outdir}
+    """

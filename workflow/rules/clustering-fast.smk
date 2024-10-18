@@ -56,7 +56,7 @@ else:
 ### MASTER RULE
 
 rule done_log:
-  name: "clustering-fast.py Done. removing tmp files"
+  name: "clustering-fast.smk Done. removing tmp files"
   localrule: True
   input:
     expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"), suffix=["ntf", "ndb"]), 
@@ -74,7 +74,7 @@ rule done_log:
 ### RULES
 
 rule makeblastdb_derep:
-  name: "viral-contigident.py make blast db [--clustering-fast]"
+  name: "clustering-fast.smk make blast db [--clustering-fast]"
   input: 
     fasta_path
   output: 
@@ -100,7 +100,7 @@ rule makeblastdb_derep:
     """
 
 rule megablast_derep:
-  name: "viral-contigident.py megablast [--clustering-fast]"
+  name: "clustering-fast.smk megablast [--clustering-fast]"
   input:
     fasta=fasta_path, 
     dbcheckpoints=expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"), suffix=["ntf", "ndb"])
@@ -135,7 +135,7 @@ rule megablast_derep:
     """
   
 rule anicalc_derep:
-  name : "viral-contigident.py calculate ani [--clustering-fast]"
+  name : "clustering-fast.smk calculate ani [--clustering-fast]"
   input:
     relpath("viralcontigident/intermediate/derep/blast_out.csv")
   output: 
@@ -162,7 +162,7 @@ rule anicalc_derep:
 
 
 rule aniclust_derep:
-  name : "viral-contigident.py cluster [--clustering-fast]"
+  name : "clustering-fast.smk cluster [--clustering-fast]"
   input:
     fa=fasta_path, 
     ani=relpath("viralcontigident/intermediate/derep/ani.tsv")
@@ -198,7 +198,7 @@ rule aniclust_derep:
 
 
 rule filtercontigs_derep:
-  name: "viral-contigident.py filter dereplicated viral contigs"
+  name: "clustering-fast.smk filter dereplicated viral contigs"
   input: 
     fna=fasta_path, 
     reps=relpath("viralcontigident/output/derep/cluster_representatives.txt")

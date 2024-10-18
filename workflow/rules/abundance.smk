@@ -3,6 +3,9 @@ import os
 configdict = config['abundance']
 logdir = relpath("abundance/logs")
 tmpd = relpath("abundance/tmp")
+benchmarks=relpath("abundance/benchmarks")
+
+os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
@@ -46,10 +49,11 @@ rule coverm_endtoend:
     bamdir=os.path.join(tmpd, "coverm/{sample_id}/bam"),
     tmpdir=os.path.join(tmpd, "coverm/{sample_id}")
   log: os.path.join(logdir, "coverm_{sample_id}.log")
+  benchmark: os.path.join(benchmarks, "coverm_{sample_id}.log")
   conda: "../envs/coverm.yml"
   threads: 8
   resources:
-    mem_mb=lambda wildcards, attempt: attempt * 16 * 10**3
+    mem_mb=lambda wildcards, attempt: attempt * 8 * 10**3
   shell:
     """
     rm -rf {params.tmpdir} {params.outdir}
