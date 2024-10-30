@@ -119,9 +119,9 @@ if config["module"] == "primary-refilter":
   if config["samplelist"] != "":
     samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
   if config["multitool"]:
-    include: "rules/genomad-refilter.smk"
+    include: "rules/multitool-refilter.smk"
   else:
-    include: "rules/primary-refilter.smk"
+    include: "rules/genomad-refilter.smk"
   if config["viralbinning"]:
     include: "rules/viral-binning.smk"
   if config["checkvoriginal"]:
