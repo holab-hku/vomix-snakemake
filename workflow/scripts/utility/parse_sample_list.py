@@ -9,6 +9,7 @@ import time
 from io import StringIO
 
 import pandas as pd
+from Bio import Entrez
 
 from rich.console import Console
 from rich.progress import Progress
@@ -50,11 +51,20 @@ def validate_samples(samples):
 			print(R1path)
 			# check if it exists in SRA if not present locally
 			acc = items['accession']
-			cmd = ['efetch', '-db', 'sra', '-id', acc, '-format', 'runinfo']
-			p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout
-			found = p.decode().split(",")[0]
 
-			if found != "Run":
+			# Deprecated Entrez-Drect replaced with Bio.Entrez
+			#cmd = ['efetch', '-db', 'sra', '-id', acc, '-format', 'runinfo']
+			#p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout
+			#found = p.decode().split(",")[0]
+
+			try:
+				handle = Entrez.efetch(db="sra", id=acc, retmax=1000, rettype="full", retmode="xml")
+				record = handle.read()
+				match = re.search(r'size="(\d+)"', record)
+				sizebyte = match.group(1)
+				sizegb = round(int(sizebyte) /pow(1024, 3), 2)
+				
+			except:
 				sys.exit("""
 ########################## WARNING ###################################
 # Accession: {} could not be found or is not a Run                   #
@@ -67,11 +77,11 @@ def validate_samples(samples):
 ########################## WARNING ###################################
 			""".format(acc))
 
-			else:
-				csvstring = StringIO(p.decode())
-				runinfo = pd.read_csv(csvstring, sep=",")
-				sizegb = round(int(runinfo.loc[0, "size_MB"]) /1024, 2)
-				console.print("[dim] {accs} validated \[{size_gb}GB][/dim]".format(accs=acc, size_gb=sizegb))
+			#else:
+				#csvstring = StringIO(p.decode())
+				#runinfo = pd.read_csv(csvstring, sep=",")
+				#sizegb = round(int(runinfo.loc[0, "size_MB"]) /1024, 2)
+				#console.print("[dim] {accs} validated \[{size_gb}GB][/dim]".format(accs=acc, size_gb=sizegb))
 
 			progress.update(task, advance=1)
 			time.sleep(0.5)
@@ -101,7 +111,8 @@ def parse_sample_list(f, datadir, outdir):
 	###################
 
 	df = pd.read_csv(f, comment='#', header=0, sep='\t', index_col=False, dtype=str)
-	df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x) # strip white space
+	df = df.map(lambda x: x.strip() if isinstance(x, str) else x) # strip white space
+	df['sample_id'] = df['sample_id'].astype(str)
 	df = df.replace(r'^\s*$', float('nan'), regex=True)
 	if 'assembly' not in df.columns:
 		    df['assembly'] = float('nan')
