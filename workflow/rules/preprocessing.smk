@@ -23,7 +23,7 @@ rule done:
       expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R2.fastq.gz"), sample_id=samples.keys()),
       expand(os.path.join(datadir, "{sample_id}_{i}.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
       expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
-      relpath("reports/preprocess/preprocess_report.html"), 
+      relpath("preprocess/reports/preprocess_report.html"), 
       relpath("preprocess/reports/library_size_stats.csv")
     output:
       os.path.join(logdir, "done.log")
@@ -167,8 +167,8 @@ rule multiqc:
     R2s=expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"), sample_id = samples.keys()),
     logs=expand(relpath("preprocess/samples/{sample_id}/report.fastp.json"), sample_id = samples.keys())
   output:
-    relpath("reports/preprocess/preprocess_report.html"),
-    relpath("reports/preprocess/preprocess_report_data/multiqc.log")
+    relpath("preprocess/reports/preprocess_report.html"),
+    relpath("preprocess/reports/preprocess_report_data/multiqc.log")
   params:
     searchdir=relpath("preprocess/"),
     outdir=relpath("reports/preprocess/"),
