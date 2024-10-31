@@ -17,6 +17,7 @@ console = Console()
 configfile: "config/config.yml"
 workdir: config["workdir"]
 outdir = config["outdir"]
+email = config["email"]
 
 # Important utility functions
 
@@ -51,7 +52,7 @@ if not (os.path.exists(outdir) and os.path.exists(os.path.join(outdir, ".vomix")
 
 ### Set wildcard constraints
 wildcard_constraints:
-  sample_id = "[A-Za-z0-9_\-\.]+"
+  sample_id = "[A-Za-z0-9_-]+"
 
 
 ### Parse sample python dictionary
@@ -74,13 +75,13 @@ targets = []
 
 # fix symlink
 if config["module"] == "symlink":
-  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email)
   include: "rules/symlink.smk"
   targets = [relpath(".vomix/log/symlink_done.log")]
 
 # pre-process
 if config["module"] == "preprocess" or config["module"] == "end-to-end":
-  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email)
   if config["decontamhost"]:
     include: "rules/preprocessing-decontam.smk"
   else:
@@ -89,7 +90,7 @@ if config["module"] == "preprocess" or config["module"] == "end-to-end":
 
 # assembly 
 if config["module"] == "assembly" or config["module"] == "end-to-end":
-  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email)
   include: "rules/assembly.smk"
   targets += [relpath("assembly/logs/done.log")]
 
@@ -97,7 +98,7 @@ if config["module"] == "assembly" or config["module"] == "end-to-end":
 # viral contig ident
 if config["module"] == "viral-contigident" or config["module"] == "end-to-end":
   if config["samplelist"] != "":
-    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email)
   if config["multitool"]:
     include: "rules/viral-multitool.smk"
   else:
@@ -117,7 +118,7 @@ if config["module"] == "viral-contigident" or config["module"] == "end-to-end":
 # viral refilter
 if config["module"] == "primary-refilter":
   if config["samplelist"] != "":
-    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email)
   if config["multitool"]:
     include: "rules/multitool-refilter.smk"
   else:
@@ -139,7 +140,7 @@ if config["module"] == "primary-refilter":
 # checkv-pyhmmer
 if config["module"] == "checkv-pyhmmer":
   if config["samplelist"] != "":
-    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email)
   if config["checkvoriginal"]:
     include: "rules/checkv.smk"
   else:
@@ -149,33 +150,33 @@ if config["module"] == "checkv-pyhmmer":
 # cluster fast
 if config["module"] == "cluster-fast":
   if config["samplelist"] != "":
-    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email)
   include: "rules/clustering-fast.smk"
   targets += [relpath("viralcontigident/logs/clustering-fast-done.log")]
 
 # taxonomy
 if config["module"] == "taxonomy" or config["module"] == "end-to-end":
   if config["samplelist"] != "":
-    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email)
   include: "rules/taxonomy.smk"
   targets += [relpath("taxonomy/viral/logs/done.log")]
 
 # abundance (viral)
 if config["module"] == "abundance" or config["module"] == "end-to-end":
-  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email)
   include: "rules/abundance.smk"
   targets += [relpath("abundance/logs/done.log")]
 
 # binning (prokaryotic)
 if config["module"] == "binning" or config["module"] == "end-to-end":
-  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email)
   include: "rules/binning.smk"
   targets += [relpath("binning/prokaryotic/logs/done.log")]
 
 # host 
 if config["module"] == "host" or config["module"] == "end-to-end":
   if config["samplelist"] != "":
-    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+    samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email)
   targets += [relpath("host/logs/done.log")]
   if config["hostprok"]:
     include: "rules/host-prok.smk"
@@ -184,7 +185,7 @@ if config["module"] == "host" or config["module"] == "end-to-end":
 
 # community (prokaryotic)
 if config["module"] == "community":
-  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir)
+  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email)
   include: "rules/metaphlan.smk"
   targets += [relpath("community/metaphlan/logs/done.log")]
 

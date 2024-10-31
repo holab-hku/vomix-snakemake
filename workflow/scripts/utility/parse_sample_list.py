@@ -17,6 +17,7 @@ from rich.layout import Layout
 from rich.panel import Panel
 console = Console()
 
+
 def validate_samples(samples):
 	"""
     	Performs checks on the samples provided in the sample_list.tsv
@@ -42,13 +43,11 @@ def validate_samples(samples):
 				R2size = os.path.getsize(R2path) / (1024 ** 3)
 
 				sizegb = round((R1size + R2size), 2)
-
-				console.print("[dim] {accs} pre-downloaded \[{size_gb}GB][/dim]".format(accs=sample, size_gb=sizegb))
+				console.print("[dim] {accs} pre-downloaded [{size_gb}GB][/dim]".format(accs=sample, size_gb=sizegb))
 				progress.update(task, advance=1)
 				time.sleep(0.5)
 				continue
 
-			print(R1path)
 			# check if it exists in SRA if not present locally
 			acc = items['accession']
 
@@ -63,6 +62,7 @@ def validate_samples(samples):
 				match = re.search(r'size="(\d+)"', record)
 				sizebyte = match.group(1)
 				sizegb = round(int(sizebyte) /pow(1024, 3), 2)
+				console.print("[dim] {accs} pre-downloaded [{size_gb}GB][/dim]".format(accs=acc, size_gb=sizegb))
 				
 			except:
 				sys.exit("""
@@ -89,7 +89,7 @@ def validate_samples(samples):
 		progress.stop_task(task)
 
 
-def parse_sample_list(f, datadir, outdir):
+def parse_sample_list(f, datadir, outdir, email):
 	"""
 	Parse the sample list. Each sample is stored as a dictionary in the samples{} dictionary.
 	samples{sample_name} will have the following information:
@@ -111,6 +111,7 @@ def parse_sample_list(f, datadir, outdir):
 	###################
 
 	df = pd.read_csv(f, comment='#', header=0, sep='\t', index_col=False, dtype=str)
+	df['sample_id'].fillna(df['accession'], inplace=True)
 	df = df.map(lambda x: x.strip() if isinstance(x, str) else x) # strip white space
 	df['sample_id'] = df['sample_id'].astype(str)
 	df = df.replace(r'^\s*$', float('nan'), regex=True)
@@ -238,6 +239,7 @@ def parse_sample_list(f, datadir, outdir):
 
 				
 	# If not exited already, validate and write
+	Entrez.email = email
 	validate_samples(samples)
 		
 	with open(samplejson, "w") as sampleout:

@@ -20,6 +20,7 @@ hostprok: False # Flag to include your own prokaryotic genomes
 contigfile : ""
 contigfolder: ""
 cores: 4
+email: "vomixtest@gmail.com"
 
 #########################
 # PRE-PROCESSING MODULE #
