@@ -154,18 +154,9 @@ def parse_sample_list(f, datadir, outdir, email):
 		dupid = duplicateid.index.tolist()
 		duplist = duprow + dupid
 
+		console.print(Panel.fit("Duplicate rows or SRA accessions found.\nPlease check your sample_list.tsv file.\nWarning list:\n{}\n\nAt the moment having the same file in different assemblies is not supported, but we are working on it for future versions".format(duplist), title="Sample ID Error", subtitle="Duplicate Sample IDs"))
+		sys.exit(1)
 
-		sys.exit("""
-		########################## WARNING ###################################
-		# Duplicate rows or SRA accessions found.                            #
-		# Please check your sample_list.tsv  file.                           #
-		# Warning list:                                                      #
-			{}							     
-		#                                                                    #
-		# At the moment having the same file in different assemblies         #
-		# is not supported, but will be implemented in future versions.      #
-		########################## WARNING ###################################
-		""".format(duplist))
 
 	######################
 	# SETUP DICTIONARIES #
