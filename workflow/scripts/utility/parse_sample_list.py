@@ -6,6 +6,7 @@ import subprocess
 import argparse
 import json
 import time
+import re
 from io import StringIO
 
 import pandas as pd
@@ -59,23 +60,16 @@ def validate_samples(samples):
 			try:
 				handle = Entrez.efetch(db="sra", id=acc, retmax=1000, rettype="full", retmode="xml")
 				record = handle.read()
+				if not isinstance(record, str):
+					record = record.decode("utf-8")
 				match = re.search(r'size="(\d+)"', record)
 				sizebyte = match.group(1)
 				sizegb = round(int(sizebyte) /pow(1024, 3), 2)
 				console.print("[dim] {accs} pre-downloaded [{size_gb}GB][/dim]".format(accs=acc, size_gb=sizegb))
 				
-			except:
-				sys.exit("""
-########################## WARNING ###################################
-# Accession: {} could not be found or is not a Run                   #
-# Is it a valid SRA accession?                                       #
-#                                                                    #
-# If you intend to use locally stored fastq files, make sure your    #
-# sample file list contains columns named 'Read_file' and            #
-# 'Paired_file' with paths pointing to the corresponding fastq files #
-# for each sample.                                                   #
-########################## WARNING ###################################
-			""".format(acc))
+			except Exception as e:
+				console.print(Panel.fit("Accession: {} could not be found by efetch in NCBI's Entrez Direct, or is not a Run. Is it a valid SRA accession?.\nIf you intend to use locally stored fastq files, make sure your sample list contains the column 'R1' for single-end and 'R2' for paired-end files.".format(acc), title="Run Error", subtitle="SRA Accession Not Found"))
+				sys.exit(1)
 
 			#else:
 				#csvstring = StringIO(p.decode())
@@ -111,7 +105,7 @@ def parse_sample_list(f, datadir, outdir, email):
 	###################
 
 	df = pd.read_csv(f, comment='#', header=0, sep='\t', index_col=False, dtype=str)
-	df['sample_id'].fillna(df['accession'], inplace=True)
+	df['sample_id'] = df['sample_id'].fillna(df['accession'])
 	df = df.map(lambda x: x.strip() if isinstance(x, str) else x) # strip white space
 	df['sample_id'] = df['sample_id'].astype(str)
 	df = df.replace(r'^\s*$', float('nan'), regex=True)
