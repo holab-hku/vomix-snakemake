@@ -65,7 +65,7 @@ def validate_samples(samples):
 				match = re.search(r'size="(\d+)"', record)
 				sizebyte = match.group(1)
 				sizegb = round(int(sizebyte) /pow(1024, 3), 2)
-				console.print("[dim] {accs} pre-downloaded [{size_gb}GB][/dim]".format(accs=acc, size_gb=sizegb))
+				console.print("[dim] {accs} downloading [{size_gb}GB][/dim]".format(accs=acc, size_gb=sizegb))
 				
 			except Exception as e:
 				console.print(Panel.fit("Accession: {} could not be found by efetch in NCBI's Entrez Direct, or is not a Run. Is it a valid SRA accession?.\nIf you intend to use locally stored fastq files, make sure your sample list contains the column 'R1' for single-end and 'R2' for paired-end files.".format(acc), title="Run Error", subtitle="SRA Accession Not Found"))

@@ -171,7 +171,7 @@ rule multiqc:
     relpath("preprocess/reports/preprocess_report_data/multiqc.log")
   params:
     searchdir=relpath("preprocess/"),
-    outdir=relpath("reports/preprocess/"),
+    outdir=relpath("preprocess/reports/"),
     tmpdir=os.path.join(tmpd, "multiqc")
   log: os.path.join(logdir, "multiqc.log")
   threads: 1
