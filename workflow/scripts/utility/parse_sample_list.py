@@ -7,6 +7,7 @@ import argparse
 import json
 import time
 import re
+import warnings
 from io import StringIO
 
 import pandas as pd
@@ -126,7 +127,9 @@ def parse_sample_list(f, datadir, outdir, email):
 	# if there are no R1 or R2s, generate them
 	df['R1'] = [row['R1'] if not pd.isna(row['R1']) else '{dir}{s}_1.fastq.gz'.format(dir= datadir, s=row['sample_id']) for _, row in df.iterrows()]
 	df['R2'] = [row['R2'] if not pd.isna(row['R2']) else '{dir}{s}_2.fastq.gz'.format(dir = datadir, s=row['sample_id']) for _, row in df.iterrows()]
-		
+
+	# FUTURE WARNINGN: Setting an item of incompatible dtype is deprecated and will raise an error in a future version of pandas. Value '' has dtype incompatible with float64, please explicitly cast to a compatible dtype first.
+	warnings.simplefilter(action='ignore', category=FutureWarning)
 	df.fillna('', inplace=True)
 	# set unique names for the file index
 	df.set_index('sample_id', inplace=True)
