@@ -162,20 +162,22 @@ rule symlink:
 
 
 rule multiqc:
-  name: "preprocessing.py preprocess report"
+  name: "preprocessing.py MultiQC preprocess report"
   input:
-    R1s=expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"), sample_id = samples.keys()), 
+    R1s=expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"), sample_id = samples.keys()),
     R2s=expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"), sample_id = samples.keys()),
     logs=expand(relpath("preprocess/samples/{sample_id}/report.fastp.json"), sample_id = samples.keys())
   output:
-    relpath("preprocess/reports/preprocess_report.html"),
-    relpath("preprocess/reports/preprocess_report_data/multiqc.log")
+    relpath("reports/preprocess/preprocess_report.html"),
+    relpath("reports/preprocess/preprocess_report_data/multiqc.log")
   params:
     searchdir=relpath("preprocess/"),
-    outdir=relpath("preprocess/reports/"),
+    outdir=relpath("reports/preprocess"),
     tmpdir=os.path.join(tmpd, "multiqc")
   log: os.path.join(logdir, "multiqc.log")
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, input, attempt: attempt * 8 * 10**3
   conda: "../envs/multiqc.yml"
   shell:
     """
@@ -183,8 +185,8 @@ rule multiqc:
     mkdir -p {params.tmpdir} {params.outdir}
 
     multiqc {params.searchdir} -f -o {params.tmpdir} -n preprocess_report.html 2> {log}
-    mv {params.tmpdir}/preprocess_report* {params.outdir}
+    mv {params.tmpdir}/*.html {params.outdir}
+    mv {params.tmpdir}/preprocess* {params.outdir}
 
-    rm -rf {params.tmpdir}
+    rm -r {params.tmpdir}/*
     """
-
