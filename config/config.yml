@@ -49,12 +49,12 @@ assembly:
 # VIRAL CONTIG IDENTIFICATION MODULE #
 ######################################
 
-viral-contigident:
+viral-identify:
         # setup working directories
         contigfile : ""
         contigdir : "results/assembly/"
         dbdir: "workflow/database/"
-        phamerdb: "workflow/database/phabox"
+        phamerdb: "workflow/database/phabox_db_v2"
         genomaddb: "workflow/database/genomad"
 
         ### PRE-FILTERING 
@@ -93,7 +93,7 @@ viral-contigident:
         # The min score to be considered a "hit" by the consensus viral filtering algorithm
         # This score is usually more stringent than primary filtering since it determines whether
         # "Low-completion" and "Not-determined" CheckV sequences should be classified as viral.
-        # Use vomix viral-contigident `--viral-binning` flag to reduce number of shorter contigs
+        # Use vomix viral-idenitfy `--viral-binning` flag to reduce number of shorter contigs
         
         genomadcutoff_s: 0
         phamercutoff_s: 0
@@ -125,11 +125,11 @@ viral-contigident:
 # TAXONOMY MODULE #
 ###################
 
-taxonomy:
+viral-taxonomy:
         viphogshmmeval: 0.01
         viphogsprop: 0.6  # Minimum proportion of annotated genes required for taxonomic assignment (default: 0.6)
         
-        phagcndb: "workflow/database/phabox"
+        phagcndb: "workflow/database/phabox_db_v2"
         phagcnminlen: 2000 # the minimum tested
         phagcnparams: ""
 
@@ -143,7 +143,7 @@ taxonomy:
 # ABUNDANCE MODULE #
 ####################
 
-abundance:
+viral-community:
         # checkout coverm documentation for options https://wwood.github.io/CoverM/coverm-make.html
         covermparams: "--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90"
         covermmethods : "tpm rpkm" # a space delimited list from coverm options
@@ -157,16 +157,16 @@ host:
         iphopdbdir: "workflow/database/iphop/Aug_2023_pub_rw"
         iphopcutoff: 90
         iphopparams: ""
-        CHERRYdb: "workflow/database/phabox"
+        CHERRYdb: "workflow/database/phabox_db_v2"
         CHERRYparams: ""
-        PhaTYPdb: "workflow/database/phabox"
+        PhaTYPdb: "workflow/database/phabox_db_v2"
         PhaTYPparams: ""
 
 ####################
 # COMMUNITY MODULE #
 ####################
 
-community:
+prok-community:
         mpaparams: "--ignore_eukaryotes"
         mpaindex_v: "mpa_vOct22_CHOCOPhlAnSGB_202212"
 
@@ -174,7 +174,7 @@ community:
 # PROKARYOTIC MODULE #
 ######################
 
-binning:
+prok-binning:
         strobealignparams: ""
         jgi_summarize_bam_contig_depths_params: "--percentIdentity 97"
         MetaBAT2params: "-m 1500"
@@ -184,13 +184,14 @@ binning:
         VAMBparams: "-m 100"
         DASToolparams: ""
         semibin2params: "--environment human_gut --self-supervised --random-seed 123 --min-len 1000"
+        drepparams: ""
 
 
+# ANNOTATION 
 
-##################                
-# MERGE DATASETS #
-##################
-
-merge:
-        inputdirs: ["hi", "hello", "hellooo"]
-
+viral-annotate:
+        eggNOG_db_params: ""
+        eggNOG_db_dir: "workflow/database/eggNOGv2"
+        eggNOG_params: "-m diamond --hmm_evalue 0.001 --hmm_score 60 --query-cover 20 --subject-cover 20 --tax_scope auto --target_orthologs all --go_evidence non-electronic --report_orthologs"
+        PhaVIPparams: ""
+        PhaVIPdb: "workflow/database/phabox_db_v2"

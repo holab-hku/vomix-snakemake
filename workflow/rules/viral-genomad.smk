@@ -1,6 +1,6 @@
 import os 
 
-configdict = config['viral-contigident']
+configdict = config['viral-identify']
 logdir=relpath("viralcontigident/logs")
 benchmarks=relpath("viralcontigident/benchmarks")
 tmpd=relpath("viralcontigident/tmp")
@@ -83,7 +83,7 @@ rule filter_contigs:
     outdir=relpath("viralcontigident/samples/{sample_id}/tmp"), 
     tmpdir=os.path.join(tmpd, "contigs/{sample_id}")
   log: os.path.join(logdir, "filtercontig_{sample_id}.log")
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   threads: 1
   shell:
     """
@@ -148,7 +148,7 @@ rule genomad_filter:
     outdir=relpath("viralcontigident/samples/{sample_id}/output/"),
     tmpdir=os.path.join(tmpd, "filter/{sample_id}")
   log: os.path.join(logdir, "genomad_filter_{sample_id}.log")
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   threads: 1
   shell:
     """
@@ -186,7 +186,7 @@ rule cat_contigs:
     names=list(assembly_ids),
     tmpdir=tmpd
   log: os.path.join(logdir, "catcontigs.log")
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   threads: 1
   shell:
     """
@@ -220,7 +220,7 @@ rule combine_classifications:
     tmpdir=tmpd
   log: os.path.join(logdir, "combine_classification.log")
   threads: 1
-  conda : "../envs/utility.yml"
+  conda : "../envs/seqkit-biopython.yml"
   shell:
     """
     rm -rf {params.tmpdir}/*
@@ -256,7 +256,7 @@ rule consensus_filtering:
     tmpdir=tmpd
   log: os.path.join(logdir, "consensus_filtering.log")
   threads: 1
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   shell:
     """
     rm -rf {params.tmpdir}/*
@@ -292,7 +292,7 @@ rule votu:
     tmpdir=tmpd
   log: os.path.join(logdir, "vOTUs.log")
   threads: 1
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   shell:
     """
     rm -rf {params.tmpdir}/*

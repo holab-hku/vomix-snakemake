@@ -50,11 +50,12 @@ else:
 ### MASTER RULE 
 
 rule done_log:
-  name: "host.py Done. removing tmp files"
+  name: "host.smk Done. removing tmp files"
   localrule: True
   input:
-    relpath("host/output/CHERRY/out/cherry_prediction.csv"), 
-    relpath("host/output/PhaTYP/out/phatyp_prediction.csv")
+    relpath("host/output/CHERRY/final_prediction/cherry_prediction.tsv"), 
+    relpath("host/output/PhaTYP/final_prediction/phatyp_prediction.tsv"), 
+    relpath("annotation/viral/output/PhaVIP/final_prediction/phavip_prediction.tsv")
   output:
     os.path.join(logdir, "done.log")
   params:
@@ -68,36 +69,32 @@ rule done_log:
 
 
 rule CHERRY:
-  name: "host.py CHERRY host prediction"
+  name: "host.smk CHERRY host prediction"
   input:
     fna=fasta_path
   output:
-    relpath("host/output/CHERRY/out/cherry_prediction.csv")
+    relpath("host/output/CHERRY/final_prediction/cherry_prediction.tsv")
   params:
-    script="workflow/software/PhaBOX/Cherry_single.py",
-    scriptdir="workflow/software/PhaBOX/scripts/",
     parameters=configdict['CHERRYparams'],
-    paramsdir="workflow/params/phabox/",
     dbdir=configdict['CHERRYdb'],
     outdir=relpath("host/output/CHERRY"),
     tmpdir=os.path.join(tmpd, "CHERRY")
-  conda: "../envs/phabox.yml"
+  conda: "../envs/phabox2.yml"
   log: os.path.join(logdir, "CHERRY.log")
   benchmark: os.path.join(benchmarks, "CHERRY.log")
   threads: 32
   resources: 
-    mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
+    mem_mb=lambda wildcards, attempt: attempt * 100 * 10**3
   shell:
     """
+    rm -r {params.outdir}
     mkdir -p {params.tmpdir} {params.outdir}
 
-    python {params.script} \
+    phabox2 --task cherry \
         --contigs {input.fna} \
         --threads {threads} \
-        --rootpth {params.tmpdir} \
+        --outpth {params.tmpdir} \
         --dbdir {params.dbdir} \
-        --parampth {params.paramsdir} \
-        --scriptpth {params.scriptdir} \
         {params.parameters} &> {log}
 
     mv {params.tmpdir}/* {params.outdir}/
@@ -105,21 +102,42 @@ rule CHERRY:
     rm -rf {params.tmpdir}
     """
 
+rule PhaVIP:
+  name: "host.smk PhaVIP results from CHERRY"
+  localrule: True
+  input:
+    relpath("host/output/CHERRY/final_prediction/cherry_prediction.tsv")
+  output:
+    relpath("annotation/viral/output/PhaVIP/final_prediction/phavip_prediction.tsv")
+  params:
+    indir=relpath("host/output/CHERRY/final_prediction"),
+    outdir=relpath("annotation/viral/output/PhaVIP/final_prediction"),
+  log: os.path.join(logdir, "PhaVIP_copy.log")
+  benchmark: os.path.join(benchmarks, "PhaVIP_copy.log")
+  threads: 1
+  shell:
+    """
+    rm -r {params.outdir}
+    mkdir -p {params.outdir}/phavip_supplementary
+
+    cp {params.indir}/phavip_prediction.tsv {params.outdir}
+    cp {params.indir}/cherry_supplementary/a* {params.outdir}/phavip_supplementary
+    cp {params.indir}/cherry_supplementary/gene_annotation.tsv {params.outdir}/phavip_supplementary
+    """
+
+
 rule PhaTYP:
-  name: "host.py PhaTYP lifestyle prediction"
+  name: "host.smk PhaTYP lifestyle prediction"
   input:
     fna=fasta_path
   output:
-    relpath("host/output/PhaTYP/out/phatyp_prediction.csv")
+    relpath("host/output/PhaTYP/final_prediction/phatyp_prediction.tsv")
   params:
-    script="workflow/software/PhaBOX/PhaTYP_single.py",
-    scriptdir="workflow/software/PhaBOX/scripts/",
     parameters=configdict['PhaTYPparams'],
-    paramsdir="workflow/params/phabox/",
     dbdir=configdict['PhaTYPdb'],
     outdir=relpath("host/output/PhaTYP"),
     tmpdir=os.path.join(tmpd, "PhaTYP")
-  conda: "../envs/phabox.yml"
+  conda: "../envs/phabox2.yml"
   log: os.path.join(logdir, "PhaTYP.log")
   benchmark: os.path.join(benchmarks, "PhaTYP.log")
   threads: 32
@@ -127,19 +145,17 @@ rule PhaTYP:
     mem_mb=lambda wildcards, attempt: attempt * 16 * 10**3
   shell:
     """
+    rm -r {params.outdir}
     mkdir -p {params.tmpdir} {params.outdir}
 
-    python {params.script} \
+    phabox2 --task phatyp \
         --contigs {input.fna} \
         --threads {threads} \
-        --rootpth {params.tmpdir} \
+        --outpth {params.tmpdir} \
         --dbdir {params.dbdir} \
-        --parampth {params.paramsdir} \
-        --scriptpth {params.scriptdir} \
         {params.parameters} &> {log}
 
     mv {params.tmpdir}/* {params.outdir}/
 
     rm -rf {params.tmpdir}
     """
-

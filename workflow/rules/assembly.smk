@@ -77,7 +77,7 @@ rule assembly_stats:
     outdir=relpath("assembly/reports"),
     tmpdir=os.path.join(tmpd, "report")
   log: os.path.join(logdir, "stats.log")
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   shell:
     """
     rm -rf {params.tmpdir} {params.outdir}/* 

@@ -8,7 +8,7 @@ from rich.panel import Panel
 console = Console()
 
 
-configdict = config['viral-contigident']
+configdict = config['viral-idenitfy']
 logdir=relpath("viralcontigident/logs")
 benchmarks=relpath("viralcontigident/benchmarks")
 tmpd=relpath("viralcontigident/tmp")
@@ -197,16 +197,13 @@ rule phamer_classify:
   output:
     relpath("viralcontigident/samples/{sample_id}/intermediate/phamer/out/phamer_prediction.csv")
   params:
-    script="workflow/software/PhaBOX/PhaMer_single.py",
-    scriptdir="workflow/software/PhaBOX/scripts/",
     parameters=configdict['phamerparams'],
-    paramsdir="workflow/params/phabox/",
     dbdir=configdict['phamerdb'],
     outdir=relpath("viralcontigident/samples/{sample_id}/intermediate/phamer/"),
     tmpdir=os.path.join(tmpd, "phamer/{sample_id}")
   log: os.path.join(logdir, "phamer_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "phamer_{sample_id}.log")
-  conda: "../envs/phabox.yml"
+  conda: "../envs/phabox2.yml"
   threads: min(32, n_cores//3)
   resources:
     mem_mb=lambda wildcards, attempt, input, threads: max(1 * threads * 10**3 * attempt, 8000)
@@ -215,14 +212,12 @@ rule phamer_classify:
     rm -rf {params.outdir}
     mkdir -p {params.tmpdir} {params.outdir}
 
-    python {params.script} \
+    phabox2 --task phamer \
         --contigs {input.fna} \
         --len 0 \
         --threads {threads} \
-        --rootpth {params.tmpdir} \
+        --outpth {params.tmpdir} \
         --dbdir {params.dbdir} \
-        --parampth {params.paramsdir} \
-        --scriptpth {params.scriptdir} \
         {params.parameters} &> {log}
 
     mv -f {params.tmpdir}/* {params.outdir}
@@ -246,7 +241,7 @@ rule merge_outputs:
     outdir=relpath("viralcontigident/samples/{sample_id}/output/"),
     tmpdir=os.path.join(tmpd, "merge/{sample_id}")
   log: os.path.join(logdir, "mergeout_{sample_id}.log")
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   threads: 1
   shell:
     """
@@ -284,7 +279,7 @@ rule filter_outputs:
     phamer_pred=configdict['phamerpred_p'], 
     tmpdir=os.path.join(tmpd, "filter/{sample_id}")
   log: os.path.join(logdir, "filteroutput_{sample_id}.log")
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   threads: 1
   shell:
     """
@@ -326,7 +321,7 @@ rule cat_contigs:
     names=list(assembly_ids),
     tmpdir=tmpd
   log: os.path.join(logdir, "catcontigs.log")
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   threads: 1
   resources:
     maxcores=1
@@ -376,7 +371,7 @@ rule combine_classifications:
     tmpdir=tmpd
   log: os.path.join(logdir, "combine_classification.log")
   threads: 1
-  conda : "../envs/utility.yml"
+  conda : "../envs/seqkit-biopython.yml"
   shell:
     """
     rm -rf {params.tmpdir}/*
@@ -408,7 +403,7 @@ rule consensus_filtering:
     tmpdir=tmpd
   log: os.path.join(logdir, "consensus_filtering.log")
   threads: 1
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   shell:
     """
     rm -rf {params.tmpdir}/*
@@ -447,7 +442,7 @@ rule votu:
     tmpdir=tmpd
   log: os.path.join(logdir, "vOTUs.log")
   threads: 1
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   shell:
     """
     rm -rf {params.tmpdir}/*

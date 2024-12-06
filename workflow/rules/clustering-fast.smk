@@ -1,4 +1,4 @@
-configdict = config['viral-contigident']['clustering']
+configdict = config['viral-identify']['clustering']
 logdir = relpath("viralcontigident/logs")
 tmpd = relpath("viralcontigident/tmp")
 benchmarks=relpath("viralcontigident/benchmarks")
@@ -208,7 +208,7 @@ rule filtercontigs_derep:
     outdir=relpath("viralcontigident/checkv/output"),
     tmpdir=tmpd
   log: os.path.join(logdir, "clustering/filterderep.log")
-  conda: "../envs/utility.yml" 
+  conda: "../envs/seqkit-biopython.yml" 
   threads: 1
   shell:
     """

@@ -1,6 +1,6 @@
 import os 
 
-configdict = config['viral-contigident']['clustering']
+configdict = config['viral-identify']['clustering']
 logdir = relpath("viralcontigident/logs")
 tmpd = relpath("viralcontigident/tmp")
 benchmarks=relpath("viralcontigident/benchmarks")
@@ -27,12 +27,11 @@ rule cdhit_derep:
     fa=relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa"), 
     clstr=relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa.clstr")
   params:
-    cdhit=configdict['cdhitpath'],
     cdhitparams=configdict['cdhitparams'],
     outdir=relpath("viralcontigident/output/derep"),
     tmpdir=os.path.join(tmpd, "cdhit")
   log: os.path.join(logdir, "clustering/cdhitderep.log")
-  #conda: "../envs/cd-hit.yml"
+  conda: "../envs/cd-hit.yml"
   benchmark: os.path.join(benchmarks, "viralcontigident_cdhit.log")
   threads: min(32, n_cores)
   resources:
@@ -40,8 +39,8 @@ rule cdhit_derep:
   shell:
     """
     mkdir -p {params.tmpdir} {params.outdir}
-   
-    {params.cdhit} -i {input} -o {params.tmpdir}/tmp.fa -T {threads} {params.cdhitparams} &> {log}
+    
+    cd-hit -i {input} -o {params.tmpdir}/tmp.fa -T {threads} {params.cdhitparams} &> {log}
 
     mv {params.tmpdir}/tmp.fa {output.fa}
     mv {params.tmpdir}/tmp.fa.clstr {output.clstr}

@@ -1,7 +1,7 @@
-name: genomad
+name: phabox2
 channels:
   - conda-forge
   - bioconda
   - defaults
 dependencies:
-  - genomad=1.7.1=pyhdfd78af_0
+  - phabox=2.1.5=pyhdfd78af_0

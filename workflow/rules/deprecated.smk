@@ -306,3 +306,42 @@ rule vamb:
 
     mv {params.tmpdir}/* {params.outdir}
     """
+
+rule phamer_classify:
+  name: "viral-multitool.smk PhaMer classify"
+  input:
+    fna=relpath("viralcontigident/samples/{sample_id}/tmp/final.contigs.filtered.fa")
+  output:
+    relpath("viralcontigident/samples/{sample_id}/intermediate/phamer/out/phamer_prediction.csv")
+  params:
+    script="workflow/software/PhaBOX/PhaMer_single.py",
+    scriptdir="workflow/software/PhaBOX/scripts/",
+    parameters=configdict['phamerparams'],
+    paramsdir="workflow/params/phabox/",
+    dbdir=configdict['phamerdb'],
+    outdir=relpath("viralcontigident/samples/{sample_id}/intermediate/phamer/"),
+    tmpdir=os.path.join(tmpd, "phamer/{sample_id}")
+  log: os.path.join(logdir, "phamer_{sample_id}.log")
+  benchmark: os.path.join(benchmarks, "phamer_{sample_id}.log")
+  conda: "../envs/phabox.yml"
+  threads: min(32, n_cores//3)
+  resources:
+    mem_mb=lambda wildcards, attempt, input, threads: max(1 * threads * 10**3 * attempt, 8000)
+  shell:
+    """
+    rm -rf {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    python {params.script} \
+        --contigs {input.fna} \
+        --len 0 \
+        --threads {threads} \
+        --rootpth {params.tmpdir} \
+        --dbdir {params.dbdir} \
+        --parampth {params.paramsdir} \
+        --scriptpth {params.scriptdir} \
+        {params.parameters} &> {log}
+
+    mv -f {params.tmpdir}/* {params.outdir}
+    rm -rf {params.tmpdir}
+    """
