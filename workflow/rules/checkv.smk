@@ -1,7 +1,7 @@
 configdict = config['viral-identify']['checkv-pyhmmer']
-logdir=relpath("viralcontigident/logs")
-benchmarks=relpath("viralcontigident/benchmarks")
-tmpd=relpath("viralcontigident/tmp")
+logdir=relpath("identify/viral/logs")
+benchmarks=relpath("identify/viral/benchmarks")
+tmpd=relpath("identify/viral/tmp")
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
@@ -36,7 +36,7 @@ if config['fasta']!="":
     console.print(Panel.fit("The fasta file path provided does not exist.", title="Error", subtitle="Contig File Path"))
     sys.exit(1)
 
-  outdir_p = os.path.join(cwd, relpath("viralcontigident/output/checkv/"))
+  outdir_p = os.path.join(cwd, relpath("identify/viral/output/checkv/"))
   console.print(f"[dim]Output file will be written to the '{outdir_p}' directory.\n")
 
   try:
@@ -48,7 +48,7 @@ if config['fasta']!="":
   sample_id = os.path.splitext(os.path.basename(fastap))[0]
 
 else:
-  fasta_path = relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")
+  fasta_path = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa")
 
 
 
@@ -58,9 +58,9 @@ rule done_log:
   name: "checkv-pyhmmer.py Done. removing tmp files"
   localrule: True
   input:
-    relpath("viralcontigident/output/checkv/viruses.fna"),
-    relpath("viralcontigident/output/checkv/proviruses.fna"),
-    relpath("viralcontigident/output/checkv/quality_summary.tsv")
+    relpath("identify/viral/output/checkv/viruses.fna"),
+    relpath("identify/viral/output/checkv/proviruses.fna"),
+    relpath("identify/viral/output/checkv/quality_summary.tsv")
   output:
     os.path.join(logdir, "checkv-done.log")
   shell: "touch {output}"
@@ -74,12 +74,12 @@ rule checkv:
   input:
     fna=fasta_path
   output:
-    relpath("viralcontigident/output/checkv/viruses.fna"),
-    relpath("viralcontigident/output/checkv/proviruses.fna"),
-    relpath("viralcontigident/output/checkv/quality_summary.tsv")
+    relpath("identify/viral/output/checkv/viruses.fna"),
+    relpath("identify/viral/output/checkv/proviruses.fna"),
+    relpath("identify/viral/output/checkv/quality_summary.tsv")
   params:
     checkvparams= configdict['checkvparams'],
-    outdir=relpath("viralcontigident/output/checkv"),
+    outdir=relpath("identify/viral/output/checkv"),
     tmpdir=os.path.join(tmpd, "checkv"),
     dbdir="workflow/database/checkv"
   log: os.path.join(logdir, "checkv.log")

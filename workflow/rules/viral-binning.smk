@@ -13,7 +13,7 @@ os.makedirs(tmpd, exist_ok=True)
 rule prodigal_gv:
   name: "viral-binning.py prodigal-gv viral contigs"
   input:
-    relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa")
+    relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa")
   output:
     fna=relpath("binning/viral/intermediate/prodigal/proteins.vOTUs.fna"),
     faa=relpath("binning/viral/intermediate/prodigal/proteins.vOTUs.faa")
@@ -48,7 +48,7 @@ rule prodigal_gv:
 rule vRhyme:
   name: "viral-binning.py vRhyme run"
   input:
-    contig=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"),
+    contig=relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa"),
     fna=relpath("binning/viral/intermediate/prodigal/proteins.vOTUs.fna"), 
     faa=relpath("binning/viral/intermediate/prodigal/proteins.vOTUs.faa"), 
     fastq=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R{i}.fastq.gz"), sample_id=assemblies[wildcards.assembly_id]["sample_id"], i=[1, 2])
@@ -117,7 +117,7 @@ rule merge_results:
   name: "viral-binning.py merge binning results"
   localrule: True
   input:
-    contig=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"),
+    contig=relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa"),
     prot=relpath("binning/viral/intermediate/prodigal/proteins.vOTUs.faa"),
     binnedlist=expand(relpath("binning/viral/samples/{sample_id}/binned.list.txt"), sample_id=assemblies.keys())
   output:

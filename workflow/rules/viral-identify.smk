@@ -1,20 +1,16 @@
 import os 
 
 configdict = config['viral-identify']
-logdir=relpath("viralcontigident/logs")
-benchmarks=relpath("viralcontigident/benchmarks")
-tmpd=relpath("viralcontigident/tmp")
+logdir=relpath("identify/viral/logs")
+benchmarks=relpath("identify/viral/benchmarks")
+tmpd=relpath("identify/viral/tmp")
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
-if isinstance(config['cores'], int):
-  n_cores = config['cores']
-else:
-   console.print(Panel.fit(f"config['cores'] is not an integer: {config['cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['cores'] not integer"))
-   sys.exit(1)
-
+n_cores = config['cores']
+assembler = config['assembler']
 
 ############################
 # Single-Sample Processing #
@@ -41,11 +37,11 @@ if config['inputdir']!="":
 
   assembly_ids = [os.path.basename(fasta_file).rsplit(".", 1)[0] for fasta_file in fasta_files]
   wildcards_p = os.path.join(indir, "{sample_id}.fa")
-  outdir_p = os.path.join(cwd, relpath("viralcontigident/"))
+  outdir_p = os.path.join(cwd, relpath("identify/viral/"))
   console.print(f"Creating output directory: '{outdir_p}'.\n")
 
 else:
-  wildcards_p = relpath("assembly/samples/{sample_id}/output/final.contigs.fa")
+  wildcards_p = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
   assembly_ids = assemblies.keys()
 
 
@@ -53,10 +49,10 @@ else:
 ### MASTER RULE 
 
 rule done_log:
-  name: "viral-genomad.smk Done. removing tmp files"
+  name: "viral-identify.smk Done. removing tmp files"
   localrule: True
   input:
-    pseudo=relpath("viralcontigident/output/combined.final.vOTUs.fa")
+    pseudo=relpath("identify/viral/output/combined.final.vOTUs.fa")
   output:
     os.path.join(logdir, "done.log")
   params:
@@ -72,15 +68,15 @@ rule done_log:
 ### RULES
 
 rule filter_contigs:
-  name: "viral-genomad.smk filter contigs [length]"
+  name: "viral-identify.smk filter contigs [length]"
   localrule: True
   input:
     wildcards_p
   output:
-    relpath("viralcontigident/samples/{sample_id}/tmp/final.contigs.filtered.fa")
+    relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
   params:
     minlen=configdict['contigminlen'],
-    outdir=relpath("viralcontigident/samples/{sample_id}/tmp"), 
+    outdir=relpath("identify/viral/samples/{sample_id}/tmp"), 
     tmpdir=os.path.join(tmpd, "contigs/{sample_id}")
   log: os.path.join(logdir, "filtercontig_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml"
@@ -98,15 +94,15 @@ rule filter_contigs:
 
 
 rule genomad_classify:
-  name: "viral-genomad.smk geNomad classify [--genomad-only]" 
+  name: "viral-identify.smk geNomad classify [--genomad-only]" 
   input:
-    fna=relpath("viralcontigident/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
   output:
-    relpath("viralcontigident/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv")
+    relpath("identify/viral/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv")
   params:
     genomadparams=configdict['genomadparams'],
     dbdir=configdict['genomaddb'],
-    outdir=relpath("viralcontigident/samples/{sample_id}/intermediate/genomad/"),
+    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/genomad/"),
     tmpdir=os.path.join(tmpd, "genomad/{sample_id}")
   log: os.path.join(logdir, "genomad_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "genomad_{sample_id}.log")
@@ -133,19 +129,19 @@ rule genomad_classify:
 
 
 rule genomad_filter:
-  name : "viral-genomad.smk filter geNomad output [--genomad-only]"
+  name : "viral-identify.smk filter geNomad output [--genomad-only]"
   input:
-    fna=relpath("viralcontigident/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
-    tsv=relpath("viralcontigident/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv"),
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
+    tsv=relpath("identify/viral/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv"),
   output:
-    fna=relpath("viralcontigident/samples/{sample_id}/output/viral.contigs.fa"),
-    scrs=relpath("viralcontigident/samples/{sample_id}/output/merged_scores_filtered.csv"),
-    hits=relpath("viralcontigident/samples/{sample_id}/output/viralhits_list")
+    fna=relpath("identify/viral/samples/{sample_id}/output/viral.contigs.fa"),
+    scrs=relpath("identify/viral/samples/{sample_id}/output/merged_scores_filtered.csv"),
+    hits=relpath("identify/viral/samples/{sample_id}/output/viralhits_list")
   params:
-    script="workflow/scripts/viralcontigident/genomad_filter.py", 
+    script="workflow/scripts/identify/viral/genomad_filter.py", 
     minlen=configdict['genomadminlen'],
     cutoff=configdict['genomadcutoff_p'],
-    outdir=relpath("viralcontigident/samples/{sample_id}/output/"),
+    outdir=relpath("identify/viral/samples/{sample_id}/output/"),
     tmpdir=os.path.join(tmpd, "filter/{sample_id}")
   log: os.path.join(logdir, "genomad_filter_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml"
@@ -174,15 +170,15 @@ rule genomad_filter:
  
 
 rule cat_contigs:
-  name : "viral-genomad.smk combine viral contigs"
+  name : "viral-identify.smk combine viral contigs"
   input:
-    fna=expand(relpath("viralcontigident/samples/{sample_id}/output/viral.contigs.fa"), sample_id=assembly_ids),
-    scrs=expand(relpath("viralcontigident/samples/{sample_id}/output/merged_scores_filtered.csv"), sample_id=assembly_ids)
+    fna=expand(relpath("identify/viral/samples/{sample_id}/output/viral.contigs.fa"), sample_id=assembly_ids),
+    scrs=expand(relpath("identify/viral/samples/{sample_id}/output/merged_scores_filtered.csv"), sample_id=assembly_ids)
   output: 
-    fna=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"),
-    scrs=relpath("viralcontigident/intermediate/scores/combined_viral_scores.csv")
+    fna=relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa"),
+    scrs=relpath("identify/viral/intermediate/scores/combined_viral_scores.csv")
   params:
-    script="workflow/scripts/viralcontigident/mergeout_scores.py", 
+    script="workflow/scripts/identify/viral/mergeout_scores.py", 
     names=list(assembly_ids),
     tmpdir=tmpd
   log: os.path.join(logdir, "catcontigs.log")
@@ -209,14 +205,14 @@ rule cat_contigs:
 
 
 rule combine_classifications:
-  name: "viral-genomad.smk combine derepped classification results"
+  name: "viral-identify.smk combine derepped classification results"
   input:
-    checkv_out=relpath("viralcontigident/output/checkv/quality_summary.tsv"),
-    classify_out=relpath("viralcontigident/intermediate/scores/combined_viral_scores.csv")
+    checkv_out=relpath("identify/viral/output/checkv/quality_summary.tsv"),
+    classify_out=relpath("identify/viral/intermediate/scores/combined_viral_scores.csv")
   output:
-    relpath("viralcontigident/output/checkv/combined_classification_results.csv")
+    relpath("identify/viral/output/checkv/combined_classification_results.csv")
   params:
-    script="workflow/scripts/viralcontigident/combineclassify.py",
+    script="workflow/scripts/identify/viral/combineclassify.py",
     tmpdir=tmpd
   log: os.path.join(logdir, "combine_classification.log")
   threads: 1
@@ -243,15 +239,15 @@ rule combine_classifications:
 
 
 rule consensus_filtering:
-  name: "viral-genomad.smk consensus vOTU filtering"
+  name: "viral-identify.smk consensus vOTU filtering"
   input:
-    relpath("viralcontigident/output/checkv/combined_classification_results.csv")
+    relpath("identify/viral/output/checkv/combined_classification_results.csv")
   output:
-    summary=relpath("viralcontigident/output/classification_summary_vOTUs.csv"),
-    proviruslist=relpath("viralcontigident/output/provirus.list.txt"),
-    viruslist=relpath("viralcontigident/output/virus.list.txt")
+    summary=relpath("identify/viral/output/classification_summary_vOTUs.csv"),
+    proviruslist=relpath("identify/viral/output/provirus.list.txt"),
+    viruslist=relpath("identify/viral/output/virus.list.txt")
   params:
-    script="workflow/scripts/viralcontigident/consensus_filtering_genomad.py",
+    script="workflow/scripts/identify/viral/consensus_filtering_genomad.py",
     genomad=configdict['genomadcutoff_s'],
     tmpdir=tmpd
   log: os.path.join(logdir, "consensus_filtering.log")
@@ -276,19 +272,19 @@ rule consensus_filtering:
 
 
 rule votu:
-  name: "viral-genomad.smk generate final vContigs"
+  name: "viral-identify.smk generate final vContigs"
   input:
-    provirusfasta=relpath("viralcontigident/output/checkv/proviruses.fna"),
-    virusfasta=relpath("viralcontigident/output/checkv/viruses.fna"), 
-    provirushits=relpath("viralcontigident/output/provirus.list.txt"),
-    virushits=relpath("viralcontigident/output/virus.list.txt")
+    provirusfasta=relpath("identify/viral/output/checkv/proviruses.fna"),
+    virusfasta=relpath("identify/viral/output/checkv/viruses.fna"), 
+    provirushits=relpath("identify/viral/output/provirus.list.txt"),
+    virushits=relpath("identify/viral/output/virus.list.txt")
   output:
-    combined=relpath("viralcontigident/output/combined.final.vOTUs.fa"),
-    provirus=relpath("viralcontigident/output/provirus.final.vOTUs.fa"),
-    virus=relpath("viralcontigident/output/virus.final.vOTUs.fa"), 
-    tsv=relpath("viralcontigident/output/GC_content_vOTUs.tsv")
+    combined=relpath("identify/viral/output/combined.final.vOTUs.fa"),
+    provirus=relpath("identify/viral/output/provirus.final.vOTUs.fa"),
+    virus=relpath("identify/viral/output/virus.final.vOTUs.fa"), 
+    tsv=relpath("identify/viral/output/GC_content_vOTUs.tsv")
   params:
-    outdir=relpath("viralcontigident/output/"),
+    outdir=relpath("identify/viral/output/"),
     tmpdir=tmpd
   log: os.path.join(logdir, "vOTUs.log")
   threads: 1

@@ -43,7 +43,7 @@ if config['fasta']!="":
   sample_id = os.path.splitext(os.path.basename(fastap))[0]
 
 else:
-  fasta_path = relpath("viralcontigident/output/combined.final.vOTUs.fa")
+  fasta_path = relpath("identify/viral/output/combined.final.vOTUs.fa")
 
 
 

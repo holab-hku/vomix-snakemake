@@ -36,7 +36,7 @@ rule done:
 rule coverm_endtoend:
   name: "viral-community.smk CoverM calculate abundance"
   input:
-    vOTUs=relpath("viralcontigident/output/combined.final.vOTUs.fa"),
+    vOTUs=relpath("identify/viral/output/combined.final.vOTUs.fa"),
     R1=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
     R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz")
   output:

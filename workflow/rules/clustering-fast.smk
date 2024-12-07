@@ -1,7 +1,7 @@
 configdict = config['viral-identify']['clustering']
-logdir = relpath("viralcontigident/logs")
-tmpd = relpath("viralcontigident/tmp")
-benchmarks=relpath("viralcontigident/benchmarks")
+logdir = relpath("identify/viral/logs")
+tmpd = relpath("identify/viral/tmp")
+benchmarks=relpath("identify/viral/benchmarks")
 
 
 os.makedirs(logdir, exist_ok=True)
@@ -38,7 +38,7 @@ if config['fasta']!="":
     console.print(Panel.fit("The fasta file path provided does not exist.", title="Error", subtitle="Contig File Path"))
     sys.exit(1)
 
-  outdir_p = os.path.join(cwd, relpath("viralcontigident/output/derep/"))
+  outdir_p = os.path.join(cwd, relpath("identify/viral/output/derep/"))
   console.print(f"[dim]Output file will be written to the '{outdir_p}' directory.\n")
   
   try:
@@ -50,7 +50,7 @@ if config['fasta']!="":
   sample_id = os.path.splitext(os.path.basename(fastap))[0]
 
 else:
-  fasta_path = relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa")
+  fasta_path = relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa")
 
 
 ### MASTER RULE
@@ -59,12 +59,12 @@ rule done_log:
   name: "clustering-fast.smk Done. removing tmp files"
   localrule: True
   input:
-    expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"), suffix=["ntf", "ndb"]), 
-    relpath("viralcontigident/intermediate/derep/blast_out.csv"), 
-    relpath("viralcontigident/intermediate/derep/ani.tsv"), 
-    relpath("viralcontigident/output/derep/clusters.tsv"),
-    relpath("viralcontigident/output/derep/cluster_representatives.txt"),
-    relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")
+    expand(relpath("identify/viral/intermediate/derep/db.{suffix}"), suffix=["ntf", "ndb"]), 
+    relpath("identify/viral/intermediate/derep/blast_out.csv"), 
+    relpath("identify/viral/intermediate/derep/ani.tsv"), 
+    relpath("identify/viral/output/derep/clusters.tsv"),
+    relpath("identify/viral/output/derep/cluster_representatives.txt"),
+    relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa")
   output:
     os.path.join(logdir, "clustering-fast-done.log")
   shell: "touch {output}"
@@ -78,9 +78,9 @@ rule makeblastdb_derep:
   input: 
     fasta_path
   output: 
-    expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"), suffix=["ntf", "ndb"])
+    expand(relpath("identify/viral/intermediate/derep/db.{suffix}"), suffix=["ntf", "ndb"])
   params:
-    outdir=relpath("viralcontigident/intermediate/derep/"), 
+    outdir=relpath("identify/viral/intermediate/derep/"), 
     dbtype='nucl', 
     tmpdir=tmpd
   log: os.path.join(logdir, "clustering/makeblastdb.log")
@@ -103,11 +103,11 @@ rule megablast_derep:
   name: "clustering-fast.smk megablast [--clustering-fast]"
   input:
     fasta=fasta_path, 
-    dbcheckpoints=expand(relpath("viralcontigident/intermediate/derep/db.{suffix}"), suffix=["ntf", "ndb"])
+    dbcheckpoints=expand(relpath("identify/viral/intermediate/derep/db.{suffix}"), suffix=["ntf", "ndb"])
   output:
-    relpath("viralcontigident/intermediate/derep/blast_out.csv")
+    relpath("identify/viral/intermediate/derep/blast_out.csv")
   params:
-    db=relpath("viralcontigident/intermediate/derep/db"),
+    db=relpath("identify/viral/intermediate/derep/db"),
     outfmt="'6 std qlen slen'",
     maxtargetseqs=10000, 
     tmpdir=tmpd
@@ -137,11 +137,11 @@ rule megablast_derep:
 rule anicalc_derep:
   name : "clustering-fast.smk calculate ani [--clustering-fast]"
   input:
-    relpath("viralcontigident/intermediate/derep/blast_out.csv")
+    relpath("identify/viral/intermediate/derep/blast_out.csv")
   output: 
-    relpath("viralcontigident/intermediate/derep/ani.tsv")
+    relpath("identify/viral/intermediate/derep/ani.tsv")
   params:
-    script_path="workflow/scripts/viralcontigident/anicalc.py", 
+    script_path="workflow/scripts/identify/viral/anicalc.py", 
     tmpdir=tmpd
   log: os.path.join(logdir, "clustering/anicalc.log")
   benchmark: os.path.join(benchmarks, "clustering/anicalc.log")
@@ -165,12 +165,12 @@ rule aniclust_derep:
   name : "clustering-fast.smk cluster [--clustering-fast]"
   input:
     fa=fasta_path, 
-    ani=relpath("viralcontigident/intermediate/derep/ani.tsv")
+    ani=relpath("identify/viral/intermediate/derep/ani.tsv")
   output:
-    tsv= relpath("viralcontigident/output/derep/clusters.tsv"),
-    reps=relpath("viralcontigident/output/derep/cluster_representatives.txt")
+    tsv= relpath("identify/viral/output/derep/clusters.tsv"),
+    reps=relpath("identify/viral/output/derep/cluster_representatives.txt")
   params:
-    script="workflow/scripts/viralcontigident/aniclust.py",
+    script="workflow/scripts/identify/viral/aniclust.py",
     minani=configdict["vOTUani"],
     targetcov=configdict["vOTUtargetcov"],
     querycov =configdict["vOTUquerycov"], 
@@ -201,11 +201,11 @@ rule filtercontigs_derep:
   name: "clustering-fast.smk filter dereplicated viral contigs"
   input: 
     fna=fasta_path, 
-    reps=relpath("viralcontigident/output/derep/cluster_representatives.txt")
+    reps=relpath("identify/viral/output/derep/cluster_representatives.txt")
   output:
-    relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")
+    relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa")
   params:
-    outdir=relpath("viralcontigident/checkv/output"),
+    outdir=relpath("identify/viral/checkv/output"),
     tmpdir=tmpd
   log: os.path.join(logdir, "clustering/filterderep.log")
   conda: "../envs/seqkit-biopython.yml" 

@@ -1,7 +1,9 @@
+assembler = config['assembler']
+
 configdict = config['assembly']
-logdir = relpath("assembly/logs")
-tmpd = relpath("assembly/tmp")
-benchmarks = relpath("assembly/benchmarks")
+logdir = relpath(os.path.join("assembly", assembler, "logs"))
+tmpd = relpath(os.path.join("assembly", assembler, "tmp"))
+benchmarks = relpath(os.path.join("assembly", assembler, "benchmarks"))
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
@@ -10,11 +12,11 @@ os.makedirs(benchmarks, exist_ok=True)
 
 # MASTER RULE
 rule done:
-  name: "assembly.py Done. removing tmp files"
+  name: "assembly.smk Done. removing tmp files"
   localrule: True
   input:
-    expand(relpath("assembly/samples/{assembly_id}/output/final.contigs.fa"),  assembly_id = assemblies.keys()),
-    expand(relpath("assembly/reports/{summary_type}.tsv"), summary_type = ["assemblystats", "assembly_size_dist"])
+    expand(relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa")),  assembly_id = assemblies.keys()),
+    expand(relpath(os.path.join("reports/assembly", assembler, "{summary_type}.tsv")), summary_type = ["assemblystats", "assembly_size_dist"])
   output:
     os.path.join(logdir, "done.log")
   shell:
@@ -25,20 +27,19 @@ rule done:
 ### RULES 
 
 rule megahit:
-  name : "assembly.py MEGAHIT assembly"
+  name : "assembly.smk MEGAHIT assembly"
   input:
     R1s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
         sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
     R2s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
         sample_id = assemblies[wildcards.assembly_id]["sample_id"])
   output:
-    fasta=relpath("assembly/samples/{assembly_id}/output/final.contigs.fa")
+    fasta=relpath("assembly/megahit/samples/{assembly_id}/output/final.contigs.fa")
   params:
-    parameters=configdict['megahitparams'],
-    minlen=configdict["megahit_min_contig_len"],
-    outdir=relpath("assembly/samples/{assembly_id}/output"),
-    interdir=relpath("assembly/samples/{assembly_id}/intermediate/megahit"),
-    tmpdir=os.path.join(tmpd, "megahit")
+    parameters=configdict['megahit-params'],
+    minlen=configdict["megahit-minlen"],
+    outdir=relpath("assembly/megahit/samples/{assembly_id}/output"),
+    tmpdir=os.path.join(tmpd, "megahit/{assembly_id}")
   log: os.path.join(logdir, "megahit_{assembly_id}.log")
   benchmark: os.path.join(benchmarks, "megahit_{assembly_id}.log")
   conda: "../envs/megahit.yml"
@@ -47,34 +48,72 @@ rule megahit:
     mem_mb = lambda wildcards, attempt, threads, input: max(attempt * input.size_mb * 5, 2000)
   shell:
     """
-    rm -rf {params.tmpdir}/{wildcards.assembly_id} {params.interdir} {params.outdir}/*
-    mkdir -p {params.interdir} {params.outdir} {params.tmpdir}
+    rm -rf {params.tmpdir} {params.outdir}/*
+    mkdir -p {params.outdir}
 
 
     megahit \
         -1 $(echo "{input.R1s}" | tr ' ' ',') \
         -2 $(echo "{input.R2s}" | tr ' ' ',') \
         --min-contig-len {params.minlen} \
-        -o {params.tmpdir}/{wildcards.assembly_id} \
+        -o {params.tmpdir} \
         -t {threads} \
         {params.parameters} &> {log} 
 
     mv {params.tmpdir}/{wildcards.assembly_id}/final.contigs.fa {output.fasta}
-    mv {params.tmpdir}/{wildcards.assembly_id}/* {params.interdir}
-    
+    mv {params.tmpdir}/{wildcards.assembly_id}/* {params.outdir}
     """
 
 
-rule assembly_stats:
-  name: "assembly.py aggregate assembly statistics"
+rule spades:
+  name : "assembly.smk SPAdes (--meta) assembly"
   input:
-    expand(relpath("assembly/samples/{assembly_id}/output/final.contigs.fa"), assembly_id = assemblies.keys())
+    R1s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
+        sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
+    R2s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
+        sample_id = assemblies[wildcards.assembly_id]["sample_id"])
   output:
-    stats=relpath("assembly/reports/assemblystats.tsv"),
-    sizedist=relpath("assembly/reports/assembly_size_dist.tsv")
+    fasta=relpath("assembly/spades/samples/{assembly_id}/output/final.contigs.fa")
+  params:
+    parameters=configdict['spades-params'],
+    memory=configdict['spades-memory'],
+    outdir=relpath("assembly/spades/samples/{assembly_id}/output"),
+    tmpdir=os.path.join(tmpd, "spades/{assembly_id}")
+  log: os.path.join(logdir, "spades_{assembly_id}.log")
+  benchmark: os.path.join(benchmarks, "spades_{assembly_id}.log")
+  conda: "../envs/spades.yml"
+  threads: 24
+  resources:
+    mem_mb = configdict['spades-memory'] * 1024
+  shell:
+    """
+    rm -rf {params.tmpdir} {params.outdir}/*
+    mkdir -p {params.outdir} {params.tmpdir}
+
+
+    spades.py \
+        -1 $(echo "{input.R1s}" | tr ' ' ',') \
+        -2 $(echo "{input.R2s}" | tr ' ' ',') \
+        -o {params.tmpdir} \
+        -m {params.memory} \
+        -t {threads} \
+        {params.parameters} &> {log} 
+
+    mv {params.tmpdir}/{wildcards.assembly_id}/scaffolds.fasta {output.fasta}
+    mv {params.tmpdir}/{wildcards.assembly_id}/* {params.outdir}
+    
+    """
+
+rule assembly_stats:
+  name: "assembly.smk aggregate assembly statistics"
+  input:
+    expand(relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa")), assembly_id = assemblies.keys())
+  output:
+    stats=relpath(os.path.join( "reports/assembly", assembler, "assemblystats.tsv")),
+    sizedist=relpath(os.path.join("reports/assembly", assembler, "assembly_size_dist.tsv"))
   params:
     script="workflow/scripts/assembly/assemblystats.py",
-    outdir=relpath("assembly/reports"),
+    outdir=relpath(os.path.join("reports/assembly", assembler)),
     tmpdir=os.path.join(tmpd, "report")
   log: os.path.join(logdir, "stats.log")
   conda: "../envs/seqkit-biopython.yml"
@@ -87,6 +126,5 @@ rule assembly_stats:
     
     mv {params.tmpdir}/tmp1.tsv {output.sizedist}
     mv {params.tmpdir}/tmp2.tsv {output.stats}
-    
     """
 

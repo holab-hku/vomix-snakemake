@@ -1,7 +1,7 @@
 configdict = config['viral-identify']['checkv-pyhmmer']
-logdir=relpath("viralcontigident/logs")
-benchmarks=relpath("viralcontigident/benchmarks")
-tmpd=relpath("viralcontigident/tmp")
+logdir=relpath("identify/viral/logs")
+benchmarks=relpath("identify/viral/benchmarks")
+tmpd=relpath("identify/viral/tmp")
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
@@ -36,7 +36,7 @@ if config['fasta']!="":
     console.print(Panel.fit("The fasta file path provided does not exist.", title="Error", subtitle="Contig File Path"))
     sys.exit(1)
 
-  outdir_p = os.path.join(cwd, relpath("viralcontigident/output/checkv/"))
+  outdir_p = os.path.join(cwd, relpath("identify/viral/output/checkv/"))
   console.print(f"[dim]Output file will be written to the '{outdir_p}' directory.\n")
 
   try:
@@ -48,7 +48,7 @@ if config['fasta']!="":
   sample_id = os.path.splitext(os.path.basename(fastap))[0]
 
 else:
-  fasta_path = relpath("viralcontigident/output/derep/combined.viralcontigs.derep.fa")
+  fasta_path = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa")
 
 ### MASTER RULE
 
@@ -56,9 +56,9 @@ rule done_log:
   name: "checkv-pyhmmer.py Done. removing tmp files"
   localrule: True
   input:
-    relpath("viralcontigident/output/checkv/viruses.fna"),
-    relpath("viralcontigident/output/checkv/proviruses.fna"),
-    relpath("viralcontigident/output/checkv/quality_summary.tsv")
+    relpath("identify/viral/output/checkv/viruses.fna"),
+    relpath("identify/viral/output/checkv/proviruses.fna"),
+    relpath("identify/viral/output/checkv/quality_summary.tsv")
   output:
     os.path.join(logdir, "checkv-done.log")
   shell: "touch {output}"
@@ -70,10 +70,10 @@ rule checkv_prodigalgv:
   name: "checkv-pyhmmer.smk CheckV run prodigal-gv"
   input: fasta_path
   output:
-    relpath("viralcontigident/output/checkv/tmp/proteins.faa")
+    relpath("identify/viral/output/checkv/tmp/proteins.faa")
   params:
     script="workflow/software/prodigal-gv/parallel-prodigal-gv.py",
-    outdir=relpath("viralcontigident/output/checkv/tmp"),
+    outdir=relpath("identify/viral/output/checkv/tmp"),
     tmpdir=os.path.join(tmpd, "checkv/prodigal-gv")
   log: os.path.join(logdir, "checkv_prodigal-gv.log")
   conda: "../envs/prodigal-gv.yml"
@@ -97,13 +97,13 @@ rule checkv_prodigalgv:
 rule checkv_pyhmmer:
   name: "checkv-pyhmmer.smk CheckV PyHMMER hmmsearch"
   input:
-    faa=relpath("viralcontigident/output/checkv/tmp/proteins.faa"), 
+    faa=relpath("identify/viral/output/checkv/tmp/proteins.faa"), 
     db="workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm"
   output:
-    relpath("viralcontigident/output/checkv/tmp/hmmsearch/{index}.hmmout")
+    relpath("identify/viral/output/checkv/tmp/hmmsearch/{index}.hmmout")
   params:
     script="workflow/scripts/taxonomy/pyhmmer_wrapper.py",
-    outdir=relpath("viralcontigident/output/checkv/tmp/hmmsearch"),
+    outdir=relpath("identify/viral/output/checkv/tmp/hmmsearch"),
     tmpdir=os.path.join(tmpd, "checkv/hmmsearch/{index}"), 
     ecutoff=10.0
   log : os.path.join(logdir, "checkv_hmmsearch_{index}.log")
@@ -132,9 +132,9 @@ rule checkv_hmm_merge:
   name: "checkv-pyhmmer.smk CheckV hmmsearch merge"
   localrule: True
   input:
-    expand(relpath("viralcontigident/output/checkv/tmp/hmmsearch/{index}.hmmout"), index = range(1, 81))
+    expand(relpath("identify/viral/output/checkv/tmp/hmmsearch/{index}.hmmout"), index = range(1, 81))
   output:
-    relpath("viralcontigident/output/checkv/tmp/hmmsearch.txt")
+    relpath("identify/viral/output/checkv/tmp/hmmsearch.txt")
   shell:
     """
     cat {input} > {output}
@@ -145,9 +145,9 @@ rule checkv_hmmer_checkpoint:
   name: "checkv-pyhmmer.smk CheckV hmmsearch checkpoint"
   localrule: True
   input:
-    relpath("viralcontigident/output/checkv/tmp/hmmsearch.txt")
+    relpath("identify/viral/output/checkv/tmp/hmmsearch.txt")
   output:
-    relpath("viralcontigident/output/checkv/tmp/hmmsearch_checkpoint")
+    relpath("identify/viral/output/checkv/tmp/hmmsearch_checkpoint")
   shell:
     """
     touch {output}
@@ -159,15 +159,15 @@ rule checkv_hmmer_checkpoint:
 rule checkv:
   name: "checkv-pyhmmer.smk CheckV dereplicated contigs"
   input:
-    checkpoint=relpath("viralcontigident/output/checkv/tmp/hmmsearch_checkpoint"),
+    checkpoint=relpath("identify/viral/output/checkv/tmp/hmmsearch_checkpoint"),
     fna=fasta_path
   output:
-    relpath("viralcontigident/output/checkv/viruses.fna"),
-    relpath("viralcontigident/output/checkv/proviruses.fna"),
-    relpath("viralcontigident/output/checkv/quality_summary.tsv")
+    relpath("identify/viral/output/checkv/viruses.fna"),
+    relpath("identify/viral/output/checkv/proviruses.fna"),
+    relpath("identify/viral/output/checkv/quality_summary.tsv")
   params:
     checkvparams= configdict['checkvparams'],
-    outdir=relpath("viralcontigident/output/checkv"),
+    outdir=relpath("identify/viral/output/checkv"),
     tmpdir=os.path.join(tmpd, "checkv"),
     dbdir="workflow/database/checkv"
   log: os.path.join(logdir, "checkv.log")

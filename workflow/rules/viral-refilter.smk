@@ -1,4 +1,4 @@
-import os 
+import os
 import json 
 
 from rich.console import Console
@@ -9,21 +9,17 @@ console = Console()
 
 
 configdict = config['viral-contigident']
-logdir=relpath("viralcontigident/logs")
-benchmarks=relpath("viralcontigident/benchmarks")
-tmpd=relpath("viralcontigident/tmp")
+logdir=relpath("identify/viral/logs")
+benchmarks=relpath("identify/viral/benchmarks")
+tmpd=relpath("identify/viral/tmp")
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
 
-if isinstance(config['cores'], int):
- n_cores = config['cores'] 
-else:
-  console.print(Panel.fit(f"config['cores'] is not an integer: {config['cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['cores'] not integer"))
-  sys.exit(1)
-
+n_cores = config['cores'] 
+assembler = config['assembler']
 
 ############################
 # Single-Sample Processing #
@@ -50,11 +46,11 @@ if config['inputdir']!="":
 
   assembly_ids = [os.path.basename(fasta_file).rsplit(".", 1)[0] for fasta_file in fasta_files]
   wildcards_p = os.path.join(indir, "{sample_id}.fa") 
-  outdir_p = os.path.join(cwd, relpath("viralcontigident/"))
+  outdir_p = os.path.join(cwd, relpath("identify/viral/"))
   console.print(f"Creating output directory: '{outdir_p}'.\n")
 
 else:
-  wildcards_p = relpath("assembly/samples/{sample_id}/output/final.contigs.fa")
+  wildcards_p = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
   assembly_ids = assemblies.keys()
 
 
@@ -70,17 +66,17 @@ rule done_log:
   name: "viral-contigident.py Done. removing tmp files"
   localrule: True
   input:
-    expand(relpath("viralcontigident/samples/{sample_id}/intermediate/dvf/final_score.txt"), sample_id=assembly_ids),
-    expand(relpath("viralcontigident/samples/{sample_id}/intermediate/phamer/out/phamer_prediction.csv"), sample_id=assembly_ids),
-    relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"),
-    relpath("viralcontigident/intermediate/scores/combined_viral_scores.csv"),
-    relpath("viralcontigident/output/checkv/combined_classification_results.csv"),
-    relpath("viralcontigident/output/combined.final.vOTUs.fa"), 
-    allhits=relpath("viralcontigident/intermediate/scores/combined_allcontigs_scores.csv")
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"), sample_id=assembly_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/out/phamer_prediction.csv"), sample_id=assembly_ids),
+    relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa"),
+    relpath("identify/viral/intermediate/scores/combined_viral_scores.csv"),
+    relpath("identify/viral/output/checkv/combined_classification_results.csv"),
+    relpath("identify/viral/output/combined.final.vOTUs.fa"), 
+    allhits=relpath("identify/viral/intermediate/scores/combined_allcontigs_scores.csv")
   output:
     os.path.join(logdir, "done.log")
   params:
-    filteredcontigs=expand(relpath("viralcontigident/samples/{sample_id}/tmp"), sample_id=assembly_ids),
+    filteredcontigs=expand(relpath("identify/viral/samples/{sample_id}/tmp"), sample_id=assembly_ids),
     tmpdir=tmpd
   log: os.path.join(logdir, "done.log")
   shell:
@@ -96,14 +92,14 @@ rule done_log:
 rule filter_outputs:
   name: "viral-contigident.py filter viral contigs"
   input:
-    fna=relpath("viralcontigident/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
-    scrs=relpath("viralcontigident/samples/{sample_id}/output/merged_scores.csv")
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
+    scrs=relpath("identify/viral/samples/{sample_id}/output/merged_scores.csv")
   output:
-    fna=relpath("viralcontigident/samples/{sample_id}/output/viral.contigs.fa"),
-    scrs=relpath("viralcontigident/samples/{sample_id}/output/merged_scores_filtered.csv"),
-    hits=relpath("viralcontigident/samples/{sample_id}/output/viralhits_list")
+    fna=relpath("identify/viral/samples/{sample_id}/output/viral.contigs.fa"),
+    scrs=relpath("identify/viral/samples/{sample_id}/output/merged_scores_filtered.csv"),
+    hits=relpath("identify/viral/samples/{sample_id}/output/viralhits_list")
   params:
-    script="workflow/scripts/viralcontigident/filtercontig_scores.py",
+    script="workflow/scripts/identify/viral/filtercontig_scores.py",
     genomad_cutoff=configdict['genomadcutoff_p'], 
     dvf_cutoff=configdict['dvfcutoff_p'], 
     dvf_pvalmax=configdict['dvfpval_p'],
@@ -141,15 +137,15 @@ rule filter_outputs:
 rule cat_contigs:
   name : "viral-contigident.py combine viral contigs"
   input:
-    fna=expand(relpath("viralcontigident/samples/{sample_id}/output/viral.contigs.fa"), sample_id=assembly_ids),
-    scrs=expand(relpath("viralcontigident/samples/{sample_id}/output/merged_scores_filtered.csv"), sample_id=assembly_ids),
-    allhits=expand(relpath("viralcontigident/samples/{sample_id}/output/merged_scores.csv"), sample_id=assembly_ids)
+    fna=expand(relpath("identify/viral/samples/{sample_id}/output/viral.contigs.fa"), sample_id=assembly_ids),
+    scrs=expand(relpath("identify/viral/samples/{sample_id}/output/merged_scores_filtered.csv"), sample_id=assembly_ids),
+    allhits=expand(relpath("identify/viral/samples/{sample_id}/output/merged_scores.csv"), sample_id=assembly_ids)
   output: 
-    fna=relpath("viralcontigident/intermediate/scores/combined.viralcontigs.fa"),
-    scrs=relpath("viralcontigident/intermediate/scores/combined_viral_scores.csv"),
-    allhits=relpath("viralcontigident/intermediate/scores/combined_allcontigs_scores.csv")
+    fna=relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa"),
+    scrs=relpath("identify/viral/intermediate/scores/combined_viral_scores.csv"),
+    allhits=relpath("identify/viral/intermediate/scores/combined_allcontigs_scores.csv")
   params:
-    script="workflow/scripts/viralcontigident/mergeout_scores.py", 
+    script="workflow/scripts/identify/viral/mergeout_scores.py", 
     names=list(assembly_ids),
     tmpdir=tmpd
   log: os.path.join(logdir, "catcontigs.log")
@@ -194,12 +190,12 @@ rule cat_contigs:
 rule combine_classifications:
   name: "viral-contigident.py combine derepped classification results"
   input:
-    checkv_out=relpath("viralcontigident/output/checkv/quality_summary.tsv"),
-    classify_out=relpath("viralcontigident/intermediate/scores/combined_viral_scores.csv")
+    checkv_out=relpath("identify/viral/output/checkv/quality_summary.tsv"),
+    classify_out=relpath("identify/viral/intermediate/scores/combined_viral_scores.csv")
   output:
-    relpath("viralcontigident/output/checkv/combined_classification_results.csv")
+    relpath("identify/viral/output/checkv/combined_classification_results.csv")
   params:
-    script="workflow/scripts/viralcontigident/combineclassify.py",
+    script="workflow/scripts/identify/viral/combineclassify.py",
     tmpdir=tmpd
   log: os.path.join(logdir, "combine_classification.log")
   threads: 1
@@ -222,13 +218,13 @@ rule combine_classifications:
 rule consensus_filtering:
   name: "viral-contigident.py consensus vOTU filtering"
   input:
-    relpath("viralcontigident/output/checkv/combined_classification_results.csv")
+    relpath("identify/viral/output/checkv/combined_classification_results.csv")
   output:
-    summary=relpath("viralcontigident/output/classification_summary_vOTUs.csv"),
-    proviruslist=relpath("viralcontigident/output/provirus.list.txt"),
-    viruslist=relpath("viralcontigident/output/virus.list.txt")
+    summary=relpath("identify/viral/output/classification_summary_vOTUs.csv"),
+    proviruslist=relpath("identify/viral/output/provirus.list.txt"),
+    viruslist=relpath("identify/viral/output/virus.list.txt")
   params:
-    script="workflow/scripts/viralcontigident/consensus_filtering.py",
+    script="workflow/scripts/identify/viral/consensus_filtering.py",
     genomad=configdict['genomadcutoff_s'],
     dvf=configdict['dvfcutoff_s'],
     phamer=configdict['phamercutoff_s'], 
@@ -260,17 +256,17 @@ rule consensus_filtering:
 rule votu:
   name: "viral-contigident.py generate final vOTUs"
   input:
-    provirusfasta=relpath("viralcontigident/output/checkv/proviruses.fna"),
-    virusfasta=relpath("viralcontigident/output/checkv/viruses.fna"), 
-    provirushits=relpath("viralcontigident/output/provirus.list.txt"),
-    virushits=relpath("viralcontigident/output/virus.list.txt")
+    provirusfasta=relpath("identify/viral/output/checkv/proviruses.fna"),
+    virusfasta=relpath("identify/viral/output/checkv/viruses.fna"), 
+    provirushits=relpath("identify/viral/output/provirus.list.txt"),
+    virushits=relpath("identify/viral/output/virus.list.txt")
   output:
-    combined=relpath("viralcontigident/output/combined.final.vOTUs.fa"),
-    provirus=relpath("viralcontigident/output/provirus.final.vOTUs.fa"),
-    virus=relpath("viralcontigident/output/virus.final.vOTUs.fa"), 
-    tsv=relpath("viralcontigident/output/GC_content_vOTUs.tsv")
+    combined=relpath("identify/viral/output/combined.final.vOTUs.fa"),
+    provirus=relpath("identify/viral/output/provirus.final.vOTUs.fa"),
+    virus=relpath("identify/viral/output/virus.final.vOTUs.fa"), 
+    tsv=relpath("identify/viral/output/GC_content_vOTUs.tsv")
   params:
-    outdir=relpath("viralcontigident/output/"),
+    outdir=relpath("identify/viral/output/"),
     tmpdir=tmpd
   log: os.path.join(logdir, "vOTUs.log")
   threads: 1

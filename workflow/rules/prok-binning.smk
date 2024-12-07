@@ -18,12 +18,8 @@ os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
 
-if isinstance(config['cores'], int):
- n_cores = config['cores'] 
-else:
-  console.print(Panel.fit(f"config['cores'] is not an integer: {config['cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['cores'] not integer"))
-  sys.exit(1)
-
+n_cores = config['cores'] 
+assembler = config['assembler']
 
 ############################
 # Single-Sample Processing #
@@ -54,7 +50,7 @@ if config['inputdir']!="":
   console.print(f"Creating output directory: '{outdir_p}'.\n")
 
 else:
-  wildcards_p = relpath("assembly/samples/{sample_id}/output/final.contigs.fa")
+  wildcards_p = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
   assembly_ids = assemblies.keys()
 
 
@@ -98,7 +94,7 @@ rule strobealign:
   input:
     R1=relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
     R2=relpath("preprocess/samples/{sample_id}/{sample_id}_R2.fastq.gz"),
-    fasta=lambda wildcards: relpath("assembly/samples/" + samples[wildcards.sample_id]["assembly"] + "/output/final.contigs.fa"),
+    fasta=lambda wildcards: relpath(os.path.join("assembly", assembler, "samples", samples[wildcards.sample_id]["assembly"], "output/final.contigs.fa")),
   output:
     bam=relpath("binning/prokaryotic/samples/{sample_id}/strobealign/{sample_id}.sorted.bam")
   params:
@@ -202,7 +198,7 @@ rule metabat2maxbin:
 rule metabat2:
   name: "prok-binning.smk MetaBAT2 binning"
   input:
-    fasta=relpath("assembly/samples/{assembly_id}/output/final.contigs.fa"),
+    fasta=relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa")),
     txt=relpath("binning/prokaryotic/assemblies/{assembly_id}/MetaBAT2/depthfile.txt")
   output:
     relpath("binning/prokaryotic/assemblies/{assembly_id}/MetaBAT2/bins/metabat2.unbinned.fa")
@@ -236,7 +232,7 @@ rule maxbin2:
   name: "prok-binning.smk MaxBin2 binning"
   input:
     jgi=relpath("binning/prokaryotic/assemblies/{assembly_id}/MaxBin2/depthfile.txt"),
-    fasta=relpath("assembly/samples/{assembly_id}/output/final.contigs.fa")
+    fasta=relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa"))
   output:
     relpath("binning/prokaryotic/assemblies/{assembly_id}/MaxBin2/bins/maxbin2.summary")
   params:
@@ -271,7 +267,7 @@ rule concoctprep:
         sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
     bams=lambda wildcards: expand(relpath("binning/prokaryotic/samples/{sample_id}/strobealign/{sample_id}.sorted.bam"),
         sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
-    fasta=relpath("assembly/samples/{assembly_id}/output/final.contigs.fa")
+    fasta=relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa"))
   output:
     bed=relpath("binning/prokaryotic/assemblies/{assembly_id}/CONCOCT/final.contigs.10k.bed"),
     fa=relpath("binning/prokaryotic/assemblies/{assembly_id}/CONCOCT/final.contigs.10k.fa"), 
@@ -309,7 +305,7 @@ rule concoctprep:
 rule concoct:
   name: "prok-binning.smk CONCOCT binning"
   input:
-    fasta=relpath("assembly/samples/{assembly_id}/output/final.contigs.fa"),
+    fasta=relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa")),
     bed=relpath("binning/prokaryotic/assemblies/{assembly_id}/CONCOCT/final.contigs.10k.bed"),
     fa=relpath("binning/prokaryotic/assemblies/{assembly_id}/CONCOCT/final.contigs.10k.fa"),       
     tsv=relpath("binning/prokaryotic/assemblies/{assembly_id}/CONCOCT/depth.tsv"),
@@ -377,7 +373,7 @@ rule contigs2bin:
 rule dastool:
   name: "prok-binning.smk DAS Tool consensus binning"
   input:
-    fasta=relpath("assembly/samples/{assembly_id}/output/final.contigs.fa"),
+    fasta=relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa")),
     MetaBAT2=relpath("binning/prokaryotic/assemblies/{assembly_id}/MetaBAT2/contigs2bin.tsv"),
     MaxBin2=relpath("binning/prokaryotic/assemblies/{assembly_id}/MaxBin2/contigs2bin.tsv"),
     CONCOCT=relpath("binning/prokaryotic/assemblies/{assembly_id}/CONCOCT/contigs2bin.tsv")

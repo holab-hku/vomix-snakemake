@@ -5,21 +5,20 @@
 module: "end-to-end"
 workdir : "."
 outdir : "results/"
-samplelist : ""
 datadir : "fastq/"
+samplelist : ""
 fasta: ""
-inputdir: ""
+indir: ""
+latest_run : ""
 
-decontamhost: False 
-clusteringfast: True
+assembler: "megahit" #["megahit", "spades"]
+decontam-host: False 
+clustering-fast: True
 multitool: False
-checkvoriginal: False
-virsorter2: False
-viralbinning: False
-hostprok: False # Flag to include your own prokaryotic genomes
-contigfile : ""
-contigfolder: ""
+checkv-original: False
+viral-binning: False
 cores: 4
+
 email: "vomixtest@gmail.com"
 
 #########################
@@ -41,8 +40,10 @@ preprocess:
 ###################
 
 assembly:
-        megahit_min_contig_len: 300
-        megahitparams: "--prune-level 3"
+        megahit-minlen: 300
+        megahit-params: "--prune-level 3"
+        spades-params: "--meta"
+        spades-memory: 250
 
 
 ######################################

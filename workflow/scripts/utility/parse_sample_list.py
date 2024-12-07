@@ -9,6 +9,7 @@ import time
 import re
 import warnings
 from io import StringIO
+import datetime
 
 import pandas as pd
 from Bio import Entrez
@@ -84,7 +85,7 @@ def validate_samples(samples):
 		progress.stop_task(task)
 
 
-def parse_sample_list(f, datadir, outdir, email):
+def parse_sample_list(f, datadir, outdir, email, time):
 	"""
 	Parse the sample list. Each sample is stored as a dictionary in the samples{} dictionary.
 	samples{sample_name} will have the following information:
@@ -210,13 +211,21 @@ def parse_sample_list(f, datadir, outdir, email):
 				'assembly': assemblyid}
 	
 
+	# save log of input files
+	logdir = os.path.join(outdir, (".vomix/log/vomix" + time))
+	
+	with open(os.path.join(logdir,  "sample.json"), "w") as samplelog:
+		json.dump(samples, samplelog)
+	with open(os.path.join(logdir,  "assemblies.json"), "w") as assemblylog:
+		json.dump(assemblies, assemblylog)
+	
 	# check if samples.json already exists or has changed
 	# if samples.json is identical, assembly.json is also
 	# presumed to be identical
-
+	
 	samplejson = os.path.join(outdir, ".vomix/samples.json")
 	assemblyjson = os.path.join(outdir, ".vomix/assemblies.json")
-	
+
 	if os.path.exists(samplejson):
 		with open(samplejson, "r") as sampleold:
 			samples_old = json.load(sampleold)
@@ -229,11 +238,12 @@ def parse_sample_list(f, datadir, outdir, email):
 	# If not exited already, validate and write
 	Entrez.email = email
 	validate_samples(samples)
-		
+	
 	with open(samplejson, "w") as sampleout:
 		json.dump(samples, sampleout)
 	with open(assemblyjson, "w") as assemblyout:
 		json.dump(assemblies, assemblyout)
+
 	
 	return samples, assemblies
 
