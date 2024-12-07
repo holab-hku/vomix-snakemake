@@ -31,7 +31,7 @@ rule megahit:
   input:
     R1s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
         sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
-    R2s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
+    R2s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R2.fastq.gz"),
         sample_id = assemblies[wildcards.assembly_id]["sample_id"])
   output:
     fasta=relpath("assembly/megahit/samples/{assembly_id}/output/final.contigs.fa")
@@ -70,7 +70,7 @@ rule spades:
   input:
     R1s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
         sample_id = assemblies[wildcards.assembly_id]["sample_id"]),
-    R2s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
+    R2s=lambda wildcards: expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R2.fastq.gz"),
         sample_id = assemblies[wildcards.assembly_id]["sample_id"])
   output:
     fasta=relpath("assembly/spades/samples/{assembly_id}/output/final.contigs.fa")
