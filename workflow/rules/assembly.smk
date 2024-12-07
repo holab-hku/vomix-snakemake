@@ -106,6 +106,7 @@ rule spades:
 
 rule assembly_stats:
   name: "assembly.smk aggregate assembly statistics"
+  localrule: True
   input:
     expand(relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa")), assembly_id = assemblies.keys())
   output:
