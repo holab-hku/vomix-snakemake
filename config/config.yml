@@ -12,7 +12,7 @@ indir: ""
 latest_run : ""
 
 assembler: "megahit" #["megahit", "spades"]
-decontam-host: False 
+decontam-host: False
 clustering-fast: True
 multitool: False
 checkv-original: False

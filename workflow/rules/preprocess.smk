@@ -23,8 +23,8 @@ rule done:
       expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R2.fastq.gz"), sample_id=samples.keys()),
       expand(os.path.join(datadir, "{sample_id}_{i}.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
       expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
-      relpath("preprocess/reports/preprocess_report.html"), 
-      relpath("preprocess/reports/library_size_stats.csv")
+      relpath("reports/preprocess/preprocess_report.html"), 
+      relpath("reports/preprocess/library_size_stats.csv")
     output:
       os.path.join(logdir, "done.log")
     shell:
@@ -119,11 +119,11 @@ rule aggregate_fastp:
   input:
     jsons=expand(relpath("preprocess/samples/{sample_id}/report.fastp.json"), sample_id = samples.keys())
   output:
-    relpath("preprocess/reports/library_size_stats.csv")
+    relpath("reports/preprocess/library_size_stats.csv")
   params:
     script="workflow/scripts/preprocess/parse_fastp.py",
     names=list(samples.keys()),
-    outdir=relpath("preprocess/reports"),
+    outdir=relpath("reports/reports"),
     tmpdir=tmpd
   log: os.path.join(logdir, "fastp_summary_stats.log")
   conda: "../envs/seqkit-biopython.yml"
@@ -181,7 +181,7 @@ rule multiqc:
   conda: "../envs/multiqc.yml"
   shell:
     """
-    rm -rf {params.tmpdir} {params.outdir}
+    rm -rf {params.tmpdir}
     mkdir -p {params.tmpdir} {params.outdir}
 
     multiqc {params.searchdir} -f -o {params.tmpdir} -n preprocess_report.html 2> {log}
