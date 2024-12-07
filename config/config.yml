@@ -14,7 +14,7 @@ latest_run : ""
 assembler: "megahit" #["megahit", "spades"]
 decontam-host: False
 clustering-fast: True
-multitool: False
+multi-tool: False
 checkv-original: False
 viral-binning: False
 cores: 4

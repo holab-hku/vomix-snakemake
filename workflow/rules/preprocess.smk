@@ -109,7 +109,6 @@ rule fastp:
     mv {params.tmpdir}/tmp.json {output.json}
 
     rm -r {params.tmpdir}
-
     """
 
 
@@ -123,7 +122,7 @@ rule aggregate_fastp:
   params:
     script="workflow/scripts/preprocess/parse_fastp.py",
     names=list(samples.keys()),
-    outdir=relpath("reports/reports"),
+    outdir=relpath("reports/preprocess"),
     tmpdir=tmpd
   log: os.path.join(logdir, "fastp_summary_stats.log")
   conda: "../envs/seqkit-biopython.yml"

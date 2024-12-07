@@ -124,7 +124,7 @@ rule aggregate_fastp:
     script="workflow/scripts/preprocess/parse_fastp.py", 
     names=list(samples.keys()),
     outdir=relpath("reports/preprocess"),
-    tmpdir=tmpd
+    tmpdir=os.path.join(tmpd, "fastp/summary")
   log: os.path.join(logdir, "fastp_summary_stats.log")
   conda: "../envs/seqkit-biopython.yml"
   threads: 1
@@ -141,7 +141,7 @@ rule aggregate_fastp:
         --jsons {params.tmpdir}/tmp.jsons > {params.tmpdir}/tmp.csv 2> {log}
 
     mv {params.tmpdir}/tmp.csv {output}
-    rm -r {params.tmpdir}/*
+    rm -rf {params.tmpdir}/*
     """
 
 
@@ -230,6 +230,6 @@ rule multiqc:
     mv {params.tmpdir}/*.html {params.outdir}
     mv {params.tmpdir}/preprocess* {params.outdir}
 
-    rm -r {params.tmpdir}/*
+    rm -rf {params.tmpdir}/*
     """
 

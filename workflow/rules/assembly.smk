@@ -39,7 +39,7 @@ rule megahit:
     parameters=configdict['megahit-params'],
     minlen=configdict["megahit-minlen"],
     outdir=relpath("assembly/megahit/samples/{assembly_id}/output"),
-    tmpdir=os.path.join(tmpd, "megahit/{assembly_id}")
+    tmpdir=os.path.join(tmpd, "megahit")
   log: os.path.join(logdir, "megahit_{assembly_id}.log")
   benchmark: os.path.join(benchmarks, "megahit_{assembly_id}.log")
   conda: "../envs/megahit.yml"
@@ -48,15 +48,15 @@ rule megahit:
     mem_mb = lambda wildcards, attempt, threads, input: max(attempt * input.size_mb * 5, 2000)
   shell:
     """
-    rm -rf {params.tmpdir} {params.outdir}/*
-    mkdir -p {params.outdir}
+    rm -rf {params.tmpdir}/{wildcards.assembly_id} {params.outdir}/*
+    mkdir -p {params.outdir} {params.tmpdir}
 
 
     megahit \
         -1 $(echo "{input.R1s}" | tr ' ' ',') \
         -2 $(echo "{input.R2s}" | tr ' ' ',') \
         --min-contig-len {params.minlen} \
-        -o {params.tmpdir} \
+        -o {params.tmpdir}/{wildcards.assembly_id} \
         -t {threads} \
         {params.parameters} &> {log} 
 
