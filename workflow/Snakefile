@@ -207,10 +207,7 @@ if config["module"] == "prok-binning" or config["module"] == "end-to-end":
 # host 
 if config["module"] == "host" or config["module"] == "end-to-end":
   targets += [relpath("host/logs/done.log")]
-  if config["hostprok"]:
-    include: "rules/host-prok.smk"
-  else:
-    include: "rules/host-cherry.smk"
+  include: "rules/host-cherry.smk"
 
 # community (prokaryotic)
 if config["module"] == "prok-community":

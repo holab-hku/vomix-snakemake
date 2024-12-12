@@ -29,7 +29,7 @@ rule done_log:
     relpath("annotation/viral/output/PhaVIP/final_prediction/phavip_prediction.tsv")
   output:
     os.path.join(logdir, "done.log")
-  arams:
+  params:
     tmpdir=tmpd
   log: os.path.join(logdir, "done.log")
   shell:
@@ -42,7 +42,7 @@ rule done_log:
 rule CHERRY:
   name: "host.smk CHERRY host prediction"
   input:
-    fna=fasta_path
+    fna=fastap
   output:
     relpath("host/output/CHERRY/final_prediction/cherry_prediction.tsv")
   params:
@@ -100,7 +100,7 @@ rule PhaVIP:
 rule PhaTYP:
   name: "host.smk PhaTYP lifestyle prediction"
   input:
-    fna=fasta_path
+    fna=fastap
   output:
     relpath("host/output/PhaTYP/final_prediction/phatyp_prediction.tsv")
   params:
