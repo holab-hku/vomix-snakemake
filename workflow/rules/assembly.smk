@@ -8,6 +8,17 @@ benchmarks = relpath(os.path.join("assembly", assembler, "benchmarks"))
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 
+email=config["email"]
+nowstr=config["latest_run"]
+outdir=config["outdir"] 
+datadir=config["datadir"]
+
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
+
+# Check if there are any co-assemblies and abort if using SPAdes and co-assembly
+if (len(assemblies.keys()) != len(samples.keys())) and (assembler == "spades"):
+  console.print(Panel.fit(f"[bold]Error[/bold]: [dim] SPAdes does not currently support co-assemblies, you may use assembler='megahit' instead. Please read more at https://ablab.github.io/spades/input.html", title="Error", subtitle="SPAdes Co-assembly Support"))
+  sys.exit(1)
 
 
 # MASTER RULE

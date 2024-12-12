@@ -12,13 +12,24 @@ os.makedirs(benchmarks, exist_ok=True)
 
 n_cores = config['cores']
 
+### Read single fasta file if input
+if config['fasta'] != "" and config["module"] == "clustering-sensitive":
+  fastap = readfasta(config['fasta'])
+  sample_id = config["sample-name"]
+  assembly_ids = [sample_id]
+else:
+  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
+  fastap = relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa")
+
+
+
 ##################
 # CD-HIT CLUSTER #
 ##################
 rule cdhit_derep:
   name: "CD-HIT --clustering-sensitive [clustering-sensitive.smk]"
   input:
-    relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa")
+    fastap
   output:
     fa=relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa"), 
     clstr=relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr")

@@ -12,6 +12,8 @@ os.makedirs(tmpd, exist_ok=True)
 methodslist = configdict["covermmethods"].split()
 methods_c = ",".join(methodslist)
 
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
+
 # MASTER RULE 
 
 rule done:

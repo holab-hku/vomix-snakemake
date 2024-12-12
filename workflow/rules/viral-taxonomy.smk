@@ -3,61 +3,29 @@ configdict = config['viral-taxonomy']
 logdir = relpath("taxonomy/viral/logs")
 tmpd = relpath("taxonomy/viral/tmp")
 benchmarks = relpath("taxonomy/viral/benchmarks")
+outdir_p = relpath("taxonomy/viral/output/")
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 
-if isinstance(config['cores'], int):
- n_cores = config['cores']
-else:
-  console.print(Panel.fit(f"config['cores'] is not an integer: {config['cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['cores'] not integer"))
-  sys.exit(1)
+n_cores = config['cores']
 
 
 ### Check if geNomad is run already 
 if os.path.exists(relpath("identify/viral/output/classification_summary_vOTUs.csv")):
   genomad_out = relpath("identify/viral/output/classification_summary_vOTUs.csv")
+  console.print(Panel.fit(f"[dim] geNomad has already been run. Using its output in '{genomad_out}' for taxonomic annotation.", title = "Warning", subtitle="geNomad taxonomy"))
 else:
   genomad_out = relpath("taxonomy/viral/intermediate/genomad/taxonomy.tsv")
 
-
-############################
-# Single-Sample Processing #
-############################
-
-if config['fasta']!="":
-
-  fastap = config['fasta']
-  _, extension = os.path.splitext(fastap)
-
-  console.print(f"\n[dim]The config['fasta'] parameter is not empty, using '{fastap}' as input.")
-
-  if extension.lower() not in ['.fa', '.fasta', '.fna']:
-    console.print(Panel.fit("File path does not end with .fa, .fasta, or .fna", title = "Error", subtitle="Input not fasta file"))
-    sys.exit(1)
-
-  cwd = os.getcwd()
-  fasta_path = os.path.join(cwd, fastap)
-
-  if not os.path.exists(fastap):
-    console.print(Panel.fit("The fasta file path provided does not exist.", title="Error", subtitle="Contig File Path"))
-    sys.exit(1)
-
-  outdir_p = os.path.join(cwd, relpath("taxonomy/viral/output/"))
-  console.print(f"[dim]Output file will be written to the '{outdir_p}' directory.\n")
-
-  try:
-    if len(os.listdir(outdir_p)) > 0:
-      console.print(Panel.fit(f"Output directory '{outdir_p}' already exists and is not empty.", title = "Warning", subtitle="Output Directory Not Empty"))
-  except Exception:
-    pass
-
-  sample_id = os.path.splitext(os.path.basename(fastap))[0]
-
+### Read single fasta file if input
+if config['fasta'] != "":
+  fastap = readfasta(config['fasta'])
+  sample_id = config["sample-name"]
+  assembly_ids = [sample_id]
 else:
-  fasta_path = relpath("identify/viral/output/combined.final.vOTUs.fa")
-
+  fastap = relpath("identify/viral/output/combined.final.vOTUs.fa")
 
 ### MASTER RULE 
 
@@ -82,7 +50,7 @@ rule done_log:
 rule prodigalgv_taxonomy:
   name: "viral-taxonomy.smk prodigal-gv vTOUs [parallelized]"
   input: 
-    fasta_path
+    fastap
   output: 
     relpath("taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa")
   params:
@@ -154,7 +122,6 @@ rule pyhmmer_taxonomy:
 
 rule VIRify_postprocess:
   name: "viral-taxonomy.smk VIRify post-process hmmer"
-  localrule: True
   input: 
     relpath("taxonomy/viral/intermediate/viphogs/vOTUs_hmmscan.tbl")
   output:
@@ -165,6 +132,9 @@ rule VIRify_postprocess:
   conda: "../envs/ete3.yml"
   log: os.path.join(logdir, "VIRify_postprocess.log")
   benchmark: os.path.join(benchmarks, "VIRify_postprocess.log")
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     rm -rf {params.tmpdir}
@@ -255,7 +225,8 @@ rule VIRify_assign:
   conda: "../envs/ete3.yml"
   log: os.path.join(logdir, "VIRify_assign.log")
   benchmark: os.path.join(benchmarks, "VIRify_assign.log")
-  threads:
+  threads: 1
+  resources:
     mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
@@ -277,14 +248,14 @@ rule VIRify_assign:
 rule genomad_classify:
   name: "viral-taxonomy.smk geNomad classify"
   input:
-    fna=fasta_path
+    fna=fastap
   output:
     genomad=genomad_out
   params:
     genomadparams=configdict['genomadparams'],
     dbdir=configdict['genomaddb'],
-    outdir=relpath("taxonomy/viral/intermediate/genomad/"),
-    tmpdir=os.path.join(tmpd, "genomad/")
+    outdir=relpath("taxonomy/viral/intermediate/genomad"),
+    tmpdir=os.path.join(tmpd, "genomad")
   log: os.path.join(logdir, "genomad_taxonomy.log")
   benchmark: os.path.join(benchmarks, "genomad_taxonomy.log")
   conda: "../envs/genomad.yml"
@@ -305,7 +276,7 @@ rule genomad_classify:
         {params.genomadparams} &> {log}
 
     mv {params.tmpdir}/* {params.outdir}
-    cp {params.outdir}/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv {output.genomad}
+    cp {params.outdir}/*_summary/*_virus_summary.tsv {output.genomad}
     rm -rf {params.tmpdir}
     """
 
@@ -318,7 +289,7 @@ rule genomad_taxonomy:
   output:
     relpath("taxonomy/viral/intermediate/genomad/taxonomy.csv")
   params:
-    script="workflow/scripts/taxonomy/genomad_viral-taxonomy.smk",
+    script="workflow/scripts/taxonomy/genomad_taxonomy.py",
     outdir=relpath("taxonomy/viral/intermediate/genomad"),
     tmpdir=os.path.join(tmpd, "genomad")
   conda: "../envs/ete3.yml"
@@ -326,7 +297,7 @@ rule genomad_taxonomy:
   benchmark: os.path.join(benchmarks, "genomad_parse.log")
   shell:
     """
-    rm -rf {params.tmpdir}/* {params.outdir}/*
+    rm -rf {params.tmpdir}/* 
     mkdir -p {params.tmpdir} {params.outdir}
 
     python {params.script} \
@@ -342,9 +313,9 @@ rule genomad_taxonomy:
 rule phagcn_taxonomy:
   name: "viral-taxonomy.smk PhaGCN phage taxonomy"
   input:
-    fna=fasta_path
+    fna=fastap
   output:
-    relpath("taxonomy/viral/intermediate/phagcn/taxonomy.csv")
+    relpath("taxonomy/viral/intermediate/phagcn/taxonomy.tsv")
   params:
     parameters=configdict['phagcnparams'],
     dbdir=configdict['phagcndb'],
@@ -369,7 +340,7 @@ rule phagcn_taxonomy:
         {params.parameters} &> {log}
 
     mv {params.tmpdir}/* {params.outdir}/
-    cp {params.outdir}/out/phagcn_prediction.csv {output}
+    cp {params.outdir}/final_prediction/phagcn_prediction.tsv {output}
 
     rm -rf {params.tmpdir}
     """ 
@@ -389,6 +360,8 @@ rule diamond_makedb:
   benchmark: os.path.join(benchmarks, "diamond_makedb.log")
   conda: "../envs/diamond.yml"
   threads: 32
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     rm -rf {params.tmpdir} {params.outdir}
@@ -474,19 +447,18 @@ rule merge_taxonomy:
   input:
     diamond=relpath("taxonomy/viral/intermediate/diamond/taxonomy.csv"),
     viphogs=relpath("taxonomy/viral/intermediate/viphogs/taxonomy.tsv"),
-    phagcn=relpath("taxonomy/viral/intermediate/phagcn/taxonomy.csv"),
+    phagcn=relpath("taxonomy/viral/intermediate/phagcn/taxonomy.tsv"),
     genomad=relpath("taxonomy/viral/intermediate/genomad/taxonomy.csv"),
-    contigs=fasta_path
+    contigs=fastap
   output:
     relpath("taxonomy/viral/output/merged_taxonomy.csv")
   params:
-    script="workflow/scripts/taxonomy/merge_viral-taxonomy.smk",
+    script="workflow/scripts/taxonomy/merge_taxonomy.py",
     outdir=relpath("taxonomy/viral/output/"),
     tmpdir=os.path.join(tmpd, "merge")
   log: os.path.join(logdir, "merge_taxonomy.log")
   benchmark: os.path.join(logdir, "merge_taxonomy.log")
   conda: "../envs/ete3.yml"
-  threads: 1
   shell:
     """
     rm -rf {params.tmpdir}/* {output}

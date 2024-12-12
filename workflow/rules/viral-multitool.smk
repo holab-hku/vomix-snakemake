@@ -7,7 +7,6 @@ from rich.layout import Layout
 from rich.panel import Panel
 console = Console()
 
-
 configdict = config['viral-idenitfy']
 logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")
@@ -17,47 +16,18 @@ os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
-
 n_cores = config['cores'] 
 assembler = config['assembler']
 
-############################
-# Single-Sample Processing #
-############################
-
-# the "contigfile" is not the nested one
-
-if config['inputdir']!="":
-
-  indir = cleanpath(config['inputdir'])
-  console.print(f"\nconfig['inputdir'] not empty, using '{indir}' as input for viral contig identification.")
-  console.print("File names without the .fa extension will be used as sample IDs.")
-  cwd = os.getcwd()
-  indir_path = os.path.join(cwd, indir)
-
-  if not os.path.exists(indir):
-    console.print(Panel.fit(f"The input file path '{indir}' does not exist.", title="Error", subtitle="Contig Directory"))
-    sys.exit(1)
-
-  fasta_files = [f for f in os.listdir(indir_path) if f.endswith('.fa')]
-  if len(fasta_files) == 0:
-    console.print(Panel.fit(f"There are no files ending with .fa in '{indir_path}', other fasta extensions are not accepted (for now) :(", title="Error", subtitle="No .fa Files"))
-    sys.exit(1) 
-
-  assembly_ids = [os.path.basename(fasta_file).rsplit(".", 1)[0] for fasta_file in fasta_files]
-  wildcards_p = os.path.join(indir, "{sample_id}.fa") 
-  outdir_p = os.path.join(cwd, relpath("identify/viral/"))
-  console.print(f"Creating output directory: '{outdir_p}'.\n")
-
+### Read single fasta file if input
+if config['fasta'] != "":
+  fastap = readfasta(config['fasta'])
+  sample_id = config["sample-name"]
+  assembly_ids = [sample_id]
 else:
-  wildcards_p = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
+  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
+  fastap = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
   assembly_ids = assemblies.keys()
-
-
-
-###########################
-# Multi-sample Processing #
-###########################
 
 
 ### MASTER RULE 
@@ -92,7 +62,7 @@ rule filter_contigs:
   name: "viral-multitool.smk filter contigs [length]"
   localrule: True
   input:
-    wildcards_p
+    fastap
   output:
     relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
   params:
@@ -186,12 +156,13 @@ rule dvf_classify:
     """
 
 
+
 rule phamer_classify:
   name: "viral-multitool.smk PhaMer classify"
   input:
     fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
   output:
-    relpath("identify/viral/samples/{sample_id}/intermediate/phamer/out/phamer_prediction.csv")
+    relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv")
   params:
     parameters=configdict['phamerparams'],
     dbdir=configdict['phamerdb'],
@@ -221,19 +192,21 @@ rule phamer_classify:
     """
 
 
+# NOTE, THE PYTHON CODE NEEDS TO BE CHANGED AS PHAMERS OUTPUT IS NOW A TSV ONE
+
 rule merge_outputs:
   name : "viral-multitool.smk merge classification outputs"
   input:
     genomadout=relpath("identify/viral/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv"),
     dvfout=relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"), 
-    phamerout=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/out/phamer_prediction.csv"),
+    phamerout=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/out/phamer_prediction.tsv"),
   output:
     relpath("identify/viral/samples/{sample_id}/output/merged_scores.csv")
   params:
     script="workflow/scripts/identify/viral/mergeout.py",
     genomadminlen=configdict['genomadminlen'],
     dvfminlen=configdict['dvfminlen'], 
-    phamerminlen=configdict['dvfminlen'], 
+    phamerminlen=configdict['phamerminlen'], 
     outdir=relpath("identify/viral/samples/{sample_id}/output/"),
     tmpdir=os.path.join(tmpd, "merge/{sample_id}")
   log: os.path.join(logdir, "mergeout_{sample_id}.log")

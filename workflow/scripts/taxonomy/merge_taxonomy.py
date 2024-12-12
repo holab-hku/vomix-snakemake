@@ -20,7 +20,7 @@ def merge_taxonomy(diamond_out, viphogs_out, phagcn_out, genomad_out, contigs_fa
 	
 	diamondf = pd.read_csv(diamondout, index_col=0)
 	viphogdf = pd.read_csv(viphogsout, delimiter="\t", index_col=0)
-	phagcndf = pd.read_csv(diamondout, index_col=0)
+	phagcndf = pd.read_csv(phagcnout, delimiter="\t", index_col=0)
 	genomdf = pd.read_csv(genomadout, index_col=0)
 	
 	diamondf = diamondf.add_prefix("diamond_")

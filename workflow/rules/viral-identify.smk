@@ -5,6 +5,11 @@ logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")
 tmpd=relpath("identify/viral/tmp")
 
+email=config["email"]
+nowstr=config["latest_run"]
+outdir=config["outdir"]
+datadir=config["datadir"]
+
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
@@ -12,38 +17,16 @@ os.makedirs(tmpd, exist_ok=True)
 n_cores = config['cores']
 assembler = config['assembler']
 
-############################
-# Single-Sample Processing #
-############################
 
-# the "contigfile" is not the nested one
-
-if config['indir']!="":
-
-  indir = cleanpath(config['indir'])
-  console.print(f"\nconfig['indir'] not empty, using '{indir}' as input for viral contig identification.")
-  console.print("File names without the .fa extension will be used as sample IDs.")
-  cwd = os.getcwd()
-  indir_path = os.path.join(cwd, indir)
-
-  if not os.path.exists(indir):
-    console.print(Panel.fit(f"The input file path '{indir}' does not exist.", title="Error", subtitle="Contig Directory"))
-    sys.exit(1)
-
-  fasta_files = [f for f in os.listdir(indir_path) if f.endswith('.fa')]
-  if len(fasta_files) == 0:
-    console.print(Panel.fit(f"There are no files ending with .fa in '{indir_path}', other fasta extensions are not accepted (for now) :(", title="Error", subtitle="No .fa Files"))
-    sys.exit(1)
-
-  assembly_ids = [os.path.basename(fasta_file).rsplit(".", 1)[0] for fasta_file in fasta_files]
-  wildcards_p = os.path.join(indir, "{sample_id}.fa")
-  outdir_p = os.path.join(cwd, relpath("identify/viral/"))
-  console.print(f"Creating output directory: '{outdir_p}'.\n")
-
+### Read single fasta file if input
+if config['fasta'] != "":
+  fastap = readfasta(config['fasta'])
+  sample_id = config["sample-name"]
+  assembly_ids = [sample_id]
 else:
-  wildcards_p = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
+  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
+  fastap = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
   assembly_ids = assemblies.keys()
-
 
 
 ### MASTER RULE 
@@ -71,7 +54,7 @@ rule filter_contigs:
   name: "viral-identify.smk filter contigs [length]"
   localrule: True
   input:
-    wildcards_p
+    fastap
   output:
     relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
   params:

@@ -8,7 +8,8 @@ outdir : "results/"
 datadir : "fastq/"
 samplelist : ""
 fasta: ""
-indir: ""
+sample-name: ""
+fastadir: ""
 latest_run : ""
 
 assembler: "megahit" #["megahit", "spades"]

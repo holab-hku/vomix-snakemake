@@ -1,5 +1,6 @@
 import os
 os.makedirs(relpath(".vomix/log"), exist_ok=True)
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
 
 
 ###################

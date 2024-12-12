@@ -14,41 +14,14 @@ else:
   sys.exit(1)
 
 
-############################
-# Single-Sample Processing #
-############################
-
-if config['fasta']!="":
-
-  fastap = config['fasta']
-  _, extension = os.path.splitext(fastap)
-
-  console.print(f"\n[dim]The config['fasta'] parameter is not empty, using '{fastap}' as input.")
-
-  if extension.lower() not in ['.fa', '.fasta', '.fna']:
-    console.print(Panel.fit("File path does not end with .fa, .fasta, or .fna", title = "Error", subtitle="Input not fasta file"))
-    sys.exit(1)
-
-  cwd = os.getcwd()
-  fasta_path = os.path.join(cwd, fastap)
-
-  if not os.path.exists(fastap):
-    console.print(Panel.fit("The fasta file path provided does not exist.", title="Error", subtitle="Contig File Path"))
-    sys.exit(1)
-
-  outdir_p = os.path.join(cwd, relpath("identify/viral/output/checkv/"))
-  console.print(f"[dim]Output file will be written to the '{outdir_p}' directory.\n")
-
-  try:
-    if len(os.listdir(outdir_p)) > 0:
-      console.print(Panel.fit(f"Output directory '{outdir_p}' already exists and is not empty.", title = "Warning", subtitle="Output Directory Not Empty"))
-  except Exception:
-    pass
-
-  sample_id = os.path.splitext(os.path.basename(fastap))[0]
-
+### Read single fasta file if input
+if config['fasta'] != "":
+  fastap = readfasta(config['fasta'])
+  sample_id = config["sample-name"]
+  assembly_ids = [sample_id]
 else:
-  fasta_path = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa")
+  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
+  fastap = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa")
 
 
 
@@ -72,7 +45,7 @@ rule done_log:
 rule checkv:
   name: "checkv.smk CheckV dereplicated contigs"
   input:
-    fna=fasta_path
+    fna=fastap
   output:
     relpath("identify/viral/output/checkv/viruses.fna"),
     relpath("identify/viral/output/checkv/proviruses.fna"),

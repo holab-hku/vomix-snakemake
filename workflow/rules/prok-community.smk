@@ -3,6 +3,13 @@ logdir = relpath("community/metaphlan/logs")
 tmpd = relpath("community/metaphlan/tmp")
 benchmarks = relpath("community/metaphlan/benchmarks")
 
+email=config["email"]
+nowstr=config["latest_run"]
+outdir=config["outdir"]
+datadir=config["datadir"] 
+
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr) 
+
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True) 
 

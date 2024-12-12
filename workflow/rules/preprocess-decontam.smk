@@ -1,7 +1,13 @@
 configdict = config['preprocess']
 logdir=relpath("preprocess/logs")
 tmpd = relpath("preprocess/tmp")
+
+email=config["email"]
+nowstr=config["latest_run"]
+outdir=config["outdir"] 
 datadir=config["datadir"]
+
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
