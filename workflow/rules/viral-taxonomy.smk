@@ -154,6 +154,7 @@ rule pyhmmer_taxonomy:
 
 rule VIRify_postprocess:
   name: "viral-taxonomy.smk VIRify post-process hmmer"
+  localrule: True
   input: 
     relpath("taxonomy/viral/intermediate/viphogs/vOTUs_hmmscan.tbl")
   output:
@@ -189,6 +190,9 @@ rule VIRify_ratioeval:
   conda: "../envs/ete3.yml"
   log: os.path.join(logdir, "VIRify_ratioeval.log")
   benchmark: os.path.join(benchmarks, "VIRify_ratioeval.log")
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     rm -rf {params.tmpdir}
@@ -218,6 +222,9 @@ rule VIRify_annotate:
   conda: "../envs/ete3.yml"
   log: os.path.join(logdir, "VIRify_annotation.log")
   benchmark: os.path.join(benchmarks, "VIRify_annotation.log")
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     rm -rf {params.tmpdir}
@@ -248,6 +255,8 @@ rule VIRify_assign:
   conda: "../envs/ete3.yml"
   log: os.path.join(logdir, "VIRify_assign.log")
   benchmark: os.path.join(benchmarks, "VIRify_assign.log")
+  threads:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     rm -rf {params.tmpdir} {output}
@@ -303,6 +312,7 @@ rule genomad_classify:
 
 rule genomad_taxonomy:
   name: "viral-taxonomy.smk geNomad parse taxonomy"
+  localrule: True
   input:
     genomad_out
   output:

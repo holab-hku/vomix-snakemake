@@ -18,10 +18,10 @@ assembler = config['assembler']
 
 # the "contigfile" is not the nested one
 
-if config['inputdir']!="":
+if config['indir']!="":
 
-  indir = cleanpath(config['inputdir'])
-  console.print(f"\nconfig['inputdir'] not empty, using '{indir}' as input for viral contig identification.")
+  indir = cleanpath(config['indir'])
+  console.print(f"\nconfig['indir'] not empty, using '{indir}' as input for viral contig identification.")
   console.print("File names without the .fa extension will be used as sample IDs.")
   cwd = os.getcwd()
   indir_path = os.path.join(cwd, indir)
@@ -146,6 +146,8 @@ rule genomad_filter:
   log: os.path.join(logdir, "genomad_filter_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml"
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     rm -rf {params.tmpdir}/*
@@ -184,6 +186,8 @@ rule cat_contigs:
   log: os.path.join(logdir, "catcontigs.log")
   conda: "../envs/seqkit-biopython.yml"
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     rm -rf {params.tmpdir}
@@ -216,6 +220,8 @@ rule combine_classifications:
     tmpdir=tmpd
   log: os.path.join(logdir, "combine_classification.log")
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   conda : "../envs/seqkit-biopython.yml"
   shell:
     """
@@ -252,6 +258,8 @@ rule consensus_filtering:
     tmpdir=tmpd
   log: os.path.join(logdir, "consensus_filtering.log")
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   conda: "../envs/seqkit-biopython.yml"
   shell:
     """
@@ -281,13 +289,15 @@ rule votu:
   output:
     combined=relpath("identify/viral/output/combined.final.vOTUs.fa"),
     provirus=relpath("identify/viral/output/provirus.final.vOTUs.fa"),
-    virus=relpath("identify/viral/output/virus.final.vOTUs.fa"), 
+    virus=relpath("identify/viral/output/virus.final.vOTUs.fa"),
     tsv=relpath("identify/viral/output/GC_content_vOTUs.tsv")
   params:
     outdir=relpath("identify/viral/output/"),
     tmpdir=tmpd
   log: os.path.join(logdir, "vOTUs.log")
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   conda: "../envs/seqkit-biopython.yml"
   shell:
     """
@@ -307,12 +317,11 @@ rule votu:
     seqkit rmdup {params.tmpdir}/tmp1.fa > {output.provirus} 2> {log}
     seqkit rmdup {params.tmpdir}/tmp2.fa > {output.virus} 2> {log}
     seqkit rmdup {params.tmpdir}/tmp3.fa > {output.combined} 2> {log}
-
+    
     echo -e "seq_id\tlength\tGC_percent" > {params.tmpdir}/tmp.tsv
     seqkit fx2tab -g -l -n {output.combined} >> {params.tmpdir}/tmp.tsv
     mv {params.tmpdir}/tmp.tsv {output.tsv}
 
     rm -rf {params.tmpdir}/*
     """
-
 

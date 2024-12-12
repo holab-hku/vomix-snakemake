@@ -132,6 +132,8 @@ rule indexbam:
   benchmark: os.path.join(benchmarks, "indexbam_{sample_id}.log")
   conda: "../envs/strobealign.yml"
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     samtools index {input} -o {output} 2> {log}
@@ -363,6 +365,8 @@ rule contigs2bin:
   log: os.path.join(logdir, "contigs2bin_{assembly_id}.log")
   conda: "../envs/dastool.yml"
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     Fasta_to_Contig2Bin.sh -i {params.MetaBAT2}/ -e fa > {output.MetaBAT2}

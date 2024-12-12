@@ -87,6 +87,8 @@ rule makeblastdb_derep:
   benchmark: os.path.join(benchmarks, "clustering/makeblastdb.log")
   conda: "../envs/checkv.yml"
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     rm -rf {params.tmpdir}/* {params.outdir}
@@ -147,6 +149,8 @@ rule anicalc_derep:
   benchmark: os.path.join(benchmarks, "clustering/anicalc.log")
   conda: "../envs/checkv.yml"
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     rm -rf {params.tmpdir}/* 
@@ -178,6 +182,8 @@ rule aniclust_derep:
   log: os.path.join(logdir, "clustering/aniclust.log")
   conda: "../envs/checkv.yml"
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     rm -rf {params.tmpdir}/*
@@ -210,6 +216,8 @@ rule filtercontigs_derep:
   log: os.path.join(logdir, "clustering/filterderep.log")
   conda: "../envs/seqkit-biopython.yml" 
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     rm -rf {params.tmpdir}/*
