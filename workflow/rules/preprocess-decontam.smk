@@ -21,8 +21,8 @@ def retrieve_accessions(wildcards):
 
 
 # MASTER RULE
-
-rule done:
+if config['intermediate']:
+  rule done:
     name: "preprocessing.py Done. deleting all tmp files"
     localrule: True
     input:
@@ -38,6 +38,27 @@ rule done:
       """
       touch {output}
       """
+else:
+  rule done:
+    name: "preprocessing.py Done. deleting all tmp and intermediate files."
+    localrule: True
+    input:
+      expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"), sample_id=samples.keys()),
+      expand(relpath("preprocess/samples/{sample_id}/{sample_id}_R2.fastq.gz"), sample_id=samples.keys()), 
+      expand(os.path.join(datadir, "{sample_id}_{i}.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
+      expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.fastq.gz"), sample_id=samples.keys(), i=[1, 2]),
+      relpath("reports/preprocess/preprocess_report.html"), 
+      relpath("reports/preprocess/library_size_stats.csv")
+    output:
+      os.path.join(logdir, "done.log")
+    params:
+      intermediate=expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R{i}_cut.trim.filt.nodecontam.fastq.gz"), sample_id=samples.keys(), i=[1, 2])
+    shell:
+      """
+      rm {params.intermediate}
+      touch {output}
+      """
+
 
 # RULES
 

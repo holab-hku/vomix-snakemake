@@ -39,7 +39,7 @@ def relpath(f):
 
 def readfasta(f):
   """Function to read fasta files for different input purposes"""
-  fastap = config['fasta']
+  fastap = f
   _, extension = os.path.splitext(fastap)
   console.print(f"\n[dim]The config['fasta'] parameter is not empty, using '{fastap}' as input.")
   if extension.lower() not in ['.fa', '.fasta', '.fna']:
@@ -60,7 +60,25 @@ def readfasta(f):
   return fasta_path
 
 def readfastadir(f):
-  print("")
+  """Function to read directory filled with fasta files for different input purposes"""
+  fastadir = cleanpath(f)
+  fastadirp = os.path.join(os.getcwd(), fastadir)
+  if not os.path.exists(fastadirp):
+    console.print(Panel.fit(f"The input file path '{fastadirp}' does not exist.", title="Error", subtitle="Fasta Directory Not Found."))
+  fastafs = [f for f in os.listdir(fastadirp) if (f.endswith('.fa') or f.endswith('.fasta') or f.endswith('.fna'))]
+  if len(fastafs) == 0:
+    console.print(Panel.fit(f"There are no files ending with .fa, .fasta, or .fna in '{fastadirp}'.", title="Error", subtitle="No Fasta Files"))
+    sys.exit(1)
+  assembly_ids = [os.path.basename(fastaf).rsplit(".", 1)[0] for fastaf in fastafs]
+  fastafs_str = '\n'.join(fastafs)
+  console.print(Panel.fit(f"Notice:[dim] Reading input as fasta files from config['fastadir'], the following files have been parsed correctly.\n{fastafs_str}", title="Notice", subtitle="Reading Fasta Directory"))
+  config['assembly-ids'] = assembly_ids
+  fasta_path = [os.path.join(fastadirp, fastaf) for fastaf in fastafs]
+  return fasta_path
+
+
+
+
 
 # Clean directory paths & add back to config.yml file
 outdir = cleanpath(config["outdir"])
@@ -84,7 +102,6 @@ if not (os.path.exists(outdir) and os.path.exists(os.path.join(outdir, ".vomix")
 wildcard_constraints:
   sample_id = "[A-Za-z0-9_-]+"
 
-
 assembler = config["assembler"]
 os.makedirs(datadir, exist_ok=True)
 
@@ -97,8 +114,12 @@ if not isinstance(config['cores'], int):
   console.print(Panel.fit(f"config['cores'] is not an integer: {config['cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['cores'] not integer"))
   sys.exit(1)
 
-if config["samplelist"] != "" and (config["fasta"] != "" or config["fastadir"] != ""):
-  console.print(Panel.fit(f"You can EITHER provide config['samplelist'] OR config['fasta/fastadir']. Please read more on our inputs wiki about the different inputs.", title="Error", subtitle="Multiple Input Formats"))
+
+inputkeys = ["fasta", "samplelist", "fastadir"]
+emptykeys = sum(1 for key in inputkeys if config.get(key, "") != "")
+
+if emptykeys != 1: 
+  console.print(Panel.fit(f"[dim] Multiple or no inputs detected. You can EITHER provide config['samplelist'] OR config['fastadir'] OR config['fasta']. You must provide at least one input format. Please read more about the permitted inputs on our wiki page.", title="Error", subtitle="Multiple Input Formats"))
   sys.exit(1)
 
 

@@ -8,8 +8,9 @@ outdir : "results/"
 datadir : "fastq/"
 samplelist : ""
 fasta: ""
-sample-name: ""
 fastadir: ""
+sample-name: ""
+assembly-ids: ""
 latest_run : ""
 
 assembler: "megahit" #["megahit", "spades"]
@@ -18,6 +19,7 @@ clustering-fast: True
 multi-tool: False
 checkv-original: False
 viral-binning: False
+intermediate: False
 cores: 4
 
 email: "vomixtest@gmail.com"
