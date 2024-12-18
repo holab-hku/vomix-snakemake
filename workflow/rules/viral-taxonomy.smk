@@ -54,7 +54,7 @@ rule prodigalgv_taxonomy:
   output: 
     relpath("taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa")
   params:
-    script="workflow/software/prodigal-gv/parallel-prodigal-gv.py", 
+    script="workflow/scripts/utility/parallel-prodigal-gv.py", 
     outdir=relpath("taxonomy/viral/intermediate/prodigal/"),
     tmpdir=os.path.join(tmpd, "prodigal")
   conda: "../envs/prodigal-gv.yml"

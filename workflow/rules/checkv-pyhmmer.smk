@@ -39,7 +39,7 @@ rule checkv_prodigalgv:
   output:
     relpath("identify/viral/output/checkv/tmp/proteins.faa")
   params:
-    script="workflow/software/prodigal-gv/parallel-prodigal-gv.py",
+    script="workflow/scripts/utility/parallel-prodigal-gv.py",
     outdir=relpath("identify/viral/output/checkv/tmp"),
     tmpdir=os.path.join(tmpd, "checkv/prodigal-gv")
   log: os.path.join(logdir, "checkv_prodigal-gv.log")
