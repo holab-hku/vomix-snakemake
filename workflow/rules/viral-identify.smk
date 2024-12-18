@@ -18,7 +18,7 @@ n_cores = config['cores']
 assembler = config['assembler']
 
 
-### Read single fasta file if input
+### Read fasta or fastadir input
 if config['fasta'] != "":
   fastap = readfasta(config['fasta'])
   sample_id = config["sample-name"]
@@ -80,10 +80,11 @@ rule filter_contigs:
 
 
 rule genomad_classify:
-  name: "viral-identify.smk geNomad classify [--genomad-only]" 
-  input:
+  name: "viral-identify.smk geNomad classify" 
+  input: 
     fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
-  output:
+    db=os.path.join(configdict['genomaddb'], "genomad_db")
+  output: 
     relpath("identify/viral/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv")
   params:
     genomadparams=configdict['genomadparams'],
@@ -115,7 +116,7 @@ rule genomad_classify:
 
 
 rule genomad_filter:
-  name : "viral-identify.smk filter geNomad output [--genomad-only]"
+  name : "viral-identify.smk filter geNomad output"
   input:
     fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
     tsv=relpath("identify/viral/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv"),
@@ -194,6 +195,13 @@ rule cat_contigs:
     """
 
 
+# THEN GOES INTO 
+# 1) VIRAL BINNING [optional]
+# 2) CLUSTERING [sensitive or fast]
+# 3) CHECKV-PYHMMER 
+# THEN COMES BACK HERE TO GET vCONTIGS
+
+
 rule combine_classifications:
   name: "viral-identify.smk combine derepped classification results"
   input:
@@ -221,13 +229,6 @@ rule combine_classifications:
 
     mv {params.tmpdir}/tmp.csv {output}
     """
-
-
-# THEN GOES INTO 
-# 1) VIRAL BINNING [optional]
-# 2) CLUSTERING [sensitive or fast]
-# 3) CHECKV-PYHMMER 
-# THEN COMES BACK HERE TO GET vCONTIGS
 
 
 rule consensus_filtering:

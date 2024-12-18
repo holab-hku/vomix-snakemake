@@ -318,7 +318,7 @@ rule phagcn_taxonomy:
     relpath("taxonomy/viral/intermediate/phagcn/taxonomy.tsv")
   params:
     parameters=configdict['phagcnparams'],
-    dbdir=configdict['phagcndb'],
+    dbdir=configdict['PhaBox2db'],
     outdir=relpath("taxonomy/viral/intermediate/phagcn"),
     tmpdir=os.path.join(tmpd, "phagcn")
   log: os.path.join(logdir, "phagcn.log")

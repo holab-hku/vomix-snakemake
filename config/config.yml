@@ -16,7 +16,6 @@ latest_run : ""
 assembler: "megahit" #["megahit", "spades"]
 decontam-host: False
 clustering-fast: True
-multi-tool: False
 checkv-original: False
 viral-binning: False
 intermediate: False
@@ -58,8 +57,9 @@ viral-identify:
         contigfile : ""
         contigdir : "results/assembly/"
         dbdir: "workflow/database/"
-        phamerdb: "workflow/database/phabox_db_v2"
+        PhaBox2db: "workflow/database/phabox_db_v2"
         genomaddb: "workflow/database/genomad"
+        virsorter2db: "workflow/database/virsorter2"
 
         ### PRE-FILTERING 
         
@@ -76,21 +76,21 @@ viral-identify:
         genomadminlen: 1500
         dvfminlen: 1500
         phamerminlen: 2000
-        vs2minlen: 1500
         
         genomadparams: "--enable-score-calibration --relaxed"
         dvfparams: ""
         phamerparams: ""
-        vs2params: ""
+        virsorter2params: ""
+        vfparams: ""
         
         genomadcutoff_p: 0.7
         dvfcutoff_p: 0.7
         dvfpval_p: 0.05
         phamercutoff_p: 0.7
         phamerpred_p: "phage"
-        vs2cutoff_p: 0.7
         
         ### SECONDARY FILTERING (Optional)
+
         # Secondary filtering is turned OFF by default by setting all thresholds to 0 
         # If you would like to do secondary filtering, you may change the parameters
         
@@ -102,7 +102,6 @@ viral-identify:
         genomadcutoff_s: 0
         phamercutoff_s: 0
         dvfcutoff_s: 0
-        vs2cutoff_s: 0
         
         ### CHECKV-PYHMMER
         checkv-pyhmmer:
@@ -124,6 +123,12 @@ viral-identify:
                 vrhymeminlen: 2000 # WARNING: cannot be set bellow 2000
 
 
+###################
+# VIRAL BENCHMARK # 
+###################
+
+#viral-benchkmark:
+
 
 ###################
 # TAXONOMY MODULE #
@@ -133,7 +138,7 @@ viral-taxonomy:
         viphogshmmeval: 0.01
         viphogsprop: 0.6  # Minimum proportion of annotated genes required for taxonomic assignment (default: 0.6)
         
-        phagcndb: "workflow/database/phabox_db_v2"
+        PhaBox2db: "workflow/database/phabox_db_v2"
         phagcnminlen: 2000 # the minimum tested
         phagcnparams: ""
 

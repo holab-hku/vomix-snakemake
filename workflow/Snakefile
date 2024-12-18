@@ -138,6 +138,7 @@ with open(os.path.join(logdir,  "config.json"), "w") as configf:
 ####################################
 
 targets = []
+include: "rules/setup-database.smk"
 
 # fix symlink
 if config["module"] == "symlink":
@@ -159,12 +160,9 @@ if config["module"] == "assembly" or config["module"] == "end-to-end":
   targets += [relpath(os.path.join("assembly", assembler, "logs/done.log"))]
 
 
-# viral contig ident
+# identify (viral)
 if config["module"] == "viral-identify" or config["module"] == "end-to-end":
-  if config["multi-tool"]:
-    include: "rules/viral-multi-tool.smk"
-  else:
-    include: "rules/viral-identify.smk"
+  include: "rules/viral-identify.smk"
   if config["viral-binning"]:
     include: "rules/viral-binning.smk"
   if config["checkv-original"]:
@@ -177,12 +175,15 @@ if config["module"] == "viral-identify" or config["module"] == "end-to-end":
     include: "rules/clustering-sensitive.smk"
   targets += [relpath("identify/viral/logs/done.log")]
 
+
+# benchmark (viral tools)
+if config["module"] == "viral-benchmark":
+  include: "rules/viral-benchmark.smk"
+  targets += [relpath("identify/viral/logs/done_benchmarks.log")]
+
 # viral refilter
 if config["module"] == "viral-refilter":
-  if config["multi-tool"]:
-    include: "rules/refilter-multi-tool.smk"
-  else:
-    include: "rules/refilter-genomad.smk"
+  include: "rules/refilter-genomad.smk"
   if config["viralbinning"]:
     include: "rules/viral-binning.smk"
   if config["checkv-original"]:
