@@ -54,11 +54,6 @@ def validate_samples(samples):
 			# check if it exists in SRA if not present locally
 			acc = items['accession']
 
-			# Deprecated Entrez-Drect replaced with Bio.Entrez
-			#cmd = ['efetch', '-db', 'sra', '-id', acc, '-format', 'runinfo']
-			#p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout
-			#found = p.decode().split(",")[0]
-
 			try:
 				handle = Entrez.efetch(db="sra", id=acc, retmax=1000, rettype="full", retmode="xml")
 				record = handle.read()
@@ -72,12 +67,6 @@ def validate_samples(samples):
 			except Exception as e:
 				console.print(Panel.fit("Accession: {} [dim]Could not be found by efetch in NCBI's Entrez Direct OR is not a valid run OR the NCBI server is limiting the number of requests. Please ensure that it is a valid SRA accession or reduce the number of requests for sample validation. Alternetaively you could change config['email'] parameter.If you intend to use locally stored fastq files, make sure your sample list contains the column 'R1' for single-end and 'R2' for paired-end files.".format(acc), title="Run Error", subtitle="SRA Accession Not Found"))
 				sys.exit(1)
-
-			#else:
-				#csvstring = StringIO(p.decode())
-				#runinfo = pd.read_csv(csvstring, sep=",")
-				#sizegb = round(int(runinfo.loc[0, "size_MB"]) /1024, 2)
-				#console.print("[dim] {accs} validated \[{size_gb}GB][/dim]".format(accs=acc, size_gb=sizegb))
 
 			progress.update(task, advance=1)
 			time.sleep(0.5)
