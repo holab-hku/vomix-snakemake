@@ -40,7 +40,7 @@ rule checkv_db:
     tmpdir=os.path.join(tmpd, "checkv/db")
   log: os.path.join(logdir, "checkv_db.log")
   benchmark: os.path.join(benchmarks, "checkv_db.log")
-  conda: "../envs/checkv-pyhmmer.yml"
+  conda: "../envs/checkv.yml"
   shell:
     """
     rm -rf {params.tmpdir} {params.outdir}
