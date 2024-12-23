@@ -48,7 +48,7 @@ rule checkv_db:
 
     checkv download_database {params.tmpdir} 
 
-    mv {params.tmpdir}/* {params.outdir}
+    mv {params.tmpdir}/checkv-db*/* {params.outdir}
     """
 
 
