@@ -105,6 +105,7 @@ viral-identify:
         
         ### CHECKV-PYHMMER
         checkv-pyhmmer:
+                checkvdatabase: "workflow/database/checkv"
                 checkvinput: "" # if only using CheckV PyHMMER module, use this to indicate input file
                 checkvparams: ""
 

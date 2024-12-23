@@ -31,6 +31,27 @@ rule genomad_db:
     """
 
 
+rule checkv_db:
+  name: "setup-database.smk geNomad database (7.3 G)"
+  localrule: True
+  output: expand("workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm", index=range(1, 81))
+  params:
+    outdir=config['viral-identify']['checkv-pyhmmer']['checkvdatabase']
+    tmpdir=os.path.join(tmpd, "checkv/db")
+  log: os.path.join(logdir, "checkv_db.log")
+  benchmark: os.path.join(benchmarks, "checkv_db.log")
+  conda: "../envs/checkv-pyhmmer.yml"
+  shell:
+    """
+    rm -rf {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    checkv download_database {params.tmpdir} 
+
+    mv {params.tmpdir}/* {params.outdir}
+    """
+
+
 rule phabox2_db:
   name: "setup-database.smk PhaBox2 database (1.6 G)"
   localrule: True
@@ -79,4 +100,3 @@ rule virsorter2_db:
 
     mv {params.tmpdir}/* {params.outdir}
     """
-

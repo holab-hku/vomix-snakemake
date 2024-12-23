@@ -65,7 +65,8 @@ rule checkv_pyhmmer:
   name: "checkv-pyhmmer.smk CheckV PyHMMER hmmsearch"
   input:
     faa=relpath("identify/viral/output/checkv/tmp/proteins.faa"), 
-    db="workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm"
+    db=os.path.join(configdict["checkvdatabase"], "hmm_db/checkv_hmms/{index}.hmm"), 
+    checkpoint=expand(os.path.join(configdict["checkvdatabase"], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
   output:
     relpath("identify/viral/output/checkv/tmp/hmmsearch/{index}.hmmout")
   params:
@@ -136,7 +137,7 @@ rule checkv:
     checkvparams= configdict['checkvparams'],
     outdir=relpath("identify/viral/output/checkv"),
     tmpdir=os.path.join(tmpd, "checkv"),
-    dbdir="workflow/database/checkv"
+    dbdir=configdict["checkvdatabase"]
   log: os.path.join(logdir, "checkv.log")
   benchmark: os.path.join(benchmarks, "checkv.log")
   threads: 1

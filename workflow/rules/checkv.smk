@@ -54,7 +54,7 @@ rule checkv:
     checkvparams= configdict['checkvparams'],
     outdir=relpath("identify/viral/output/checkv"),
     tmpdir=os.path.join(tmpd, "checkv"),
-    dbdir="workflow/database/checkv"
+    dbdir=configdict["checkvdatabase"]
   log: os.path.join(logdir, "checkv.log")
   benchmark: os.path.join(benchmarks, "checkv.log")
   threads: min(64, n_cores)
