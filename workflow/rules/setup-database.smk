@@ -36,7 +36,7 @@ rule checkv_db:
   localrule: True
   output: expand("workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm", index=range(1, 81))
   params:
-    outdir=config['viral-identify']['checkv-pyhmmer']['checkvdatabase']
+    outdir=config['viral-identify']['checkv-pyhmmer']['checkvdatabase'],
     tmpdir=os.path.join(tmpd, "checkv/db")
   log: os.path.join(logdir, "checkv_db.log")
   benchmark: os.path.join(benchmarks, "checkv_db.log")
