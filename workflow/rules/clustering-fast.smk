@@ -55,7 +55,7 @@ rule makeblastdb_derep:
     dbtype='nucl', 
     tmpdir=tmpd
   log: os.path.join(logdir, "clustering/makeblastdb.log")
-  benchmark: os.path.join(benchmarks, "clustering/makeblastdb.log")
+  benchmark: os.path.join(benchmarks, "makeblastdb.log")
   conda: "../envs/checkv.yml"
   threads: 1
   resources:
@@ -65,7 +65,7 @@ rule makeblastdb_derep:
     rm -rf {params.tmpdir}/* {params.outdir}
     mkdir -p {params.tmpdir} {params.outdir}
 
-    makeblastdb -in {input} -dbtype {params.dbtype} -out {params.tmpdir}/db 2> {log}
+    makeblastdb -in {input} -dbtype {params.dbtype} -out {params.tmpdir}/db &> {log}
 
     mv {params.tmpdir}/* {params.outdir}
     rm -rf {params.tmpdir}/*
@@ -84,8 +84,8 @@ rule megablast_derep:
     outfmt="'6 std qlen slen'",
     maxtargetseqs=10000, 
     tmpdir=tmpd
-  log: os.path.join(logdir, "clustering/megablastpairwise.log")
-  benchmark: os.path.join(benchmarks, "clustering/megablastpairwise.log")
+  log: os.path.join(logdir, "megablastpairwise.log")
+  benchmark: os.path.join(benchmarks, "megablastpairwise.log")
   conda: "../envs/checkv.yml"
   threads: min(64, n_cores)
   resources:
@@ -116,8 +116,8 @@ rule anicalc_derep:
   params:
     script_path="workflow/scripts/identify/viral/anicalc.py", 
     tmpdir=tmpd
-  log: os.path.join(logdir, "clustering/anicalc.log")
-  benchmark: os.path.join(benchmarks, "clustering/anicalc.log")
+  log: os.path.join(logdir, "anicalc.log")
+  benchmark: os.path.join(benchmarks, "anicalc.log")
   conda: "../envs/checkv.yml"
   threads: 1
   resources:
@@ -150,7 +150,8 @@ rule aniclust_derep:
     targetcov=configdict["vOTU-targetcov"],
     querycov =configdict["vOTU-querycov"], 
     tmpdir=tmpd
-  log: os.path.join(logdir, "clustering/aniclust.log")
+  log: os.path.join(logdir, "aniclust.log")
+  benchmark: os.path.join(benchmarks, "aniclust.log")
   conda: "../envs/checkv.yml"
   threads: 1
   resources:
@@ -184,7 +185,7 @@ rule filtercontigs_derep:
   params:
     outdir=relpath("identify/viral/checkv/output"),
     tmpdir=tmpd
-  log: os.path.join(logdir, "clustering/filterderep.log")
+  log: os.path.join(logdir, "filterderep.log")
   conda: "../envs/seqkit-biopython.yml" 
   threads: 1
   resources:

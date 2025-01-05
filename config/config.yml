@@ -20,6 +20,7 @@ checkv-original: False
 splits: 0
 viral-binning: False
 intermediate: False
+setup-database: True
 cores: 4
 
 email: "vomixtest@gmail.com"

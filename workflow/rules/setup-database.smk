@@ -17,7 +17,7 @@ rule done:
   input:
     os.path.join(config['viral-identify']['genomad-db'], "genomad_db.source"), 
     expand("workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm", index=range(1, 81)), 
-    os.path.join(config['viral-identify']['PhaBox2-db'], "genus2hostlineage.pkl")
+    os.path.join(config['viral-identify']['PhaBox2-db'], "genus2hostlineage.pkl"), 
   output:
     os.path.join(benchmarks, "done.log")
   shell:

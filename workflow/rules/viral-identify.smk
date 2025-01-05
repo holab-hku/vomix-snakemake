@@ -38,7 +38,8 @@ rule done_log:
   name: "viral-identify.smk Done. removing tmp files"
   localrule: True
   input:
-    pseudo=relpath("identify/viral/output/combined.final.vOTUs.fa")
+    relpath("identify/viral/output/combined.final.vOTUs.fa"), 
+    os.path.join(benchmarks, "summary.tsv")
   output:
     os.path.join(logdir, "done.log")
   params:
@@ -314,3 +315,19 @@ rule votu:
     rm -rf {params.tmpdir}/*
     """
 
+
+rule benchmark_summary:
+  name: "viral-identify.smk summaries performance benchmarks"
+  localrule: True
+  input:
+    os.path.join(benchmarks, "checkv.log")
+  output:
+    os.path.join(benchmarks, "summary.tsv")
+  params:
+    indir=benchmarks
+  threads: 1
+  shell:
+    """
+    cat {params.indir}/* | head -n 1 > {output}
+    for file in $(find {params.indir}/*.log -type f); do echo -e "$(tail -n +2 $file)\t  $(basename $file)" >> {output}; done
+    """

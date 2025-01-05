@@ -63,6 +63,7 @@ rule checkv_prodigalgv:
 
 rule checkv_pyhmmer:
   name: "checkv-pyhmmer.smk CheckV PyHMMER hmmsearch"
+  localrule: True
   input:
     faa=relpath("identify/viral/output/checkv/tmp/proteins.faa"), 
     db=os.path.join(configdict["checkv-database"], "hmm_db/checkv_hmms/{index}.hmm"), 
@@ -90,7 +91,7 @@ rule checkv_pyhmmer:
          --hmmdb {input.db} \
          --cores {threads} \
          --e_value {params.ecutoff} \
-         --tblout {params.tmpdir}/tmp.hmmout 2> {log}
+         --tblout {params.tmpdir}/tmp.hmmout &> {log}
 
     mv {params.tmpdir}/tmp.hmmout {output}
     rm -rf {params.tmpdir}
