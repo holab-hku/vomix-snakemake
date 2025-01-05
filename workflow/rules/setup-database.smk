@@ -27,7 +27,7 @@ rule genomad_db:
 
     genomad download-database {params.tmpdir}
 
-    mv {params.tmpdir}/* {params.outdir}
+    mv {params.tmpdir}/genomad_db/* {params.outdir}
     """
 
 

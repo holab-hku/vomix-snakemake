@@ -83,7 +83,7 @@ rule genomad_classify:
   name: "viral-identify.smk geNomad classify" 
   input: 
     fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
-    db=os.path.join(configdict['genomad-db'], "genomad_db")
+    db=os.path.join(configdict['genomad-db'], "genomad_db.source")
   output: 
     relpath("identify/viral/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv")
   params:

@@ -79,10 +79,8 @@ viral-identify:
         dvf-cutoff-s: 0
         
         checkv-database: "workflow/database/checkv"
-        checkv-input: "" # if only using CheckV PyHMMER module, use this to indicate input file
         checkv-params: ""
 
-        cdhit-path: "/home/eshekar/pipeline/vomix/workflow/software/cdhit/cd-hit"
         cdhit-params: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
         vOTU-ani: 95
         vOTU-targetcov: 85
