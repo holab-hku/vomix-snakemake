@@ -51,10 +51,10 @@ rule checkv:
     relpath("identify/viral/output/checkv/proviruses.fna"),
     relpath("identify/viral/output/checkv/quality_summary.tsv")
   params:
-    checkvparams= configdict['checkvparams'],
+    checkvparams= configdict['checkv-params'],
     outdir=relpath("identify/viral/output/checkv"),
     tmpdir=os.path.join(tmpd, "checkv"),
-    dbdir=configdict["checkvdatabase"]
+    dbdir=configdict["checkv-database"]
   log: os.path.join(logdir, "checkv.log")
   benchmark: os.path.join(benchmarks, "checkv.log")
   threads: min(64, n_cores)

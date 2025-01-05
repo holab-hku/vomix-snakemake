@@ -146,9 +146,9 @@ rule aniclust_derep:
     reps=relpath("identify/viral/output/derep/cluster_representatives.txt")
   params:
     script="workflow/scripts/identify/viral/aniclust.py",
-    minani=configdict["vOTUani"],
-    targetcov=configdict["vOTUtargetcov"],
-    querycov =configdict["vOTUquerycov"], 
+    minani=configdict["vOTU-ani"],
+    targetcov=configdict["vOTU-targetcov"],
+    querycov =configdict["vOTU-querycov"], 
     tmpdir=tmpd
   log: os.path.join(logdir, "clustering/aniclust.log")
   conda: "../envs/checkv.yml"

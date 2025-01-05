@@ -54,72 +54,46 @@ assembly:
 ######################################
 
 viral-identify:
-        dbdir: "workflow/database/"
         PhaBox2db: "workflow/database/phabox_db_v2"
         genomaddb: "workflow/database/genomad"
         virsorter2db: "workflow/database/virsorter2"
-
-        ### PRE-FILTERING 
+        contig-minlen: 0
+        genomad-minlen: 1000
+        dvf-minlen: 1500
+        phamer-minlen: 2000
         
-        # filter applied BEFORE viral contig identification
-        # if it is higher e.g. 1000, it reduces computation time 
+        genomad-params: "--enable-score-calibration --relaxed"
+        dvf-params: ""
+        phamer-params: ""
+        virsorter2-params: ""
+        vf-params: ""
         
-        contigminlen: 0
+        genomad-cutoff: 0.7
+        dvf-cutoff: 0.7
+        dvf-pval: 0.05
+        phamer-cutoff: 0.7
+        phamer-pred: "phage"
         
-        ### PRIMARY FILTERING 
+        genomad-cutoff-s: 0
+        phamer-cutoff-s: 0
+        dvf-cutoff-s: 0
         
-        # Primary filtering determines which contigs are likely viral from the raw assembly
-        # Hits are used for downstream viral-binning or clustering analysis. This filter is usually less stringent 
-        
-        genomadminlen: 1000
-        dvfminlen: 1500
-        phamerminlen: 2000
-        
-        genomadparams: "--enable-score-calibration --relaxed"
-        dvfparams: ""
-        phamerparams: ""
-        virsorter2params: ""
-        vfparams: ""
-        
-        genomadcutoff_p: 0.7
-        dvfcutoff_p: 0.7
-        dvfpval_p: 0.05
-        phamercutoff_p: 0.7
-        phamerpred_p: "phage"
-        
-        ### SECONDARY FILTERING (Optional)
-
-        # Secondary filtering is turned OFF by default by setting all thresholds to 0 
-        # If you would like to do secondary filtering, you may change the parameters
-        
-        # The min score to be considered a "hit" by the consensus viral filtering algorithm
-        # This score is usually more stringent than primary filtering since it determines whether
-        # "Low-completion" and "Not-determined" CheckV sequences should be classified as viral.
-        # Use vomix viral-idenitfy `--viral-binning` flag to reduce number of shorter contigs
-        
-        genomadcutoff_s: 0
-        phamercutoff_s: 0
-        dvfcutoff_s: 0
-        
-        ### CHECKV-PYHMMER
         checkv-pyhmmer:
-                checkvdatabase: "workflow/database/checkv"
-                checkvinput: "" # if only using CheckV PyHMMER module, use this to indicate input file
-                checkvparams: ""
+                checkv-database: "workflow/database/checkv"
+                checkv-input: "" # if only using CheckV PyHMMER module, use this to indicate input file
+                checkv-params: ""
 
-        ### CLUSTERING
         clustering:
-                cdhitpath: "/home/eshekar/pipeline/vomix/workflow/software/cdhit/cd-hit"
-                cdhitparams: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
-                vOTUani: 95
-                vOTUtargetcov: 85
-                vOTUquerycov: 0
+                cdhit-path: "/home/eshekar/pipeline/vomix/workflow/software/cdhit/cd-hit"
+                cdhit-params: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
+                vOTU-ani: 95
+                vOTU-targetcov: 85
+                vOTU-querycov: 0
 
-        ### VIRAL BINNING
         viral-binning:
-                minimap2params: "-x sr"
-                vrhymeparams: "-m 1000"
-                vrhymeminlen: 2000 # WARNING: cannot be set bellow 2000
+                minimap2-params: "-x sr"
+                vrhyme-params: "-m 1000"
+                vrhyme-minlen: 2000 # WARNING: cannot be set bellow 2000
 
 
 ###################

@@ -34,7 +34,7 @@ rule cdhit_derep:
     fa=relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa"), 
     clstr=relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr")
   params:
-    cdhitparams=configdict['cdhitparams'],
+    cdhitparams=configdict['cdhit-params'],
     outdir=relpath("identify/viral/output/derep"),
     tmpdir=os.path.join(tmpd, "cdhit")
   log: os.path.join(logdir, "clustering/cdhitderep.log")

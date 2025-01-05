@@ -61,7 +61,7 @@ rule filter_contigs:
   output:
     relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
   params:
-    minlen=configdict['contigminlen'],
+    minlen=configdict['contig-minlen'],
     outdir=relpath("identify/viral/samples/{sample_id}/tmp"), 
     tmpdir=os.path.join(tmpd, "contigs/{sample_id}")
   log: os.path.join(logdir, "filtercontig_{sample_id}.log")
@@ -83,13 +83,14 @@ rule genomad_classify:
   name: "viral-identify.smk geNomad classify" 
   input: 
     fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
-    db=os.path.join(configdict['genomaddb'], "genomad_db")
+    db=os.path.join(configdict['genomad-db'], "genomad_db")
   output: 
     relpath("identify/viral/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv")
   params:
-    genomadparams=configdict['genomadparams'],
-    dbdir=configdict['genomaddb'],
+    genomadparams=configdict['genomad-params'],
+    dbdir=configdict['genomad-db'],
     outdir=relpath("identify/viral/samples/{sample_id}/intermediate/genomad/"),
+    splits=config['splits'],
     tmpdir=os.path.join(tmpd, "genomad/{sample_id}")
   log: os.path.join(logdir, "genomad_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "genomad_{sample_id}.log")
@@ -107,6 +108,7 @@ rule genomad_classify:
         {params.tmpdir} \
         {params.dbdir} \
         --threads {threads} \
+        --splits {params.splits} \
         --cleanup \
         {params.genomadparams} &> {log}
 
@@ -126,8 +128,8 @@ rule genomad_filter:
     hits=relpath("identify/viral/samples/{sample_id}/output/viralhits_list")
   params:
     script="workflow/scripts/identify/viral/genomad_filter.py", 
-    minlen=configdict['genomadminlen'],
-    cutoff=configdict['genomadcutoff_p'],
+    minlen=configdict['genomad-minlen'],
+    cutoff=configdict['genomad-cutoff'],
     outdir=relpath("identify/viral/samples/{sample_id}/output/"),
     tmpdir=os.path.join(tmpd, "filter/{sample_id}")
   log: os.path.join(logdir, "genomad_filter_{sample_id}.log")
@@ -241,7 +243,7 @@ rule consensus_filtering:
     viruslist=relpath("identify/viral/output/virus.list.txt")
   params:
     script="workflow/scripts/identify/viral/consensus_filtering_genomad.py",
-    genomad=configdict['genomadcutoff_s'],
+    genomad=configdict['genomad-cutoff-s'],
     tmpdir=tmpd
   log: os.path.join(logdir, "consensus_filtering.log")
   threads: 1
