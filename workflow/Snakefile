@@ -118,7 +118,7 @@ if not isinstance(config['cores'], int):
 inputkeys = ["fasta", "samplelist", "fastadir"]
 emptykeys = sum(1 for key in inputkeys if config.get(key, "") != "")
 
-if emptykeys != 1: 
+if emptykeys != 1 and config["module"] != "setup-database": 
   console.print(Panel.fit(f"[dim] Multiple or no inputs detected. You can EITHER provide config['samplelist'] OR config['fastadir'] OR config['fasta']. You must provide at least one input format. Please read more about the permitted inputs on our wiki page.", title="Error", subtitle="Multiple Input Formats"))
   sys.exit(1)
 
@@ -138,7 +138,11 @@ with open(os.path.join(logdir,  "config.json"), "w") as configf:
 ####################################
 
 targets = []
-include: "rules/setup-database.smk"
+if config["setup-database"] or config["module"] == "setup-database":
+  include: "rules/setup-database.smk"
+  if config["module"] == "setup-database":
+    targets += ["workflow/database/.benchmarks/done.log"]
+
 
 # fix symlink
 if config["module"] == "symlink":

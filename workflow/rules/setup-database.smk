@@ -10,6 +10,22 @@ os.makedirs(tmpd, exist_ok=True)
 
 n_cores = config['cores']
 
+
+rule done:
+  name: "setup-database.smk Done."
+  localrule: True
+  input:
+    os.path.join(config['viral-identify']['genomad-db'], "genomad_db.source"), 
+    expand("workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm", index=range(1, 81)), 
+    os.path.join(config['viral-identify']['PhaBox2-db'], "genus2hostlineage.pkl")
+  output:
+    os.path.join(benchmarks, "done.log")
+  shell:
+    """
+    touch {output}
+    """
+
+
 rule genomad_db:
   name: "setup-database.smk geNomad database (1.3 G)"
   localrule: True
@@ -25,7 +41,7 @@ rule genomad_db:
     rm -rf {params.tmpdir} {params.outdir}
     mkdir -p {params.tmpdir} {params.outdir}
 
-    genomad download-database {params.tmpdir}
+    genomad download-database {params.tmpdir} &> {log}
 
     mv {params.tmpdir}/genomad_db/* {params.outdir}
     """
@@ -46,7 +62,7 @@ rule checkv_db:
     rm -rf {params.tmpdir} {params.outdir}
     mkdir -p {params.tmpdir} {params.outdir}
 
-    checkv download_database {params.tmpdir} 
+    checkv download_database {params.tmpdir} &> {log}
 
     mv {params.tmpdir}/checkv-db*/* {params.outdir}
     """
@@ -65,14 +81,13 @@ rule phabox2_db:
   threads: 1
   shell:
     """
-    rm -rf {params.outdir}
+    rm -rf {params.outdir} {params.tmpdir}/phabox_db_v2
     mkdir -p {params.tmpdir} {params.outdir}
 
-    wget -O {params.tmpdir}/phabox_db_v2.zip \
-        https://github.com/KennthShang/PhaBOX/releases/download/v2/phabox_db_v2.zip
-    unzip {params.tmpdir}/phabox_db_v2.zip > /dev/null
+    wget -O {params.tmpdir}/phabox_db_v2.zip https://github.com/KennthShang/PhaBOX/releases/download/v2/phabox_db_v2.zip &> {log}
+    unzip -o {params.tmpdir}/phabox_db_v2.zip -d {params.tmpdir} > {log}
 
-    mv {params.tmpdir}/phabox_db_v2 {params.outdir}
+    mv {params.tmpdir}/phabox_db_v2/* {params.outdir}
     """
 
 
