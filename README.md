@@ -5,7 +5,8 @@ vOMIX-MEGA is a reproducible, scalable, and fast viral metagenomic pipeline with
 
 # Quick Start 
 
-1. Install the vOMIX-MEGA base environment
+**1.1 Install the vOMIX-MEGA base environment:**
+
 ```bash
 # Set channel priority to strict before running vOMIX-MEGA to ensure reproducibility [IMPORTANT]
 conda config --add channels bioconda
@@ -23,12 +24,19 @@ conda activate vomix
 snakemake -v
 ```
 
-2. Download the GitHub repository 
+**1.2 Download the GitHub repository:**
+
 ```bash
 # clone from GitHub
 git clone https://github.com/holab-hku/vOMIX-MEGA
 cd vOMIX-MEGA
 ```
+
+**1.3 Test Viral Contig Identification using Sample Data**
+```bash
+snakemake --use-conda --config module="viral-identify" outdir="test_res" splits=8  fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20                              
+```
+
 
 # Wiki
 
