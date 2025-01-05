@@ -54,9 +54,9 @@ assembly:
 ######################################
 
 viral-identify:
-        PhaBox2db: "workflow/database/phabox_db_v2"
-        genomaddb: "workflow/database/genomad"
-        virsorter2db: "workflow/database/virsorter2"
+        PhaBox2-db: "workflow/database/phabox_db_v2"
+        genomad-db: "workflow/database/genomad"
+        virsorter2-db: "workflow/database/virsorter2"
         contig-minlen: 0
         genomad-minlen: 1000
         dvf-minlen: 1500
@@ -78,22 +78,19 @@ viral-identify:
         phamer-cutoff-s: 0
         dvf-cutoff-s: 0
         
-        checkv-pyhmmer:
-                checkv-database: "workflow/database/checkv"
-                checkv-input: "" # if only using CheckV PyHMMER module, use this to indicate input file
-                checkv-params: ""
+        checkv-database: "workflow/database/checkv"
+        checkv-input: "" # if only using CheckV PyHMMER module, use this to indicate input file
+        checkv-params: ""
 
-        clustering:
-                cdhit-path: "/home/eshekar/pipeline/vomix/workflow/software/cdhit/cd-hit"
-                cdhit-params: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
-                vOTU-ani: 95
-                vOTU-targetcov: 85
-                vOTU-querycov: 0
+        cdhit-path: "/home/eshekar/pipeline/vomix/workflow/software/cdhit/cd-hit"
+        cdhit-params: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
+        vOTU-ani: 95
+        vOTU-targetcov: 85
+        vOTU-querycov: 0
 
-        viral-binning:
-                minimap2-params: "-x sr"
-                vrhyme-params: "-m 1000"
-                vrhyme-minlen: 2000 # WARNING: cannot be set bellow 2000
+        minimap2-params: "-x sr"
+        vrhyme-params: "-m 1000"
+        vrhyme-minlen: 2000 # WARNING: cannot be set bellow 2000
 
 
 ###################

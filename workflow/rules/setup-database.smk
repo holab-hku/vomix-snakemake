@@ -13,9 +13,9 @@ n_cores = config['cores']
 rule genomad_db:
   name: "setup-database.smk geNomad database (1.3 G)"
   localrule: True
-  output: os.path.join(config['viral-identify']['genomaddb'], "genomad_db")
+  output: os.path.join(config['viral-identify']['genomad-db'], "genomad_db")
   params:
-    outdir=config['viral-identify']['genomaddb'],
+    outdir=config['viral-identify']['genomad-db'],
     tmpdir=os.path.join(tmpd, "genomad/db")
   log: os.path.join(logdir, "genomad_db.log")
   benchmark: os.path.join(benchmarks, "genomad_db.log")
@@ -36,7 +36,7 @@ rule checkv_db:
   localrule: True
   output: expand("workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm", index=range(1, 81))
   params:
-    outdir=config['viral-identify']['checkv-pyhmmer']['checkvdatabase'],
+    outdir=config['viral-identify']['checkv-pyhmmer']['checkv-database'],
     tmpdir=os.path.join(tmpd, "checkv/db")
   log: os.path.join(logdir, "checkv_db.log")
   benchmark: os.path.join(benchmarks, "checkv_db.log")
@@ -55,9 +55,9 @@ rule checkv_db:
 rule phabox2_db:
   name: "setup-database.smk PhaBox2 database (1.6 G)"
   localrule: True
-  output: os.path.join(config['viral-identify']['PhaBox2db'], "genus2hostlineage.pkl")
+  output: os.path.join(config['viral-identify']['PhaBox2-db'], "genus2hostlineage.pkl")
   params:
-    outdir=config['viral-identify']['PhaBox2db'],
+    outdir=config['viral-identify']['PhaBox2-db'],
     tmpdir=os.path.join(tmpd, "PhaBox2/db")
   log: os.path.join(logdir, "PhaBox2_db.log")
   benchmark: os.path.join(benchmarks, "PhaBox2_db.log")
@@ -78,9 +78,9 @@ rule phabox2_db:
 
 rule virsorter2_db:
   name: "setup-database.smk VirSorter2 setup data"
-  output: os.path.join(config['viral-identify']['virsorter2db'], "db.tgz")
+  output: os.path.join(config['viral-identify']['virsorter2-db'], "db.tgz")
   params:
-    outdir=config['viral-identify']['virsorter2db'],
+    outdir=config['viral-identify']['virsorter2-db'],
     tmpdir=os.path.join(tmpd, "virsorter2/db")
   log: os.path.join(logdir, "virsorter2_database.log")
   benchmark: os.path.join(benchmarks, "virsorter2_db.log")

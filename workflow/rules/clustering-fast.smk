@@ -1,4 +1,4 @@
-configdict = config['viral-identify']['clustering']
+configdict = config['viral-identify']
 logdir = relpath("identify/viral/logs")
 tmpd = relpath("identify/viral/tmp")
 benchmarks=relpath("identify/viral/benchmarks")

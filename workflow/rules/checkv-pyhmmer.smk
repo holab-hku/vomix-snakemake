@@ -1,4 +1,4 @@
-configdict = config['viral-identify']['checkv-pyhmmer']
+configdict = config['viral-identify']
 logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")
 tmpd=relpath("identify/viral/tmp")

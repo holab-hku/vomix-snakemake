@@ -1,10 +1,9 @@
 import os 
 
-configdict = config['viral-identify']['clustering']
+configdict = config['viral-identify']
 logdir = relpath("identify/viral/logs")
 tmpd = relpath("identify/viral/tmp")
 benchmarks=relpath("identify/viral/benchmarks")
-
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
