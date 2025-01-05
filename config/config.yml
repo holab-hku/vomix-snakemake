@@ -17,6 +17,7 @@ assembler: "megahit" #["megahit", "spades"]
 decontam-host: False
 clustering-fast: True
 checkv-original: False
+splits: 0
 viral-binning: False
 intermediate: False
 cores: 4
@@ -28,14 +29,14 @@ email: "vomixtest@gmail.com"
 #########################
 
 preprocess:
-        dwnldparams : ""
-        pigzparams: ""
-        fastpparams: ""
+        dwnld-params : ""
+        pigz-params: ""
+        fastp-params: ""
 
-        hostileparams: ""
-        hostilealigner: "minimap2" # minimap2 or bowtie2 for long reads
-        alignerparams: "-x sr" # parameters to pass to aligner [-x sr for minimap is for short reads]
-        indexpath: "workflow/database/hostile/human-t2t-hla.fa.gz" # visit https://github.com/bede/hostile to find out how to make your own custom host index
+        hostile-params: ""
+        hostile-aligner: "minimap2" # minimap2 or bowtie2 for long reads
+        aligner-params: "-x sr" # parameters to pass to aligner [-x sr for minimap is for short reads]
+        index-path: "workflow/database/hostile/human-t2t-hla.fa.gz" # visit https://github.com/bede/hostile to find out how to make your own custom host index
 
 ###################
 # ASSEMBLY MODULE #
@@ -53,9 +54,6 @@ assembly:
 ######################################
 
 viral-identify:
-        # setup working directories
-        contigfile : ""
-        contigdir : "results/assembly/"
         dbdir: "workflow/database/"
         PhaBox2db: "workflow/database/phabox_db_v2"
         genomaddb: "workflow/database/genomad"
@@ -73,7 +71,7 @@ viral-identify:
         # Primary filtering determines which contigs are likely viral from the raw assembly
         # Hits are used for downstream viral-binning or clustering analysis. This filter is usually less stringent 
         
-        genomadminlen: 1500
+        genomadminlen: 1000
         dvfminlen: 1500
         phamerminlen: 2000
         

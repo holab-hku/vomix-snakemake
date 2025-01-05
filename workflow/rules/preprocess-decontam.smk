@@ -68,8 +68,8 @@ rule download_fastq:
     R1=os.path.join(datadir, "{sample_id}_1.fastq.gz"),
     R2=os.path.join(datadir, "{sample_id}_2.fastq.gz")
   params:
-    download=configdict['dwnldparams'],
-    pigz=configdict['pigzparams'],
+    download=configdict['dwnld-params'],
+    pigz=configdict['pigz-params'],
     logdir=os.path.join(datadir, ".log"), 
     accessions= lambda wildcards: retrieve_accessions(wildcards),
     tmpdir=os.path.join(datadir, ".tmp/{sample_id}")
@@ -110,7 +110,7 @@ rule fastp:
     html=relpath("preprocess/samples/{sample_id}/report.fastp.html"),
     json=relpath("preprocess/samples/{sample_id}/report.fastp.json")
   params:
-    fastp=configdict['fastpparams'],
+    fastp=configdict['fastp-params'],
     outdir=relpath("preprocess/samples/{sample_id}/output"),
     tmpdir=os.path.join(tmpd, "fastp/{sample_id}")
   log: os.path.join(logdir, "fastp_{sample_id}.log")
@@ -183,10 +183,10 @@ rule decontam:
     R1=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"), 
     R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"),
   params:
-    parameters=configdict["hostileparams"], 
-    aligner=configdict["hostilealigner"],
-    alignerp=configdict["alignerparams"],
-    indexpath=configdict["indexpath"], 
+    parameters=configdict["hostile-params"], 
+    aligner=configdict["hostile-aligner"],
+    alignerp=configdict["aligner-params"],
+    indexpath=configdict["index-path"], 
     outdir=relpath("preprocess/samples/{sample_id}/output"),
     tmpdir=os.path.join(tmpd, "hostile/{sample_id}")
   log: os.path.join(logdir, "hostile_{sample_id}.log")
@@ -259,4 +259,3 @@ rule multiqc:
 
     rm -rf {params.tmpdir}/*
     """
-
