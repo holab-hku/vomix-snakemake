@@ -13,7 +13,7 @@ n_cores = config['cores']
 rule genomad_db:
   name: "setup-database.smk geNomad database (1.3 G)"
   localrule: True
-  output: os.path.join(config['viral-identify']['genomad-db'], "genomad_db")
+  output: directory(os.path.join(config['viral-identify']['genomad-db'], "genomad_db"))
   params:
     outdir=config['viral-identify']['genomad-db'],
     tmpdir=os.path.join(tmpd, "genomad/db")
