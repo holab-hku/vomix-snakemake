@@ -156,7 +156,7 @@ rule VIRify_ratioeval:
   params:
     script="workflow/scripts/taxonomy/ratio_evalue_table.py", 
     tmpdir=os.path.join(tmpd, "viphogs"),
-    evalue=configdict['viphogshmmeval']
+    evalue=configdict['viphogs-hmmeval']
   conda: "../envs/ete3.yml"
   log: os.path.join(logdir, "VIRify_ratioeval.log")
   benchmark: os.path.join(benchmarks, "VIRify_ratioeval.log")
@@ -220,7 +220,7 @@ rule VIRify_assign:
   params:
     script="workflow/scripts/taxonomy/contig_taxonomic_assign.py",
     outdir=relpath("taxonomy/viral/intermediate/viphogs/"),
-    thresh=configdict['viphogsprop'], 
+    thresh=configdict['viphogs-prop'], 
     tmpdir=os.path.join(tmpd, "viphogs")
   conda: "../envs/ete3.yml"
   log: os.path.join(logdir, "VIRify_assign.log")
@@ -252,8 +252,8 @@ rule genomad_classify:
   output:
     genomad=genomad_out
   params:
-    genomadparams=configdict['genomadparams'],
-    dbdir=configdict['genomaddb'],
+    genomadparams=configdict['genomad-params'],
+    dbdir=configdict['genomad-db'],
     outdir=relpath("taxonomy/viral/intermediate/genomad"),
     tmpdir=os.path.join(tmpd, "genomad")
   log: os.path.join(logdir, "genomad_taxonomy.log")
@@ -317,8 +317,8 @@ rule phagcn_taxonomy:
   output:
     relpath("taxonomy/viral/intermediate/phagcn/taxonomy.tsv")
   params:
-    parameters=configdict['phagcnparams'],
-    dbdir=configdict['PhaBox2db'],
+    parameters=configdict['phagcn-params'],
+    dbdir=configdict['PhaBox2-db'],
     outdir=relpath("taxonomy/viral/intermediate/phagcn"),
     tmpdir=os.path.join(tmpd, "phagcn")
   log: os.path.join(logdir, "phagcn.log")
@@ -380,7 +380,7 @@ rule dimaond_taxonomy:
   output:
     relpath("taxonomy/viral/intermediate/diamond/diamond_out.tsv")
   params:
-    parameters=configdict['diamondparams'],
+    parameters=configdict['diamond-params'],
     outdir=relpath("taxonomy/viral/intermediate/diamond"),
     tmpdir=os.path.join(tmpd, "diamond")
   log: os.path.join(logdir, "diamond_blastp.log")
@@ -475,15 +475,3 @@ rule merge_taxonomy:
     mv {params.tmpdir}/tmp.csv {output}
     """
         
-
-
-# rule consensus_taxonomy:
-#   input:
-#   output:
-#   params:
-#   conda:
-#   log:
-#   threads:
-#   shell:
-#     """
-#     """

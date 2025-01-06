@@ -104,16 +104,16 @@ viral-identify:
 ###################
 
 viral-taxonomy:
-        viphogshmmeval: 0.01
-        viphogsprop: 0.6  # Minimum proportion of annotated genes required for taxonomic assignment (default: 0.6)
+        viphogs-hmmeval: 0.01
+        viphogs-prop: 0.6  # Minimum proportion of annotated genes required for taxonomic assignment (default: 0.6)
         
-        PhaBox2db: "workflow/database/phabox_db_v2"
-        phagcnminlen: 2000 # the minimum tested
-        phagcnparams: ""
+        PhaBox2-db: "workflow/database/phabox_db_v2"
+        phagcn-minlen: 2000 # the minimum tested
+        phagcn-params: ""
 
-        diamondparams: "--query-cover 50 --subject-cover 50 --evalue 1e-5 --max-target-seqs 1000" # strongly recommend not changing this as it has been extensively tested by https://doi.org/10.1038/s41564-021-00928-6
-        genomaddb: "workflow/database/genomad"        
-        genomadparams: "--enable-score-calibration --relaxed"
+        diamond-params: "--query-cover 50 --subject-cover 50 --evalue 1e-5 --max-target-seqs 1000" # strongly recommend not changing this as it has been extensively tested by https://doi.org/10.1038/s41564-021-00928-6
+        genomad-db: "workflow/database/genomad"        
+        genomad-params: "--enable-score-calibration --relaxed"
 
 
 
