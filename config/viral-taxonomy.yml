@@ -1,0 +1,175 @@
+#########################
+# GENERAL CONFIGURATION #
+#########################
+
+module: "end-to-end"
+workdir : "."
+outdir : "results/"
+datadir : "fastq/"
+samplelist : ""
+fasta: ""
+fastadir: ""
+sample-name: ""
+assembly-ids: ""
+latest_run : ""
+
+assembler: "megahit" #["megahit", "spades"]
+decontam-host: False
+clustering-fast: True
+checkv-original: False
+splits: 0
+viral-binning: False
+intermediate: False
+setup-database: True
+cores: 4
+
+email: "vomixtest@gmail.com"
+
+#########################
+# PRE-PROCESSING MODULE #
+#########################
+
+preprocess:
+        dwnld-params : ""
+        pigz-params: ""
+        fastp-params: ""
+
+        hostile-params: ""
+        hostile-aligner: "minimap2" # minimap2 or bowtie2 for long reads
+        aligner-params: "-x sr" # parameters to pass to aligner [-x sr for minimap is for short reads]
+        index-path: "workflow/database/hostile/human-t2t-hla.fa.gz" # visit https://github.com/bede/hostile to find out how to make your own custom host index
+
+###################
+# ASSEMBLY MODULE #
+###################
+
+assembly:
+        megahit-minlen: 300
+        megahit-params: "--prune-level 3"
+        spades-params: "--meta"
+        spades-memory: 250
+
+
+######################################
+# VIRAL CONTIG IDENTIFICATION MODULE #
+######################################
+
+viral-identify:
+        PhaBox2-db: "workflow/database/phabox_db_v2"
+        genomad-db: "workflow/database/genomad"
+        virsorter2-db: "workflow/database/virsorter2"
+        contig-minlen: 0
+        genomad-minlen: 1000
+        dvf-minlen: 1500
+        phamer-minlen: 2000
+        
+        genomad-params: "--enable-score-calibration --relaxed"
+        dvf-params: ""
+        phamer-params: ""
+        virsorter2-params: ""
+        vf-params: ""
+        
+        genomad-cutoff: 0.7
+        dvf-cutoff: 0.7
+        dvf-pval: 0.05
+        phamer-cutoff: 0.7
+        phamer-pred: "phage"
+        
+        genomad-cutoff-s: 0
+        phamer-cutoff-s: 0
+        dvf-cutoff-s: 0
+        
+        checkv-database: "workflow/database/checkv"
+        checkv-params: ""
+
+        cdhit-params: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
+        vOTU-ani: 95
+        vOTU-targetcov: 85
+        vOTU-querycov: 0
+
+        minimap2-params: "-x sr"
+        vrhyme-params: "-m 1000"
+        vrhyme-minlen: 2000 # WARNING: cannot be set bellow 2000
+
+
+###################
+# VIRAL BENCHMARK # 
+###################
+
+#viral-benchkmark:
+
+
+###################
+# TAXONOMY MODULE #
+###################
+
+viral-taxonomy:
+        viphogs-hmmeval: 0.01
+        viphogs-prop: 0.6  # Minimum proportion of annotated genes required for taxonomic assignment (default: 0.6)
+        
+        PhaBox2-db: "workflow/database/phabox_db_v2"
+        phagcn-minlen: 1500 # the minimum tested
+        phagcn-params: ""
+
+        diamond-params: "--query-cover 50 --subject-cover 50 --evalue 1e-5 --max-target-seqs 1000" # strongly recommend not changing this as it has been extensively tested by https://doi.org/10.1038/s41564-021-00928-6
+        genomad-db: "workflow/database/genomad"        
+        genomad-params: "--enable-score-calibration --relaxed"
+
+
+
+####################
+# ABUNDANCE MODULE #
+####################
+
+viral-community:
+        # checkout coverm documentation for options https://wwood.github.io/CoverM/coverm-make.html
+        covermparams: "--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90"
+        covermmethods : "tpm rpkm" # a space delimited list from coverm options
+
+
+####################
+# ABUNDANCE MODULE #
+####################
+
+host:
+        iphop-dbdir: "workflow/database/iphop/Aug_2023_pub_rw"
+        iphop-cutoff: 90
+        iphop-params: ""
+        CHERRY-db: "workflow/database/phabox_db_v2"
+        CHERRY-params: ""
+        PhaTYP-db: "workflow/database/phabox_db_v2"
+        PhaTYP-params: ""
+
+####################
+# COMMUNITY MODULE #
+####################
+
+prok-community:
+        mpaparams: "--ignore_eukaryotes"
+        mpaindex_v: "mpa_vOct22_CHOCOPhlAnSGB_202212"
+
+######################
+# PROKARYOTIC MODULE #
+######################
+
+prok-binning:
+        strobealignparams: ""
+        jgi_summarize_bam_contig_depths_params: "--percentIdentity 97"
+        MetaBAT2params: "-m 1500"
+        MaxBin2params: "-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9"
+        CONCOCTparams: ""
+        COMEBinparams: ""
+        VAMBparams: "-m 100"
+        DASToolparams: ""
+        semibin2params: "--environment human_gut --self-supervised --random-seed 123 --min-len 1000"
+        drepparams: ""
+
+
+# ANNOTATION 
+
+viral-annotate:
+        eggNOG_db_params: ""
+        eggNOG_db_dir: "workflow/database/eggNOGv2"
+        eggNOG_params: "-m diamond --hmm_evalue 0.001 --hmm_score 60 --query-cover 20 --subject-cover 20 --tax_scope auto --target_orthologs all --go_evidence non-electronic --report_orthologs"
+        PhaVIPparams: ""
+        PhaVIPdb: "workflow/database/phabox_db_v2"

@@ -15,9 +15,9 @@ rule done:
   name: "setup-database.smk Done."
   localrule: True
   input:
-    os.path.join(config['viral-identify']['genomad-db'], "genomad_db.source"), 
+    os.path.join(config['genomad-db'], "genomad_db.source"), 
     expand("workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm", index=range(1, 81)), 
-    os.path.join(config['viral-identify']['PhaBox2-db'], "genus2hostlineage.pkl"), 
+    os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl"), 
   output:
     os.path.join(benchmarks, "done.log")
   shell:
@@ -29,9 +29,9 @@ rule done:
 rule genomad_db:
   name: "setup-database.smk geNomad database (1.3 G)"
   localrule: True
-  output: os.path.join(config['viral-identify']['genomad-db'], "genomad_db.source")
+  output: os.path.join(config['genomad-db'], "genomad_db.source")
   params:
-    outdir=config['viral-identify']['genomad-db'],
+    outdir=config['genomad-db'],
     tmpdir=os.path.join(tmpd, "genomad/db")
   log: os.path.join(logdir, "genomad_db.log")
   benchmark: os.path.join(benchmarks, "genomad_db.log")
@@ -52,7 +52,7 @@ rule checkv_db:
   localrule: True
   output: expand("workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm", index=range(1, 81))
   params:
-    outdir=config['viral-identify']['checkv-database'],
+    outdir=config['checkv-database'],
     tmpdir=os.path.join(tmpd, "checkv/db")
   log: os.path.join(logdir, "checkv_db.log")
   benchmark: os.path.join(benchmarks, "checkv_db.log")
@@ -71,9 +71,9 @@ rule checkv_db:
 rule phabox2_db:
   name: "setup-database.smk PhaBox2 database (1.6 G)"
   localrule: True
-  output: os.path.join(config['viral-identify']['PhaBox2-db'], "genus2hostlineage.pkl")
+  output: os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl")
   params:
-    outdir=config['viral-identify']['PhaBox2-db'],
+    outdir=config['PhaBox2-db'],
     tmpdir=os.path.join(tmpd, "PhaBox2/db")
   log: os.path.join(logdir, "PhaBox2_db.log")
   benchmark: os.path.join(benchmarks, "PhaBox2_db.log")
@@ -93,9 +93,9 @@ rule phabox2_db:
 
 rule virsorter2_db:
   name: "setup-database.smk VirSorter2 setup data"
-  output: os.path.join(config['viral-identify']['virsorter2-db'], "db.tgz")
+  output: os.path.join(config['virsorter2-db'], "db.tgz")
   params:
-    outdir=config['viral-identify']['virsorter2-db'],
+    outdir=config['virsorter2-db'],
     tmpdir=os.path.join(tmpd, "virsorter2/db")
   log: os.path.join(logdir, "virsorter2_database.log")
   benchmark: os.path.join(benchmarks, "virsorter2_db.log")
@@ -115,3 +115,4 @@ rule virsorter2_db:
 
     mv {params.tmpdir}/* {params.outdir}
     """
+

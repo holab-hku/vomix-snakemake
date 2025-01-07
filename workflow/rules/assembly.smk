@@ -1,6 +1,4 @@
 assembler = config['assembler']
-
-configdict = config['assembly']
 logdir = relpath(os.path.join("assembly", assembler, "logs"))
 tmpd = relpath(os.path.join("assembly", assembler, "tmp"))
 benchmarks = relpath(os.path.join("assembly", assembler, "benchmarks"))
@@ -47,8 +45,8 @@ rule megahit:
   output:
     fasta=relpath("assembly/megahit/samples/{assembly_id}/output/final.contigs.fa")
   params:
-    parameters=configdict['megahit-params'],
-    minlen=configdict["megahit-minlen"],
+    parameters=config['megahit-params'],
+    minlen=config["megahit-minlen"],
     outdir=relpath("assembly/megahit/samples/{assembly_id}/output"),
     tmpdir=os.path.join(tmpd, "megahit")
   log: os.path.join(logdir, "megahit_{assembly_id}.log")
@@ -86,8 +84,8 @@ rule spades:
   output:
     fasta=relpath("assembly/spades/samples/{assembly_id}/output/final.contigs.fa")
   params:
-    parameters=configdict['spades-params'],
-    memory=configdict['spades-memory'],
+    parameters=config['spades-params'],
+    memory=config['spades-memory'],
     outdir=relpath("assembly/spades/samples/{assembly_id}/output"),
     tmpdir=os.path.join(tmpd, "spades/{assembly_id}")
   log: os.path.join(logdir, "spades_{assembly_id}.log")
@@ -95,7 +93,7 @@ rule spades:
   conda: "../envs/spades.yml"
   threads: 24
   resources:
-    mem_mb = configdict['spades-memory'] * 1024
+    mem_mb = config['spades-memory'] * 1024
   shell:
     """
     rm -rf {params.tmpdir} {params.outdir}/*

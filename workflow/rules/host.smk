@@ -1,5 +1,3 @@
-configdict = config['host']
-
 logdir = relpath("host/logs")
 tmpd = relpath("host/tmp")
 benchmarks = relpath("host/benchmarks")
@@ -47,9 +45,9 @@ rule iphop:
     detailed=relpath("host/output/detailed_output_by_tool.csv")
   params:
     outdir=relpath("host/output/"),
-    dbdir=configdict['iphopdbdir'], 
-    cutoff=configdict['iphopcutoff'],
-    parameters=configdict['iphopparams'], 
+    dbdir=config['iphop-dbdir'], 
+    cutoff=config['iphop-cutoff'],
+    parameters=config['iphop-params'], 
     tmpdir=tmpd
   conda: "../envs/iphop.yml"
   log: os.path.join(logdir, "iphop.log")

@@ -1,5 +1,3 @@
-configdict = config['viral-taxonomy']
-
 logdir = relpath("taxonomy/viral/logs")
 tmpd = relpath("taxonomy/viral/tmp")
 benchmarks = relpath("taxonomy/viral/benchmarks")
@@ -156,7 +154,7 @@ rule VIRify_ratioeval:
   params:
     script="workflow/scripts/taxonomy/ratio_evalue_table.py", 
     tmpdir=os.path.join(tmpd, "viphogs"),
-    evalue=configdict['viphogs-hmmeval']
+    evalue=config['viphogs-hmmeval']
   conda: "../envs/ete3.yml"
   log: os.path.join(logdir, "VIRify_ratioeval.log")
   benchmark: os.path.join(benchmarks, "VIRify_ratioeval.log")
@@ -220,7 +218,7 @@ rule VIRify_assign:
   params:
     script="workflow/scripts/taxonomy/contig_taxonomic_assign.py",
     outdir=relpath("taxonomy/viral/intermediate/viphogs/"),
-    thresh=configdict['viphogs-prop'], 
+    thresh=config['viphogs-prop'], 
     tmpdir=os.path.join(tmpd, "viphogs")
   conda: "../envs/ete3.yml"
   log: os.path.join(logdir, "VIRify_assign.log")
@@ -252,8 +250,8 @@ rule genomad_classify:
   output:
     genomad=genomad_out
   params:
-    genomadparams=configdict['genomad-params'],
-    dbdir=configdict['genomad-db'],
+    genomadparams=config['genomad-params'],
+    dbdir=config['genomad-db'],
     outdir=relpath("taxonomy/viral/intermediate/genomad"),
     tmpdir=os.path.join(tmpd, "genomad")
   log: os.path.join(logdir, "genomad_taxonomy.log")
@@ -317,8 +315,8 @@ rule phagcn_taxonomy:
   output:
     relpath("taxonomy/viral/intermediate/phagcn/taxonomy.tsv")
   params:
-    parameters=configdict['phagcn-params'],
-    dbdir=configdict['PhaBox2-db'],
+    parameters=config['phagcn-params'],
+    dbdir=config['PhaBox2-db'],
     outdir=relpath("taxonomy/viral/intermediate/phagcn"),
     tmpdir=os.path.join(tmpd, "phagcn")
   log: os.path.join(logdir, "phagcn.log")
@@ -380,7 +378,7 @@ rule dimaond_taxonomy:
   output:
     relpath("taxonomy/viral/intermediate/diamond/diamond_out.tsv")
   params:
-    parameters=configdict['diamond-params'],
+    parameters=config['diamond-params'],
     outdir=relpath("taxonomy/viral/intermediate/diamond"),
     tmpdir=os.path.join(tmpd, "diamond")
   log: os.path.join(logdir, "diamond_blastp.log")

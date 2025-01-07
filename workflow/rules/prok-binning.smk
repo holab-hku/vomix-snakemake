@@ -1,13 +1,5 @@
 import os 
-import json 
 
-from rich.console import Console
-from rich.progress import Progress
-from rich.layout import Layout
-from rich.panel import Panel
-console = Console()
-
-configdict = config['prok-binning']
 logdir=relpath("binning/prokaryotic/logs")
 benchmarks=relpath("binning/prokaryotic/benchmarks")
 tmpd=relpath("binning/prokaryotic/tmp")
@@ -65,7 +57,7 @@ rule strobealign:
   output:
     bam=relpath("binning/prokaryotic/samples/{sample_id}/strobealign/{sample_id}.sorted.bam")
   params:
-    strobealignparams=configdict["strobealignparams"],
+    strobealignparams=config["strobealignparams"],
     tmpdir=os.path.join(tmpd, "strobealign/{sample_id}"),
   log: os.path.join(logdir, "strobealign_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "strobealign_{sample_id}.log")
@@ -117,7 +109,7 @@ rule binprep:
     relpath("binning/prokaryotic/assemblies/{assembly_id}/MetaBAT2/depthfile.txt"), 
   params:
     script="workflow/scripts/binning/metabat2maxbin.py",
-    parameters=configdict["jgi_summarize_bam_contig_depths_params"],
+    parameters=config["jgi_summarize_bam_contig_depths_params"],
     outdir=relpath("binning/prokaryotic/assemblies/{assembly_id}/MetaBAT2"),
     tmpdir=os.path.join(tmpd, "MetaBAT2/{assembly_id}")
   log: os.path.join(logdir, "MetaBAT2_prep_{assembly_id}.log")
@@ -172,7 +164,7 @@ rule metabat2:
   output:
     relpath("binning/prokaryotic/assemblies/{assembly_id}/MetaBAT2/bins/metabat2.unbinned.fa")
   params:
-    parameters=configdict["MetaBAT2params"],
+    parameters=config["MetaBAT2params"],
     outdir=relpath("binning/prokaryotic/assemblies/{assembly_id}/MetaBAT2"), 
     tmpdir=os.path.join(tmpd, "MetaBAT2/{assembly_id}/bins")
   log: os.path.join(logdir, "MetaBAT2_{assembly_id}.log")
@@ -205,7 +197,7 @@ rule maxbin2:
   output:
     relpath("binning/prokaryotic/assemblies/{assembly_id}/MaxBin2/bins/maxbin2.summary")
   params:
-    parameters=configdict["MaxBin2params"],
+    parameters=config["MaxBin2params"],
     outdir=relpath("binning/prokaryotic/assemblies/{assembly_id}/MaxBin2"),
     tmpdir=os.path.join(tmpd, "MaxBin2/{assembly_id}/bins")
   log: os.path.join(logdir, "MaxBin2_{assembly_id}.log")
@@ -281,7 +273,7 @@ rule concoct:
   output:
     csv=relpath("binning/prokaryotic/assemblies/{assembly_id}/CONCOCT/concoct_clustering_merged.csv")
   params:
-    parameters=configdict["CONCOCTparams"],
+    parameters=config["CONCOCTparams"],
     outdir=relpath("binning/prokaryotic/assemblies/{assembly_id}/CONCOCT"),
     tmpdir=os.path.join(tmpd, "CONCOCT/{assembly_id}")
   log: os.path.join(logdir, "CONCOCT_{assembly_id}.log")
@@ -351,7 +343,7 @@ rule dastool:
   output:
     relpath("binning/prokaryotic/assemblies/{assembly_id}/finalbins_DASTool_summary.tsv")
   params:
-    parameters=configdict["DASToolparams"], 
+    parameters=config["DASToolparams"], 
     outdir=relpath("binning/prokaryotic/assemblies/{assembly_id}"),
     tmpdir=os.path.join(tmpd, "DASTool/{assembly_id}")
   log: os.path.join(logdir, "DASTool_{assembly_id}.log")
@@ -416,7 +408,7 @@ rule drep:
   output:
     relpath("binning/prokaryotic/output/drep/figures/Primary_clustering_dendrogram.pdf")
   params:
-    parameters=configdict["drepparams"], 
+    parameters=config["drepparams"], 
     indir=relpath("binning/prokaryotic/output/no-drep"),
     outdir=relpath("binning/prokaryotic/output/drep"), 
     tmpdir=os.path.join(tmpd, "drep")

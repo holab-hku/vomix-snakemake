@@ -1,5 +1,3 @@
-configdict = config['viral-annotate']
-
 logdir = relpath("annotate/viral/logs")
 tmpd = relpath("annotate/viral//tmp")
 benchmarks = relpath("annotate/viral/benchmarks")
@@ -14,8 +12,8 @@ rule done_log:
   name: "viral-annotate.smk Done. removing tmp files"
   localrule: True
   input:
-    os.path.join(configdict['eggNOG_db_dir'], "eggnog.db"),
-    os.path.join(configdict['eggNOG_db_dir'], "eggnog_proteins.dmnd"), 
+    os.path.join(config['eggNOG_db_dir'], "eggnog.db"),
+    os.path.join(config['eggNOG_db_dir'], "eggnog_proteins.dmnd"), 
     relpath("annotate/viral/output/proteins.vOTUs.faa"), 
     relpath("annotate/viral/output/PhaVIP/final_prediction/phavip_prediction.tsv"), 
     relpath("annotate/viral/output/eggNOGv2/out.emapper.annotations")
@@ -35,10 +33,10 @@ rule done_log:
 rule eggnog_download:
   name: "viral-annotate.smk Download eggNOG-mapper v2 Database"
   output:
-    os.path.join(configdict['eggNOG_db_dir'], "eggnog.db"), 
-    os.path.join(configdict['eggNOG_db_dir'], "eggnog_proteins.dmnd")
+    os.path.join(config['eggNOG_db_dir'], "eggnog.db"), 
+    os.path.join(config['eggNOG_db_dir'], "eggnog_proteins.dmnd")
   params:
-    dbdir=configdict['eggNOG_db_dir'],
+    dbdir=config['eggNOG_db_dir'],
     outdir="workflow/database/eggNOGv2",
     tmpdir=os.path.join(tmpd, "eggNOGdb")
   conda: "../envs/eggnog-mapper.yml"
@@ -94,14 +92,14 @@ rule eggNOGmapper:
   name: "viral-annotate.smk eggNOG-mapper v2 Run"
   input:
     faa=relpath("annotate/viral/output/proteins.vOTUs.faa"),
-    db=os.path.join(configdict['eggNOG_db_dir'], "eggnog.db"),
-    diamond=os.path.join(configdict['eggNOG_db_dir'], "eggnog_proteins.dmnd")
+    db=os.path.join(config['eggNOG_db_dir'], "eggnog.db"),
+    diamond=os.path.join(config['eggNOG_db_dir'], "eggnog_proteins.dmnd")
   output:
     relpath("annotate/viral/output/eggNOGv2/out.emapper.annotations")
   params:
-    parameters=configdict["eggNOG_params"],
+    parameters=config["eggNOG_params"],
     outdir=relpath("annotate/viral/output/eggNOGv2"),
-    dbdir=configdict["eggNOG_db_dir"], 
+    dbdir=config["eggNOG_db_dir"], 
     tmpdir=os.path.join(tmpd, "eggNOGv2-mapper")
   conda: "../envs/eggnog-mapper.yml"
   log: os.path.join(logdir, "eggNOGv2-mapper.log")
@@ -135,8 +133,8 @@ rule PhaVIP:
   output:
     relpath("annotate/viral/output/PhaVIP/final_prediction/phavip_prediction.tsv")
   params:
-    parameters=configdict['PhaVIPparams'],
-    dbdir=configdict['PhaVIPdb'],
+    parameters=config['PhaVIPparams'],
+    dbdir=config['PhaBox2-db:'],
     outdir=relpath("annotate/viral/output/PhaVIP"),
     tmpdir=os.path.join(tmpd, "PhaVIP")
   conda: "../envs/phabox2.yml"

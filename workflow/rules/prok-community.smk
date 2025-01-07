@@ -1,4 +1,3 @@
-configdict = config['prok-community']
 logdir = relpath("community/metaphlan/logs")
 tmpd = relpath("community/metaphlan/tmp")
 benchmarks = relpath("community/metaphlan/benchmarks")
@@ -42,7 +41,7 @@ rule metaphlan:
     outdir=relpath("community/metaphlan/samples/{sample_id}"),
     bowtiedir=relpath("community/metaphlan/samples/{sample_id}/bowtie"),
     db=os.path.join("workflow/database/metaphlan"), 
-    index_v=configdict["mpaindex_v"], 
+    index_v=config["mpaindex_v"], 
     tmpdir=os.path.join(tmpd, "metaphlan/{sample_id}")
   log: os.path.join(logdir, "metaphlan_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "metaphlan_{sample_id}.log")

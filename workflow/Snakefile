@@ -241,9 +241,9 @@ if config["module"] == "prok-community":
   targets += [relpath("community/metaphlan/logs/done.log")]
 
 # annotation (prokaryotic)
-if config["module"] == "viral-annotate":
-  include: "rules/viral-annotate.smk"
-  targets += [relpath("annotate/viral/logs/done.log")]
+if config["module"] == "prok-annotate":
+  include: "rules/prok-annotate.smk"
+  targets += [relpath("annotate/prok/logs/done.log")]
 
 ###############
 # MASTER RULE #

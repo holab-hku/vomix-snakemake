@@ -1,5 +1,3 @@
-configdict = config['host']
-
 logdir = relpath("host/logs")
 tmpd = relpath("host/tmp")
 benchmarks = relpath("host/benchmarks")
@@ -46,8 +44,8 @@ rule CHERRY:
   output:
     relpath("host/output/CHERRY/final_prediction/cherry_prediction.tsv")
   params:
-    parameters=configdict['CHERRYparams'],
-    dbdir=configdict['CHERRYdb'],
+    parameters=config['CHERRY-params'],
+    dbdir=config['PhaBox2-db'],
     outdir=relpath("host/output/CHERRY"),
     tmpdir=os.path.join(tmpd, "CHERRY")
   conda: "../envs/phabox2.yml"
@@ -104,8 +102,8 @@ rule PhaTYP:
   output:
     relpath("host/output/PhaTYP/final_prediction/phatyp_prediction.tsv")
   params:
-    parameters=configdict['PhaTYPparams'],
-    dbdir=configdict['PhaTYPdb'],
+    parameters=config['PhaTYP-params'],
+    dbdir=config['PhaBox2-db'],
     outdir=relpath("host/output/PhaTYP"),
     tmpdir=os.path.join(tmpd, "PhaTYP")
   conda: "../envs/phabox2.yml"
