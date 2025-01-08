@@ -41,7 +41,8 @@ rule metaphlan:
     outdir=relpath("community/metaphlan/samples/{sample_id}"),
     bowtiedir=relpath("community/metaphlan/samples/{sample_id}/bowtie"),
     db=os.path.join("workflow/database/metaphlan"), 
-    index_v=config["mpaindex_v"], 
+    index_v=config["mpa-indexv"], 
+    parameters=config["mpa-params"],
     tmpdir=os.path.join(tmpd, "metaphlan/{sample_id}")
   log: os.path.join(logdir, "metaphlan_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "metaphlan_{sample_id}.log")
@@ -63,7 +64,7 @@ rule metaphlan:
         -t rel_ab_w_read_stats \
         -o {params.tmpdir}/tmp.txt \
         --tmp_dir {params.tmpdir} \
-        --offline &> {log}
+        --offline {params.parameters} &> {log}
 
     mv {params.tmpdir}/tmp.sam {output.sam}
     mv {params.tmpdir}/tmp.txt {output.rpkm}

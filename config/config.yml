@@ -24,7 +24,8 @@ genomad-db: "workflow/database/genomad"
 virsorter2-db: "workflow/database/virsorter2"
 checkv-database: "workflow/database/checkv"
 iphop-dbdir: "workflow/database/iphop/Aug_2023_pub_rw"
-eggNOG_db_dir: "workflow/database/eggNOGv2"
+eggNOG-db: "workflow/database/eggNOGv2"
+eggNOG-db-params: ""
 humann-db: "workflow/database/humann"
 
 # preprocess.smk & preprocess-decontam.smk
@@ -96,8 +97,8 @@ genomad-params: "--enable-score-calibration --relaxed"
 
 # viral-community.smk
 
-covermparams: "--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90" # checkout coverm documentation for options https://wwood.github.io/CoverM/coverm-make.html
-covermmethods : "tpm rpkm" # a space delimited list from coverm options
+coverm-params: "--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90" # checkout coverm documentation for options https://wwood.github.io/CoverM/coverm-make.html
+coverm-methods : "tpm rpkm" # a space delimited list from coverm options
 
 
 # host.smk
@@ -110,29 +111,27 @@ PhaTYP-params: ""
 
 # prok-community.smk
 
-mpaparams: "--ignore_eukaryotes"
-mpaindex_v: "mpa_vOct22_CHOCOPhlAnSGB_202212"
+mpa-params: "--ignore_eukaryotes"
+mpa-indexv: "mpa_vOct22_CHOCOPhlAnSGB_202212"
 
 
 # prok-binning.smk 
 
-strobealignparams: ""
-jgi_summarize_bam_contig_depths_params: "--percentIdentity 97"
-MetaBAT2params: "-m 1500"
-MaxBin2params: "-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9"
-CONCOCTparams: ""
-COMEBinparams: ""
-VAMBparams: "-m 100"
-DASToolparams: ""
-semibin2params: "--environment human_gut --self-supervised --random-seed 123 --min-len 1000"
-drepparams: ""
+binning-consensus: True
+strobealign-params: ""
+MetaBAT2-params: "-m 1500"
+MaxBin2-params: "-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9"
+CONCOCT-params: ""
+jgi-summarize-params: "--percentIdentity 97"
+DASTool-params: ""
+drep-params: ""
+VAMB-params: "-m 100"
 
 
 # viral-annotate.smk
 
-eggNOG_db_params: ""
-eggNOG_params: "-m diamond --hmm_evalue 0.001 --hmm_score 60 --query-cover 20 --subject-cover 20 --tax_scope auto --target_orthologs all --go_evidence non-electronic --report_orthologs"
-PhaVIPparams: ""
+eggNOG-params: "-m diamond --hmm_evalue 0.001 --hmm_score 60 --query-cover 20 --subject-cover 20 --tax_scope auto --target_orthologs all --go_evidence non-electronic --report_orthologs"
+PhaVIP-params: ""
 
 # prok-annotate.smk
 humann-params: ""

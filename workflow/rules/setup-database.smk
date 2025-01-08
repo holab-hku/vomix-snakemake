@@ -192,3 +192,30 @@ rule utilitymap_db:
 
     mv {params.tmpdir}/utility_mapping {params.outdir}/
     """
+
+
+rule eggnog_download:
+  name: "setup-database.smk eggNOG-mapper v2 Database (43.0 G)"
+  output:
+    os.path.join(config['eggNOG-db'], "eggnog.db"),
+    os.path.join(config['eggNOG-db'], "eggnog_proteins.dmnd")
+  params:
+    dbdir=config['eggNOG-db'],
+    outdir="workflow/database/eggNOGv2",
+    tmpdir=os.path.join(tmpd, "eggNOGdb")
+  conda: "../envs/eggnog-mapper.yml"
+  log: os.path.join(logdir, "eggNOGv2_db.log")
+  benchmark: os.path.join(benchmarks, "eggNOGv2_db.log")
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 8 * 10**3
+  shell:
+    """
+    rm -r {params.outdir}
+    mkdir -p {params.tmpdir} {params.dbdir}
+    
+    download_eggnog_data.py -y --data_dir {params.tmpdir} 2> {log}
+    mv {params.tmpdir}/* {params.outdir}/
+
+    rm -rf {params.tmpdir}
+    """

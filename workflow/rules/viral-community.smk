@@ -1,6 +1,5 @@
 import os
 
-configdict = config['viral-community']
 logdir = relpath("community/viral/logs")
 tmpd = relpath("community/viral/tmp")
 benchmarks=relpath("community/viral/benchmarks")
@@ -9,7 +8,7 @@ os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
-methodslist = configdict["covermmethods"].split()
+methodslist = config["coverm-methods"].split()
 methods_c = ",".join(methodslist)
 
 samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
@@ -45,8 +44,8 @@ rule coverm_endtoend:
     tsv=relpath("community/viral/samples/{sample_id}/output/vOTU_table.tsv"),
     bam=relpath("community/viral/samples/{sample_id}/output/{sample_id}.bam")
   params:
-    parameters=configdict["covermparams"], 
-    methods=configdict["covermmethods"],
+    parameters=config["coverm-params"], 
+    methods=config["coverm-methods"],
     outdir=relpath("community/viral/samples/{sample_id}/output"),
     bamdir=os.path.join(tmpd, "coverm/{sample_id}/bam"),
     tmpdir=os.path.join(tmpd, "coverm/{sample_id}")
