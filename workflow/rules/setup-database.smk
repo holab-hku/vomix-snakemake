@@ -92,7 +92,7 @@ rule phabox2_db:
 
 
 rule virsorter2_db:
-  name: "setup-database.smk VirSorter2 setup data"
+  name: "setup-database.smk VirSorter2 setup database (X.X G)"
   output: os.path.join(config['virsorter2-db'], "db.tgz")
   params:
     outdir=config['virsorter2-db'],
@@ -116,3 +116,79 @@ rule virsorter2_db:
     mv {params.tmpdir}/* {params.outdir}
     """
 
+rule chocophlan_db:
+  name: "setup-database.smk HUMAnN3 chocophlan database (16.4 G)"
+  output: os.path.join(config['humann-db'], "chocophlan/")
+  params:
+    outdir=config['humann-db'],
+    tmpdir=os.path.join(tmpd, "humann/db")
+  log: os.path.join(logdir, "humann_chocophlan_db.log")
+  benchmark: os.path.join(benchmarks, "humann_chocophlan_db.log")
+  conda: "../envs/biobakery3.yml"
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input, threads: 4000
+  shell:
+    """
+    rm -rf {params.outdir} {params.tmpdir}
+    mkdir -p {params.outdir}
+
+    cd {params.tmpdir}
+    wget --no-check-certificate http://huttenhower.sph.harvard.edu/humann_data/chocophlan/full_chocophlan.v201901_v31.tar.gz &> {log}
+    tar -xf full_chocophlan.v201901_v31.tar.gz &> {log}
+    # humann_databases --download chocophlan full {params.tmpdir}/ &> {log}
+
+    mv {params.tmpdir}/chocophlan {params.outdir}/
+    """
+
+
+rule uniref_db:
+  name: "setup-database.smk HUMAnN3 uniref database (20.7 G)"
+  output: os.path.join(config['humann-db'], "uniref/")
+  params:
+    outdir=config['humann-db'],
+    tmpdir=os.path.join(tmpd, "humann/db")
+  log: os.path.join(logdir, "humann_uniref_db.log")
+  benchmark: os.path.join(benchmarks, "humann_uniref_db.log")
+  conda: "../envs/biobakery3.yml"
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input, threads: 4000
+  shell:
+    """
+    rm -rf {params.outdir} {params.tmpdir}
+    mkdir -p {params.outdir} 
+ 
+    cd {params.tmpdir} 
+    wget --no-check-certificate http://huttenhower.sph.harvard.edu/humann_data/uniprot/uniref_annotated/uniref90_annotated_v201901b_full.tar.gz &> {log}
+    tar -xf uniref90_annotated_v201901b_full.tar.gz &> {log}
+    # humann_databases --download uniref uniref90_diamond {params.tmpdir}/ &> {log}
+
+    mv {params.tmpdir}/uniref {params.outdir}/
+    """
+
+
+rule utilitymap_db:
+  name: "setup-database.smk HUMAnN3 utility mapping database (X.X G)"
+  output: os.path.join(config['humann-db'], "utility_mapping/")
+  params:
+    outdir=config['humann-db'],
+    tmpdir=os.path.join(tmpd, "humann/db")
+  log: os.path.join(logdir, "humann_utility_db.log")
+  benchmark: os.path.join(benchmarks, "humann_utility_db.log")
+  conda: "../envs/biobakery3.yml"
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input, threads: 4000
+  shell:
+    """
+    rm -rf {params.outdir} {params.tmpdir}
+    mkdir -p {params.outdir} 
+ 
+    cd {params.tmpdir} 
+    wget --no-check-certificate http://huttenhower.sph.harvard.edu/humann_data/full_mapping_v201901b.tar.gz &> {log}
+    tar -xf full_mapping_v201901b.tar.gz &> {log}
+    # humann_databases --download utility_mapping full {params.tmpdir}/ &> {log}
+
+    mv {params.tmpdir}/utility_mapping {params.outdir}/
+    """

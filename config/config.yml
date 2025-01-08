@@ -1,6 +1,4 @@
-#########################
-# GENERAL CONFIGURATION #
-#########################
+# general configuration 
 
 module: "end-to-end"
 workdir : "."
@@ -12,17 +10,11 @@ fastadir: ""
 sample-name: ""
 assembly-ids: ""
 latest_run : ""
-
-assembler: "megahit" #["megahit", "spades"]
-decontam-host: False
-clustering-fast: True
-checkv-original: False
 splits: 0
 viral-binning: False
 intermediate: False
 setup-database: True
 cores: 4
-
 email: "vomixtest@gmail.com"
 
 # setup-database.smk
@@ -33,21 +25,22 @@ virsorter2-db: "workflow/database/virsorter2"
 checkv-database: "workflow/database/checkv"
 iphop-dbdir: "workflow/database/iphop/Aug_2023_pub_rw"
 eggNOG_db_dir: "workflow/database/eggNOGv2"
+humann-db: "workflow/database/humann"
 
-
-# preprocess.smk 
-# preprocess-decontam.smk
+# preprocess.smk & preprocess-decontam.smk
 
 dwnld-params : ""
 pigz-params: ""
 fastp-params: ""
 hostile-params: ""
+decontam-host: False
 hostile-aligner: "minimap2" # minimap2 or bowtie2 for long reads
 aligner-params: "-x sr" # parameters to pass to aligner [-x sr for minimap is for short reads]
 index-path: "workflow/database/hostile/human-t2t-hla.fa.gz" # visit https://github.com/bede/hostile to find out how to make your own custom host index
 
 # assembly.smk 
 
+assembler: "megahit" #["megahit", "spades"]
 megahit-minlen: 300
 megahit-params: "--prune-level 3"
 spades-params: "--meta"
@@ -77,8 +70,10 @@ genomad-cutoff-s: 0
 phamer-cutoff-s: 0
 dvf-cutoff-s: 0
 
+checkv-original: False
 checkv-params: ""
 
+clustering-fast: True
 cdhit-params: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
 vOTU-ani: 95
 vOTU-targetcov: 85
@@ -139,5 +134,6 @@ eggNOG_db_params: ""
 eggNOG_params: "-m diamond --hmm_evalue 0.001 --hmm_score 60 --query-cover 20 --subject-cover 20 --tax_scope auto --target_orthologs all --go_evidence non-electronic --report_orthologs"
 PhaVIPparams: ""
 
-# PROK-ANNOTATE
+# prok-annotate.smk
 humann-params: ""
+
