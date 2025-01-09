@@ -143,7 +143,7 @@ rule metabat2maxbin:
     script="workflow/scripts/binning/metabat2maxbin.py",
     outdir=relpath("binning/prokaryotic/assemblies/{assembly_id}/MaxBin2"),
   log: os.path.join(logdir, "MaxBin2_prep_{assembly_id}.log")
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   threads: 1
   shell:
     """

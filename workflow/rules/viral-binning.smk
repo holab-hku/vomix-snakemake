@@ -129,7 +129,7 @@ rule merge_results:
     outdir=relpath("binning/viral/output"),
     tmpdir=os.path.join(tmpd, "merge")
   log: os.path.join(logdir, "merge.log")
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   threads: 1
   shell:
     """

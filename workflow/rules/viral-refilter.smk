@@ -87,7 +87,7 @@ rule filter_outputs:
     phamer_pred=config['phamerpred_p'], 
     tmpdir=os.path.join(tmpd, "filter/{sample_id}")
   log: os.path.join(logdir, "filteroutput_{sample_id}.log")
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   threads: 1
   shell:
     """
@@ -129,7 +129,7 @@ rule cat_contigs:
     names=list(assembly_ids),
     tmpdir=tmpd
   log: os.path.join(logdir, "catcontigs.log")
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   threads: 1
   resources:
     maxcores=1
@@ -179,7 +179,7 @@ rule combine_classifications:
     tmpdir=tmpd
   log: os.path.join(logdir, "combine_classification.log")
   threads: 1
-  conda : "../envs/utility.yml"
+  conda : "../envs/seqkit-biopython.yml"
   shell:
     """
     rm -rf {params.tmpdir}/*
@@ -211,7 +211,7 @@ rule consensus_filtering:
     tmpdir=tmpd
   log: os.path.join(logdir, "consensus_filtering.log")
   threads: 1
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   shell:
     """
     rm -rf {params.tmpdir}/*
@@ -250,7 +250,7 @@ rule votu:
     tmpdir=tmpd
   log: os.path.join(logdir, "vOTUs.log")
   threads: 1
-  conda: "../envs/utility.yml"
+  conda: "../envs/seqkit-biopython.yml"
   shell:
     """
     rm -rf {params.tmpdir}/*
