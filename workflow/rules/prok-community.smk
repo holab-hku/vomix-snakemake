@@ -1,6 +1,6 @@
-logdir = relpath("community/metaphlan/logs")
-tmpd = relpath("community/metaphlan/tmp")
-benchmarks = relpath("community/metaphlan/benchmarks")
+logdir = relpath("community/prok/logs")
+tmpd = relpath("community/prok/tmp")
+benchmarks = relpath("community/prok/benchmarks")
 
 email=config["email"]
 nowstr=config["latest_run"]
@@ -17,9 +17,9 @@ rule done_log:
   name: "prok-community.smk done. Removing tmp files"
   localrule: True
   input:
-    expand(relpath("community/metaphlan/samples/{sample_id}/{sample_id}.txt"), sample_id = samples.keys()),
-    relpath("community/metaphlan/output/metaphlan_out.txt"), 
-    expand(relpath("community/metaphlan/output/metaphlan_out_{level}.txt"),
+    expand(relpath("community/prok/samples/{sample_id}/{sample_id}.txt"), sample_id = samples.keys()),
+    relpath("community/prok/output/metaphlan_out.txt"), 
+    expand(relpath("community/prok/output/metaphlan_out_{level}.txt"),
         level = ['phylum' , 'class', 'order', 'family', 'genus', 'species', 'SGB'])
   output:
     os.path.join(logdir, "done.log")
@@ -35,11 +35,11 @@ rule metaphlan:
     R1=relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"), 
     R2=relpath("preprocess/samples/{sample_id}/{sample_id}_R2.fastq.gz"), 
   output:
-    rpkm=relpath("community/metaphlan/samples/{sample_id}/{sample_id}.txt"),
-    sam=relpath("community/metaphlan/samples/{sample_id}/{sample_id}_bowtie_out.txt")
+    rpkm=relpath("community/prok/samples/{sample_id}/{sample_id}.txt"),
+    sam=relpath("community/prok/samples/{sample_id}/{sample_id}_bowtie_out.txt")
   params:
-    outdir=relpath("community/metaphlan/samples/{sample_id}"),
-    bowtiedir=relpath("community/metaphlan/samples/{sample_id}/bowtie"),
+    outdir=relpath("community/prok/samples/{sample_id}"),
+    bowtiedir=relpath("community/prok/samples/{sample_id}/bowtie"),
     db=os.path.join("workflow/database/metaphlan"), 
     index_v=config["mpa-indexv"], 
     parameters=config["mpa-params"],
@@ -75,11 +75,11 @@ rule metphlan_merge:
   name: "prok-community.smk merging MetaPhlAn outputs"
   localrule: True
   input:
-    expand(relpath("community/metaphlan/samples/{sample_id}/{sample_id}.txt"), sample_id = samples.keys())
+    expand(relpath("community/prok/samples/{sample_id}/{sample_id}.txt"), sample_id = samples.keys())
   output:
-    relpath("community/metaphlan/output/metaphlan_out.txt")
+    relpath("community/prok/output/metaphlan_out.txt")
   params:
-    outdir=relpath("community/metaphlan/output"),
+    outdir=relpath("community/prok/output"),
     tmpdir=os.path.join(tmpd, "metaphlan")
   log: os.path.join(logdir, "merge_metaphlan.log")
   threads: 1
@@ -98,15 +98,15 @@ rule metaphlan_separate:
   name: "prok-community.smk separate MetaPhlAn outputs on taxonomy level"
   localrule: True
   input:
-    relpath("community/metaphlan/output/metaphlan_out.txt")
+    relpath("community/prok/output/metaphlan_out.txt")
   output:
-    plev=relpath("community/metaphlan/output/metaphlan_out_phylum.txt"),
-    clev=relpath("community/metaphlan/output/metaphlan_out_class.txt"),
-    olev=relpath("community/metaphlan/output/metaphlan_out_order.txt"),
-    flev=relpath("community/metaphlan/output/metaphlan_out_family.txt"),
-    glev=relpath("community/metaphlan/output/metaphlan_out_genus.txt"),
-    slev=relpath("community/metaphlan/output/metaphlan_out_species.txt"),
-    tlev=relpath("community/metaphlan/output/metaphlan_out_SGB.txt")
+    plev=relpath("community/prok/output/metaphlan_out_phylum.txt"),
+    clev=relpath("community/prok/output/metaphlan_out_class.txt"),
+    olev=relpath("community/prok/output/metaphlan_out_order.txt"),
+    flev=relpath("community/prok/output/metaphlan_out_family.txt"),
+    glev=relpath("community/prok/output/metaphlan_out_genus.txt"),
+    slev=relpath("community/prok/output/metaphlan_out_species.txt"),
+    tlev=relpath("community/prok/output/metaphlan_out_SGB.txt")
   log: os.path.join(logdir, "process_metaphlan.log")
   threads: 1
   shell:
