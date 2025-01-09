@@ -100,7 +100,7 @@ rule virsorter2_db:
   log: os.path.join(logdir, "virsorter2_database.log")
   benchmark: os.path.join(benchmarks, "virsorter2_db.log")
   conda: "../envs/virsorter2.yml"
-  threads: min(64, n_cores)
+  threads: 64
   resources:
     mem_mb=lambda wildcards, attempt, input, threads: 8000
   shell:

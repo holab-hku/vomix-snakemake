@@ -43,7 +43,7 @@ rule checkv_prodigalgv:
     tmpdir=os.path.join(tmpd, "checkv/prodigal-gv")
   log: os.path.join(logdir, "checkv_prodigal-gv.log")
   conda: "../envs/prodigal-gv.yml"
-  threads: min(64, n_cores)
+  threads: 64
   resources:
     mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
   shell:

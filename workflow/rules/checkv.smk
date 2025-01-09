@@ -56,7 +56,7 @@ rule checkv:
     dbdir=config["checkv-database"]
   log: os.path.join(logdir, "checkv.log")
   benchmark: os.path.join(benchmarks, "checkv.log")
-  threads: min(64, n_cores)
+  threads: 64
   resources:
     mem_mb=lambda wildcards, attempt, input: attempt * 72 * 10**3 * 3
   conda: "../envs/checkv.yml"

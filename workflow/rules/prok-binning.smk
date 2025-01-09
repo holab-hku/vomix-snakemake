@@ -62,7 +62,7 @@ rule strobealign:
   log: os.path.join(logdir, "strobealign_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "strobealign_{sample_id}.log")
   conda: "../envs/strobealign.yml"
-  threads: min(4, n_cores)
+  threads: 4
   resources:
     mem_mb=lambda wildcards, attempt, input: 8 * 10**3 * attempt
   shell:
@@ -115,7 +115,7 @@ rule binprep:
   log: os.path.join(logdir, "MetaBAT2_prep_{assembly_id}.log")
   benchmark: os.path.join(benchmarks, "MetaBAT2_prep_{assembly_id}.log")
   conda: "../envs/metabat2.yml"
-  threads: min(8, n_cores)
+  threads: 8
   resources:
     mem_mb=lambda wildcards, attempt, input: 20 * 10**3 * attempt
   shell:
@@ -170,7 +170,7 @@ rule metabat2:
   log: os.path.join(logdir, "MetaBAT2_{assembly_id}.log")
   benchmark: os.path.join(benchmarks, "MetaBAT2_{assembly_id}.log")
   conda: "../envs/metabat2.yml"
-  threads: min(8, n_cores)
+  threads: 8
   resources:
     mem_mb=lambda wildcards, attempt, input: 6 * 10**3 * attempt
   shell:
@@ -203,7 +203,7 @@ rule maxbin2:
   log: os.path.join(logdir, "MaxBin2_{assembly_id}.log")
   benchmark: os.path.join(benchmarks, "MaxBin2_{assembly_id}.log")
   conda: "../envs/maxbin2.yml"
-  threads: min(8, n_cores)
+  threads: 8
   resources:
     mem_mb=lambda wildcards, attempt, input: 4 * 10**3 * attempt
   shell:
@@ -239,7 +239,7 @@ rule concoctprep:
   log: os.path.join(logdir, "CONCOCT_prep_{assembly_id}.log")
   benchmark: os.path.join(benchmarks, "CONCOCT_prep_{assembly_id}.log")
   conda: "../envs/concoct.yml"
-  threads: min(8, n_cores)
+  threads: 8
   resources:
     mem_mb=lambda wildcards, attempt, input: 2 * 10**3 * attempt
   shell:
@@ -279,7 +279,7 @@ rule concoct:
   log: os.path.join(logdir, "CONCOCT_{assembly_id}.log")
   benchmark: os.path.join(benchmarks, "CONCOCT_{assembly_id}.log")
   conda: "../envs/concoct.yml"
-  threads: min(8, n_cores)
+  threads: 8
   resources:
     mem_mb=lambda wildcards, attempt, input: 4 * 10**3 * attempt
   shell:
@@ -349,7 +349,7 @@ rule dastool:
   log: os.path.join(logdir, "DASTool_{assembly_id}.log")
   benchmark: os.path.join(benchmarks, "DASTool_{assembly_id}.log")
   conda: "../envs/dastool.yml"
-  threads: min(8, n_cores)
+  threads: 8
   resources:
     mem_mb=lambda wildcards, attempt, input: 8 * 10**3 * attempt
   shell:
@@ -415,7 +415,7 @@ rule drep:
   log: os.path.join(logdir, "drep.log")
   benchmark: os.path.join(benchmarks, "drep.log")
   conda: "../envs/drep.yml"
-  threads: min(64, n_cores)
+  threads: 64
   resources:
     mem_mb=lambda wildcards, attempt, input: 8 * 10**3 * attempt
   shell:

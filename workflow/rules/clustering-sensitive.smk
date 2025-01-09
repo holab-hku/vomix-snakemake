@@ -36,7 +36,7 @@ rule cdhit_derep:
   log: os.path.join(logdir, "clustering/cdhitderep.log")
   conda: "../envs/cd-hit.yml"
   benchmark: os.path.join(benchmarks, "identify/viral_cdhit.log")
-  threads: min(32, n_cores)
+  threads: 32
   resources:
     mem_mb = lambda wildcards, attempt: attempt * 72 * 10**3
   shell:

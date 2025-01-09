@@ -86,7 +86,7 @@ rule megablast_derep:
   log: os.path.join(logdir, "megablastpairwise.log")
   benchmark: os.path.join(benchmarks, "megablastpairwise.log")
   conda: "../envs/checkv.yml"
-  threads: min(64, n_cores)
+  threads: 64
   resources:
     mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
   shell: 

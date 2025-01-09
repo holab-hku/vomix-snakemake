@@ -97,7 +97,7 @@ rule genomad_classify:
   log: os.path.join(logdir, "genomad_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "genomad_{sample_id}.log")
   conda: "../envs/genomad.yml"
-  threads: min(32, n_cores//3)
+  threads: 32
   resources:
     mem_mb=lambda wildcards, attempt, input: 24 * 10**3 * attempt
   shell:
@@ -134,7 +134,7 @@ rule dvf_classify:
   log: os.path.join(logdir, "dvf_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "dvf_{sample_id}.log")
   conda: "../envs/dvf.yml"
-  threads: min(32, n_cores//3)
+  threads: 32
   resources:
     mem_mb=lambda wildcards, attempt, input, threads: max(6 * threads * 10**3 * attempt, 8000)
   shell:
@@ -169,7 +169,7 @@ rule phamer_classify:
   log: os.path.join(logdir, "phamer_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "phamer_{sample_id}.log")
   conda: "../envs/phabox2.yml"
-  threads: min(32, n_cores//3)
+  threads: 32
   resources:
     mem_mb=lambda wildcards, attempt, input, threads: max(1 * threads * 10**3 * attempt, 8000)
   shell:
@@ -205,7 +205,7 @@ rule virsorter2:
   log: os.path.join(logdir, "virsorter2_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "virsorter2_{sample_id}.log")
   conda: "../envs/virsorter2.yml"
-  threads: min(32, n_cores//8)
+  threads: 32
   resources:
     mem_mb=lambda wildcards, attempt, input, threads: max(1 * threads * 10**3 * attempt, 8000)
   shell:
@@ -235,7 +235,7 @@ rule virfinder_parallel:
   log: os.path.join(logdir, "virfinder_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "virfinder_{sample_id}.log")
   conda: "../envs/parallel-virfinder.yml"
-  threads: min(32, n_cores//8)
+  threads: 32
   resources:
     mem_mb=lambda wildcards, attempt, input, threads: max(1 * threads * 10**3 * attempt, 8000)
   shell:
