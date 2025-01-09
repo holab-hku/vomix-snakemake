@@ -24,7 +24,8 @@ rule done_log:
   input:
     relpath("host/output/CHERRY/final_prediction/cherry_prediction.tsv"), 
     relpath("host/output/PhaTYP/final_prediction/phatyp_prediction.tsv"), 
-    relpath("annotation/viral/output/PhaVIP/final_prediction/phavip_prediction.tsv")
+    relpath("annotation/viral/output/PhaVIP/final_prediction/phavip_prediction.tsv"), 
+    relpath("host/output/merged_host.csv")
   output:
     os.path.join(logdir, "done.log")
   params:
@@ -42,7 +43,10 @@ rule CHERRY:
   input:
     fna=fastap
   output:
-    relpath("host/output/CHERRY/final_prediction/cherry_prediction.tsv")
+    phavip=relpath("host/output/CHERRY/final_prediction/phavip_prediction.tsv"), 
+    cherry=relpath("host/output/CHERRY/final_prediction/cherry_prediction.tsv"), 
+    edges=relpath("host/output/CHERRY/final_prediction/cherry_supplementary/cherry_network_edges.tsv"),
+    nodes=relpath("host/output/CHERRY/final_prediction/cherry_supplementary/cherry_network_nodes.tsv"),
   params:
     parameters=config['CHERRY-params'],
     dbdir=config['PhaBox2-db'],
@@ -127,4 +131,41 @@ rule PhaTYP:
     mv {params.tmpdir}/* {params.outdir}/
 
     rm -rf {params.tmpdir}
+    """
+
+rule merge_results:
+  name: "host.smk merge results"
+  localrule: True
+  input:
+    contigs=fastap,
+    cherry=relpath("host/output/CHERRY/final_prediction/cherry_prediction.tsv"),
+    phatyp=relpath("host/output/PhaTYP/final_prediction/phatyp_prediction.tsv"),
+    phavip=relpath("host/output/CHERRY/final_prediction/phavip_prediction.tsv"), 
+    edges=relpath("host/output/CHERRY/final_prediction/cherry_supplementary/cherry_network_edges.tsv"),
+    nodes=relpath("host/output/CHERRY/final_prediction/cherry_supplementary/cherry_network_nodes.tsv"),
+  output:
+    merged=relpath("host/output/merged_host.csv"), 
+    edges=relpath("host/output/cherry_network_edges.tsv"), 
+    nodes=relpath("host/output/cherry_network_nodes.tsv"),
+  params: 
+    script="workflow/scripts/host/merge_host.py",
+    outdir=relpath("host/output/"), 
+    tmpdir=os.path.join(tmpd, "merge")
+  conda: "../envs/seqkit-biopython.yml"
+  log: os.path.join(logdir, "merge_results.log")
+  threads: 1
+  shell:
+    """
+    mkdir -p {params.outdir} {params.tmpdir}
+
+    python {params.script} \
+        --cherryout {input.cherry} \
+        --phatypout {input.phatyp} \
+        --phavipout {input.phavip} \
+        --contigs {input.contigs} \
+        --output {params.tmpdir}/tmp.csv
+    
+    mv {params.tmpdir}/tmp.csv {output.merged}
+    cp {input.edges} {output.edges}
+    cp {input.nodes} {output.nodes}
     """
