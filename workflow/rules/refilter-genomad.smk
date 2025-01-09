@@ -1,6 +1,3 @@
-import os 
-
-configdict = config['viral-contigident']
 logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")
 tmpd=relpath("identify/viral/tmp")
@@ -97,7 +94,7 @@ rule filter_contigs:
   output:
     relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
   params:
-    minlen=configdict['contigminlen'],
+    minlen=config['contigminlen'],
     outdir=relpath("identify/viral/samples/{sample_id}/tmp"),
     tmpdir=os.path.join(tmpd, "contigs/{sample_id}")
   log: os.path.join(logdir, "filtercontig_{sample_id}.log")
@@ -124,8 +121,8 @@ rule genomad_filter:
     hits=relpath("identify/viral/samples/{sample_id}/output/viralhits_list")
   params:
     script="workflow/scripts/identify/viral/genomad_filter.py", 
-    minlen=configdict['genomadminlen'],
-    cutoff=configdict['genomadcutoff_p'],
+    minlen=config['genomadminlen'],
+    cutoff=config['genomadcutoff_p'],
     outdir=relpath("identify/viral/samples/{sample_id}/output/"),
     tmpdir=os.path.join(tmpd, "filter/{sample_id}")
   log: os.path.join(logdir, "genomad_filter_{sample_id}.log")
@@ -232,7 +229,7 @@ rule consensus_filtering:
     viruslist=relpath("identify/viral/output/virus.list.txt")
   params:
     script="workflow/scripts/identify/viral/consensus_filtering_genomad.py",
-    genomad=configdict['genomadcutoff_s'],
+    genomad=config['genomadcutoff_s'],
     tmpdir=tmpd
   log: os.path.join(logdir, "consensus_filtering.log")
   threads: 1

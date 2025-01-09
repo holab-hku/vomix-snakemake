@@ -1,4 +1,3 @@
-configdict = config['viral-identify']
 logdir = relpath("identify/viral/logs")
 tmpd = relpath("identify/viral/tmp")
 benchmarks=relpath("identify/viral/benchmarks")
@@ -146,9 +145,9 @@ rule aniclust_derep:
     reps=relpath("identify/viral/output/derep/cluster_representatives.txt")
   params:
     script="workflow/scripts/identify/viral/aniclust.py",
-    minani=configdict["vOTU-ani"],
-    targetcov=configdict["vOTU-targetcov"],
-    querycov =configdict["vOTU-querycov"], 
+    minani=config["vOTU-ani"],
+    targetcov=config["vOTU-targetcov"],
+    querycov =config["vOTU-querycov"], 
     tmpdir=tmpd
   log: os.path.join(logdir, "aniclust.log")
   benchmark: os.path.join(benchmarks, "aniclust.log")

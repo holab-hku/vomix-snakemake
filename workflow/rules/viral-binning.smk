@@ -1,6 +1,5 @@
 import os 
 
-configdict = config['viral-contigident']['viral-binning']
 logdir = relpath("binning/viral/logs")
 benchmarks = relpath("binning/viral/benchmarks")
 tmpd = relpath("binning/viral/tmp")
@@ -59,8 +58,8 @@ rule vRhyme:
   params:
     script="workflow/software/vRhyme/vRhyme/vRhyme",
     outdir=relpath("binning/viral/samples/{assembly_id}/vRhyme"), 
-    parameters=configdict["vrhymeparams"], 
-    minlen=configdict["vrhymeminlen"],
+    parameters=config["vrhymeparams"], 
+    minlen=config["vrhymeminlen"],
     tmpdir=os.path.join(tmpd, "vrhyme/{assembly_id}")
   log: os.path.join(logdir, "vRhyme_{assembly_id}.log")
   conda: "../envs/vrhyme.yml"

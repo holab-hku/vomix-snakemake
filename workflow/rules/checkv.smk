@@ -1,4 +1,3 @@
-configdict = config['viral-identify']
 logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")
 tmpd=relpath("identify/viral/tmp")
@@ -51,10 +50,10 @@ rule checkv:
     relpath("identify/viral/output/checkv/proviruses.fna"),
     relpath("identify/viral/output/checkv/quality_summary.tsv")
   params:
-    checkvparams= configdict['checkv-params'],
+    checkvparams= config['checkv-params'],
     outdir=relpath("identify/viral/output/checkv"),
     tmpdir=os.path.join(tmpd, "checkv"),
-    dbdir=configdict["checkv-database"]
+    dbdir=config["checkv-database"]
   log: os.path.join(logdir, "checkv.log")
   benchmark: os.path.join(benchmarks, "checkv.log")
   threads: min(64, n_cores)

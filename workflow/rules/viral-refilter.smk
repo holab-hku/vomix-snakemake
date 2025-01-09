@@ -7,8 +7,6 @@ from rich.layout import Layout
 from rich.panel import Panel
 console = Console()
 
-
-configdict = config['viral-contigident']
 logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")
 tmpd=relpath("identify/viral/tmp")
@@ -82,11 +80,11 @@ rule filter_outputs:
     hits=relpath("identify/viral/samples/{sample_id}/output/viralhits_list")
   params:
     script="workflow/scripts/identify/viral/filtercontig_scores.py",
-    genomad_cutoff=configdict['genomadcutoff_p'], 
-    dvf_cutoff=configdict['dvfcutoff_p'], 
-    dvf_pvalmax=configdict['dvfpval_p'],
-    phamer_cutoff=configdict['phamercutoff_p'], 
-    phamer_pred=configdict['phamerpred_p'], 
+    genomad_cutoff=config['genomadcutoff_p'], 
+    dvf_cutoff=config['dvfcutoff_p'], 
+    dvf_pvalmax=config['dvfpval_p'],
+    phamer_cutoff=config['phamercutoff_p'], 
+    phamer_pred=config['phamerpred_p'], 
     tmpdir=os.path.join(tmpd, "filter/{sample_id}")
   log: os.path.join(logdir, "filteroutput_{sample_id}.log")
   conda: "../envs/utility.yml"
@@ -207,9 +205,9 @@ rule consensus_filtering:
     viruslist=relpath("identify/viral/output/virus.list.txt")
   params:
     script="workflow/scripts/identify/viral/consensus_filtering.py",
-    genomad=configdict['genomadcutoff_s'],
-    dvf=configdict['dvfcutoff_s'],
-    phamer=configdict['phamercutoff_s'], 
+    genomad=config['genomadcutoff_s'],
+    dvf=config['dvfcutoff_s'],
+    phamer=config['phamercutoff_s'], 
     tmpdir=tmpd
   log: os.path.join(logdir, "consensus_filtering.log")
   threads: 1

@@ -7,7 +7,6 @@ from rich.layout import Layout
 from rich.panel import Panel
 console = Console()
 
-configdict = config['viral-identify']
 logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")
 tmpd=relpath("identify/viral/tmp")
@@ -67,7 +66,7 @@ rule filter_contigs:
   output:
     relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
   params:
-    minlen=configdict['contigminlen'],
+    minlen=config['contigminlen'],
     outdir=relpath("identify/viral/samples/{sample_id}/tmp"),
     tmpdir=os.path.join(tmpd, "contigs/{sample_id}")
   log: os.path.join(logdir, "filtercontig_{sample_id}.log")
@@ -87,12 +86,12 @@ rule genomad_classify:
   name: "viral-benchmark.smk geNomad classify" 
   input:
     fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
-    db=os.path.join(configdict['genomaddb'], "genomad_db")
+    db=os.path.join(config['genomaddb'], "genomad_db")
   output:
     relpath("identify/viral/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv")
   params:
-    genomadparams=configdict['genomadparams'],
-    dbdir=configdict['genomaddb'],
+    genomadparams=config['genomadparams'],
+    dbdir=config['genomaddb'],
     outdir=relpath("identify/viral/samples/{sample_id}/intermediate/genomad/"),
     tmpdir=os.path.join(tmpd, "genomad/{sample_id}")
   log: os.path.join(logdir, "genomad_{sample_id}.log")
@@ -128,7 +127,7 @@ rule dvf_classify:
     relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt")
   params:
     script="workflow/software/DeepVirFinder/dvf.py",
-    parameters=configdict['dvfparams'], 
+    parameters=config['dvfparams'], 
     modeldir="workflow/software/DeepVirFinder/models/",
     outdir=relpath("identify/viral/samples/{sample_id}/intermediate/dvf/"),
     tmpdir=os.path.join(tmpd, "dvf/{sample_id}")
@@ -163,8 +162,8 @@ rule phamer_classify:
   output:
     relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv")
   params:
-    parameters=configdict['phamerparams'],
-    dbdir=configdict['PhaBox2db'],
+    parameters=config['phamerparams'],
+    dbdir=config['PhaBox2db'],
     outdir=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/"),
     tmpdir=os.path.join(tmpd, "phamer/{sample_id}")
   log: os.path.join(logdir, "phamer_{sample_id}.log")
@@ -196,11 +195,11 @@ rule virsorter2:
   name: "viral-benchmark.smk VirSorter2 classify"
   input: 
     fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"), 
-    db=os.path.join(configdict['virsorter2db'], "db.tgz")
+    db=os.path.join(config['virsorter2db'], "db.tgz")
   output: relpath("identify/viral/{sample_id}/intermediate/virsorter2/final-viral-score.tsv")
   params: 
-    parameters=configdict['virsorter2params'],
-    dbdir=configdict['virsorter2db'],
+    parameters=config['virsorter2params'],
+    dbdir=config['virsorter2db'],
     outdir=relpath("identify/viral/{sample_id}/intermediate/virsorter2/"),
     tmpdir=os.path.join(tmpd, "virsorter2/{sample_id}")
   log: os.path.join(logdir, "virsorter2_{sample_id}.log")
@@ -230,7 +229,7 @@ rule virfinder_parallel:
   input: relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
   output: relpath("identify/viral/{sample_id}/intermediate/virfinder/output.tsv")
   params: 
-    parameters=configdict['vfparams'],
+    parameters=config['vfparams'],
     outdir=relpath("identify/viral/{sample_id}/intermediate/virfinder/"),
     tmpdir=os.path.join(tmpd, "virfinder/{sample_id}")
   log: os.path.join(logdir, "virfinder_{sample_id}.log")
