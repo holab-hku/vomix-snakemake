@@ -100,7 +100,7 @@ for newfile in $(find vomix-tmp/workflow/scripts/ -maxdepth 1 -type f); do
             ;;
         1 | 2)
             echo "Updating $BASE"
-            mv "$oldfile" "$newfile"
+            mv "$newfile" "$oldfile"
             ;;
     esac
 done
