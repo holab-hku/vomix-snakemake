@@ -89,7 +89,7 @@ vrhyme-minlen: 2000 # WARNING: cannot be set bellow 2000
 
 viphogs-hmmeval: 0.01
 viphogs-prop: 0.6  # Minimum proportion of annotated genes required for taxonomic assignment (default: 0.6)
-phagcn-minlen: 1500 # the minimum tested
+phagcn-minlen: 1000 # the minimum tested
 phagcn-params: ""
 diamond-params: "--query-cover 50 --subject-cover 50 --evalue 1e-5 --max-target-seqs 1000" # strongly recommend not changing this as it has been extensively tested by https://doi.org/10.1038/s41564-021-00928-6
 genomad-params: "--enable-score-calibration --relaxed"
