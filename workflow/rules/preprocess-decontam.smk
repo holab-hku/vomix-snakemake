@@ -137,7 +137,7 @@ rule fastp:
     mv {params.tmpdir}/tmp.html {output.html}
     mv {params.tmpdir}/tmp.json {output.json}
 
-    rm -r {params.tmpdir}
+    rm -rf {params.tmpdir}
 
     """
 

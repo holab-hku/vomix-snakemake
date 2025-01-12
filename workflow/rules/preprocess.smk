@@ -113,7 +113,7 @@ rule fastp:
     mv {params.tmpdir}/tmp.html {output.html}
     mv {params.tmpdir}/tmp.json {output.json}
 
-    rm -r {params.tmpdir}
+    rm -rf {params.tmpdir}
     """
 
 
@@ -192,5 +192,5 @@ rule multiqc:
     mv {params.tmpdir}/*.html {params.outdir}
     mv {params.tmpdir}/preprocess* {params.outdir}
 
-    rm -r {params.tmpdir}/*
+    rm -rf {params.tmpdir}/*
     """
