@@ -83,7 +83,7 @@ rule coverm_merge:
   output:
     otu=expand(relpath("community/viral/output/vOTU_table_{methods}.tsv"), methods = methodslist)
   params:
-    script="workflow/scripts/community/viral/OTU_table_parse.py",
+    script="workflow/scripts/merged_vOTU_table.py",
     methods=methods_c,
     outdir=relpath("community/viral/output"),
     prefix="vOTU_table",

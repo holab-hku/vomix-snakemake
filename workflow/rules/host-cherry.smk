@@ -148,7 +148,7 @@ rule merge_results:
     edges=relpath("host/output/cherry_network_edges.tsv"), 
     nodes=relpath("host/output/cherry_network_nodes.tsv"),
   params: 
-    script="workflow/scripts/host/merge_host.py",
+    script="workflow/scripts/host/host_merge.py",
     outdir=relpath("host/output/"), 
     tmpdir=os.path.join(tmpd, "merge")
   conda: "../envs/seqkit-biopython.yml"

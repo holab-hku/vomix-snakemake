@@ -122,7 +122,7 @@ rule assembly_stats:
     stats=relpath(os.path.join( "reports/assembly", assembler, "assemblystats.tsv")),
     sizedist=relpath(os.path.join("reports/assembly", assembler, "assembly_size_dist.tsv"))
   params:
-    script="workflow/scripts/assembly/assemblystats.py",
+    script="workflow/scripts/assembly_stats.py",
     outdir=relpath(os.path.join("reports/assembly", assembler)),
     tmpdir=os.path.join(tmpd, "report")
   log: os.path.join(logdir, "stats.log")

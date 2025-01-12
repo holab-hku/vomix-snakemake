@@ -108,7 +108,7 @@ rule binprep:
   output:
     relpath("binning/prokaryotic/assemblies/{assembly_id}/MetaBAT2/depthfile.txt"), 
   params:
-    script="workflow/scripts/binning/metabat2maxbin.py",
+    script="workflow/scripts/metabat2maxbin.py",
     parameters=config["jgi-summarize-params"],
     outdir=relpath("binning/prokaryotic/assemblies/{assembly_id}/MetaBAT2"),
     tmpdir=os.path.join(tmpd, "MetaBAT2/{assembly_id}")

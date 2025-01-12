@@ -113,7 +113,7 @@ rule anicalc_derep:
   output: 
     relpath("identify/viral/intermediate/derep/ani.tsv")
   params:
-    script_path="workflow/scripts/identify/viral/anicalc.py", 
+    script="workflow/scripts/clust_anicalc.py", 
     tmpdir=tmpd
   log: os.path.join(logdir, "anicalc.log")
   benchmark: os.path.join(benchmarks, "anicalc.log")
@@ -126,7 +126,7 @@ rule anicalc_derep:
     rm -rf {params.tmpdir}/* 
     mkdir -p {params.tmpdir}
 
-    python {params.script_path} \
+    python {params.script} \
         -i {input} \
         -o {params.tmpdir}/tmp.tsv &> {log}
 
@@ -144,7 +144,7 @@ rule aniclust_derep:
     tsv= relpath("identify/viral/output/derep/clusters.tsv"),
     reps=relpath("identify/viral/output/derep/cluster_representatives.txt")
   params:
-    script="workflow/scripts/identify/viral/aniclust.py",
+    script="workflow/scripts/clust_ani.py",
     minani=config["vOTU-ani"],
     targetcov=config["vOTU-targetcov"],
     querycov =config["vOTU-querycov"], 

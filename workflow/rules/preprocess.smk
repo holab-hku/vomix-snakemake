@@ -125,7 +125,7 @@ rule aggregate_fastp:
   output:
     relpath("reports/preprocess/library_size_stats.csv")
   params:
-    script="workflow/scripts/preprocess/parse_fastp.py",
+    script="workflow/scripts/fastp_parse.py",
     names=list(samples.keys()),
     outdir=relpath("reports/preprocess"),
     tmpdir=tmpd

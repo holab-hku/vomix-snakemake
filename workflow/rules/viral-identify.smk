@@ -127,7 +127,7 @@ rule genomad_filter:
     scrs=relpath("identify/viral/samples/{sample_id}/output/merged_scores_filtered.csv"),
     hits=relpath("identify/viral/samples/{sample_id}/output/viralhits_list")
   params:
-    script="workflow/scripts/identify/viral/genomad_filter.py", 
+    script="workflow/scripts/genomad_filter.py", 
     minlen=config['genomad-minlen'],
     cutoff=config['genomad-cutoff'],
     outdir=relpath("identify/viral/samples/{sample_id}/output/"),
@@ -169,7 +169,7 @@ rule cat_contigs:
     fna=relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa"),
     scrs=relpath("identify/viral/intermediate/scores/combined_viral_scores.csv")
   params:
-    script="workflow/scripts/identify/viral/mergeout_scores.py", 
+    script="workflow/scripts/viral_merge_scores.py", 
     names=list(assembly_ids),
     tmpdir=tmpd
   log: os.path.join(logdir, "catcontigs.log")
@@ -212,7 +212,7 @@ rule combine_classifications:
   output:
     relpath("identify/viral/output/checkv/combined_classification_results.csv")
   params:
-    script="workflow/scripts/identify/viral/combineclassify.py",
+    script="workflow/scripts/viral_combine_class.py",
     tmpdir=tmpd
   log: os.path.join(logdir, "combine_classification.log")
   threads: 1
@@ -242,7 +242,7 @@ rule consensus_filtering:
     proviruslist=relpath("identify/viral/output/provirus.list.txt"),
     viruslist=relpath("identify/viral/output/virus.list.txt")
   params:
-    script="workflow/scripts/identify/viral/consensus_filtering_genomad.py",
+    script="workflow/scripts/genomad_consensus_filtering.py",
     genomad=config['genomad-cutoff-s'],
     tmpdir=tmpd
   log: os.path.join(logdir, "consensus_filtering.log")

@@ -1,11 +1,4 @@
-import os
-import json 
-
-from rich.console import Console
-from rich.progress import Progress
-from rich.layout import Layout
-from rich.panel import Panel
-console = Console()
+import os 
 
 logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")
@@ -14,146 +7,126 @@ tmpd=relpath("identify/viral/tmp")
 email=config["email"]
 nowstr=config["latest_run"]
 outdir=config["outdir"]
-datadir=config["datadir"] 
+datadir=config["datadir"]
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
-n_cores = config['cores'] 
+n_cores = config['cores']
 assembler = config['assembler']
 
-### Read single fasta file if input
+
+### Read fasta or fastadir input
 if config['fasta'] != "":
   fastap = readfasta(config['fasta'])
   sample_id = config["sample-name"]
   assembly_ids = [sample_id]
+elif config['fastadir'] != "":
+  fastap = readfastadir(config['fastadir'])
+  assembly_ids = config["assembly-ids"]
 else:
   samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
   fastap = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
   assembly_ids = assemblies.keys()
 
 
-
-###########################
-# Multi-sample Processing #
-###########################
-
-
 ### MASTER RULE 
 
 rule done_log:
-  name: "viral-contigident.py Done. removing tmp files"
+  name: "viral-identify.smk Done. removing tmp files"
   localrule: True
   input:
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"), sample_id=assembly_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/out/phamer_prediction.csv"), sample_id=assembly_ids),
-    relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa"),
-    relpath("identify/viral/intermediate/scores/combined_viral_scores.csv"),
-    relpath("identify/viral/output/checkv/combined_classification_results.csv"),
     relpath("identify/viral/output/combined.final.vOTUs.fa"), 
-    allhits=relpath("identify/viral/intermediate/scores/combined_allcontigs_scores.csv")
+    os.path.join(benchmarks, "summary.tsv")
   output:
     os.path.join(logdir, "done.log")
   params:
-    filteredcontigs=expand(relpath("identify/viral/samples/{sample_id}/tmp"), sample_id=assembly_ids),
     tmpdir=tmpd
   log: os.path.join(logdir, "done.log")
   shell:
     """
-    rm -rf {params.filteredcontigs} {params.tmpdir}/*
+    rm -rf {params.tmpdir}/*
     touch {output}
     """
 
 
 ### RULES
 
-
-rule filter_outputs:
-  name: "viral-contigident.py filter viral contigs"
+rule genomad_filter:
+  name : "viral-identify.smk filter geNomad output"
   input:
     fna=relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa"),
-    scrs=relpath("identify/viral/samples/{sample_id}/output/merged_scores.csv")
+    tsv=relpath("identify/viral/samples/{sample_id}/intermediate/genomad/final.contigs.filtered_summary/final.contigs.filtered_virus_summary.tsv"),
   output:
     fna=relpath("identify/viral/samples/{sample_id}/output/viral.contigs.fa"),
     scrs=relpath("identify/viral/samples/{sample_id}/output/merged_scores_filtered.csv"),
     hits=relpath("identify/viral/samples/{sample_id}/output/viralhits_list")
   params:
-    script="workflow/scripts/identify/viral/filtercontig_scores.py",
-    genomad_cutoff=config['genomadcutoff_p'], 
-    dvf_cutoff=config['dvfcutoff_p'], 
-    dvf_pvalmax=config['dvfpval_p'],
-    phamer_cutoff=config['phamercutoff_p'], 
-    phamer_pred=config['phamerpred_p'], 
+    script="workflow/scripts/genomad_filter.py", 
+    minlen=config['genomad-minlen'],
+    cutoff=config['genomad-cutoff'],
+    outdir=relpath("identify/viral/samples/{sample_id}/output/"),
     tmpdir=os.path.join(tmpd, "filter/{sample_id}")
-  log: os.path.join(logdir, "filteroutput_{sample_id}.log")
+  log: os.path.join(logdir, "genomad_filter_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml"
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
-    rm -rf {params.tmpdir}
-    mkdir -p {params.tmpdir}
-
+    rm -rf {params.tmpdir}/*
+    mkdir -p {params.tmpdir} {params.outdir}
+    
     python {params.script} \
-        --csv_path {input.scrs} \
-        --genomad_min_score {params.genomad_cutoff} \
-        --dvf_min_score {params.dvf_cutoff} \
-        --dvf_max_pval {params.dvf_pvalmax} \
-        --phamer_pred {params.phamer_pred} \
-        --phamer_min_score {params.phamer_cutoff} \
+        --genomad_out {input.tsv} \
+        --genomad_min_score {params.cutoff} \
+        --genomad_min_len {params.minlen} \
         --output_path {params.tmpdir}/tmp.csv \
-        --hitlist_path {params.tmpdir}/tmplist
+        --hitlist_path {params.tmpdir}/tmplist &> {log}
 
-    cat {params.tmpdir}/tmplist | uniq > {output.hits}
     mv {params.tmpdir}/tmp.csv {output.scrs}
+    cat {params.tmpdir}/tmplist | uniq > {output.hits}
     
     seqkit grep {input.fna} -f {output.hits} | seqkit replace -p  "\s.*" -r "" | seqkit replace -p $ -r _{wildcards.sample_id}  > {params.tmpdir}/tmp.fa 2> {log}
     mv {params.tmpdir}/tmp.fa {output.fna}
 
-    rm -r {params.tmpdir}
+    rm -rf {params.tmpdir}/*
     """
+    
  
 
 rule cat_contigs:
-  name : "viral-contigident.py combine viral contigs"
+  name : "viral-identify.smk combine viral contigs"
   input:
     fna=expand(relpath("identify/viral/samples/{sample_id}/output/viral.contigs.fa"), sample_id=assembly_ids),
-    scrs=expand(relpath("identify/viral/samples/{sample_id}/output/merged_scores_filtered.csv"), sample_id=assembly_ids),
-    allhits=expand(relpath("identify/viral/samples/{sample_id}/output/merged_scores.csv"), sample_id=assembly_ids)
+    scrs=expand(relpath("identify/viral/samples/{sample_id}/output/merged_scores_filtered.csv"), sample_id=assembly_ids)
   output: 
     fna=relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa"),
-    scrs=relpath("identify/viral/intermediate/scores/combined_viral_scores.csv"),
-    allhits=relpath("identify/viral/intermediate/scores/combined_allcontigs_scores.csv")
+    scrs=relpath("identify/viral/intermediate/scores/combined_viral_scores.csv")
   params:
-    script="workflow/scripts/identify/viral/mergeout_scores.py", 
+    script="workflow/scripts/viral_merge_scores.py", 
     names=list(assembly_ids),
     tmpdir=tmpd
   log: os.path.join(logdir, "catcontigs.log")
   conda: "../envs/seqkit-biopython.yml"
   threads: 1
   resources:
-    maxcores=1
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   shell:
     """
     rm -rf {params.tmpdir}
     mkdir -p {params.tmpdir}
-
+    
     echo "{params.names}" > {params.tmpdir}/tmp.names
-    echo "{input.scrs}" > {params.tmpdir}/tmp.hits.paths
-    echo "{input.allhits}" > {params.tmpdir}/tmp.allhits.paths
-
+    echo "{input.scrs}" > {params.tmpdir}/tmp.csv.paths
+    
     python {params.script} \
         --names {params.tmpdir}/tmp.names \
-        --csvs {params.tmpdir}/tmp.hits.paths > {params.tmpdir}/tmp.csv 2> {log}
-        
-    python {params.script} \
-        --names {params.tmpdir}/tmp.names \
-        --csvs {params.tmpdir}/tmp.allhits.paths > {params.tmpdir}/tmp.allhits.csv 2> {log}
-
+        --csvs {params.tmpdir}/tmp.csv.paths > {params.tmpdir}/tmp.csv 2> {log}
     cat {input.fna} > {params.tmpdir}/tmp.fa 2> {log}
 
     mv {params.tmpdir}/tmp.csv {output.scrs}
-    mv {params.tmpdir}/tmp.allhits.csv {output.allhits}
     mv {params.tmpdir}/tmp.fa {output.fna}
 
     rm -rf {params.tmpdir}
@@ -168,17 +141,19 @@ rule cat_contigs:
 
 
 rule combine_classifications:
-  name: "viral-contigident.py combine derepped classification results"
+  name: "viral-identify.smk combine derepped classification results"
   input:
     checkv_out=relpath("identify/viral/output/checkv/quality_summary.tsv"),
     classify_out=relpath("identify/viral/intermediate/scores/combined_viral_scores.csv")
   output:
     relpath("identify/viral/output/checkv/combined_classification_results.csv")
   params:
-    script="workflow/scripts/identify/viral/combineclassify.py",
+    script="workflow/scripts/viral_combine_class.py",
     tmpdir=tmpd
   log: os.path.join(logdir, "combine_classification.log")
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   conda : "../envs/seqkit-biopython.yml"
   shell:
     """
@@ -194,9 +169,8 @@ rule combine_classifications:
     """
 
 
-
 rule consensus_filtering:
-  name: "viral-contigident.py consensus vOTU filtering"
+  name: "viral-identify.smk consensus vOTU filtering"
   input:
     relpath("identify/viral/output/checkv/combined_classification_results.csv")
   output:
@@ -204,13 +178,13 @@ rule consensus_filtering:
     proviruslist=relpath("identify/viral/output/provirus.list.txt"),
     viruslist=relpath("identify/viral/output/virus.list.txt")
   params:
-    script="workflow/scripts/identify/viral/consensus_filtering.py",
-    genomad=config['genomadcutoff_s'],
-    dvf=config['dvfcutoff_s'],
-    phamer=config['phamercutoff_s'], 
+    script="workflow/scripts/genomad_consensus_filtering.py",
+    genomad=config['genomad-cutoff-s'],
     tmpdir=tmpd
   log: os.path.join(logdir, "consensus_filtering.log")
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   conda: "../envs/seqkit-biopython.yml"
   shell:
     """
@@ -220,8 +194,6 @@ rule consensus_filtering:
     python {params.script} \
         --classification_results {input} \
         --genomad_min_score {params.genomad} \
-        --dvf_min_score {params.dvf} \
-        --phamer_min_score {params.phamer} \
         --summary_out {params.tmpdir}/tmp.csv \
         --provirus_list {params.tmpdir}/tmp.list.1 \
         --virus_list {params.tmpdir}/tmp.list.2  2> {log}
@@ -232,9 +204,8 @@ rule consensus_filtering:
     """
 
 
-
 rule votu:
-  name: "viral-contigident.py generate final vOTUs"
+  name: "viral-identify.smk generate final vContigs"
   input:
     provirusfasta=relpath("identify/viral/output/checkv/proviruses.fna"),
     virusfasta=relpath("identify/viral/output/checkv/viruses.fna"), 
@@ -243,23 +214,25 @@ rule votu:
   output:
     combined=relpath("identify/viral/output/combined.final.vOTUs.fa"),
     provirus=relpath("identify/viral/output/provirus.final.vOTUs.fa"),
-    virus=relpath("identify/viral/output/virus.final.vOTUs.fa"), 
+    virus=relpath("identify/viral/output/virus.final.vOTUs.fa"),
     tsv=relpath("identify/viral/output/GC_content_vOTUs.tsv")
   params:
     outdir=relpath("identify/viral/output/"),
     tmpdir=tmpd
   log: os.path.join(logdir, "vOTUs.log")
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
   conda: "../envs/seqkit-biopython.yml"
   shell:
     """
     rm -rf {params.tmpdir}/*
     mkdir -p {params.tmpdir} {params.outdir}
 
-    seqkit replace {input.provirusfasta} --f-use-regexp -p "(.+)_\d\s.+$" -r '$1' \
-        | seqkit grep -f {input.provirushits} > {params.tmpdir}/tmp1.fa 2> {log}
-    seqkit replace {input.virusfasta} --f-use-regexp -p "(.+)_\d\s.+$" -r '$1' \
-        | seqkit grep -f {input.provirushits} >> {params.tmpdir}/tmp1.fa 2> {log}
+    seqkit replace {input.provirusfasta} --f-use-regexp -p "(.+)_\d\s.+$" -r '$1' | \
+        seqkit grep -f {input.provirushits} > {params.tmpdir}/tmp1.fa 2> {log}
+    seqkit replace {input.virusfasta} --f-use-regexp -p "(.+)_\d\s.+$" -r '$1' | \
+        seqkit grep -f {input.provirushits} >> {params.tmpdir}/tmp1.fa 2> {log}
 
     seqkit grep {input.virusfasta} -f {input.virushits} > {params.tmpdir}/tmp2.fa 2> {log}
     seqkit grep {input.provirusfasta} -f {input.virushits} >> {params.tmpdir}/tmp2.fa 2> {log}
@@ -277,3 +250,19 @@ rule votu:
     rm -rf {params.tmpdir}/*
     """
 
+
+rule benchmark_summary:
+  name: "viral-identify.smk summaries performance benchmarks"
+  localrule: True
+  input:
+    os.path.join(benchmarks, "checkv.log")
+  output:
+    os.path.join(benchmarks, "summary.tsv")
+  params:
+    indir=benchmarks
+  threads: 1
+  shell:
+    """
+    cat {params.indir}/* | head -n 1 > {output}
+    for file in $(find {params.indir}/*.log -type f); do echo -e "$(tail -n +2 $file)\t  $(basename $file)" >> {output}; done
+    """
