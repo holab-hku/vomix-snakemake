@@ -147,11 +147,11 @@ rule aggregate_fastp:
   input:
     jsons=expand(relpath("preprocess/samples/{sample_id}/report.fastp.json"), sample_id = samples.keys())
   output:
-    relpath("reports/preprocess/library_size_stats.csv")
+    relpath("preprocess/reports/library_size_stats.csv")
   params:
     script="workflow/scripts/fastp_parse.py", 
     names=list(samples.keys()),
-    outdir=relpath("reports/preprocess"),
+    outdir=relpath("preprocess/reports"),
     tmpdir=os.path.join(tmpd, "fastp/summary")
   log: os.path.join(logdir, "fastp_summary_stats.log")
   benchmark: os.path.join(benchmarks, "fastp_summary_stats.log")
@@ -240,11 +240,11 @@ rule multiqc:
     R2s=expand(relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"), sample_id = samples.keys()),
     logs=expand(relpath("preprocess/samples/{sample_id}/report.fastp.json"), sample_id = samples.keys())
   output:
-    relpath("reports/preprocess/preprocess_report.html"),
-    relpath("reports/preprocess/preprocess_report_data/multiqc.log")
+    relpath("preprocess/reports/preprocess_report.html"),
+    relpath("preprocess/reports/preprocess_report_data/multiqc.log")
   params:
     searchdir=relpath("preprocess/"),
-    outdir=relpath("reports/preprocess"),
+    outdir=relpath("preprocess/reports"),
     tmpdir=os.path.join(tmpd, "multiqc")
   log: os.path.join(logdir, "multiqc.log")
   benchmark: os.path.join(benchmarks, "multiqc.log")
