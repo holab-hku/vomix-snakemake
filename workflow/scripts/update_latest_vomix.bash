@@ -36,7 +36,7 @@ echo "[2/5] Updating config.yml..."
 oldfile="${DIR_CLEAN}/config/config.yml"
 newfile="vomix-tmp/config/config.yml"
 if [[ -e "$oldfile" ]]; then 
-    cp "$oldfile" "${old_file%.yml}_old.yml"
+    cp "$oldfile" "${DIR_CLEAN}/config/config_old.yml"
 else 
     : 
 fi
