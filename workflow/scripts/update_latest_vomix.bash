@@ -26,7 +26,7 @@ case $? in
         ;;
     1 | 2) 
         echo "Updating Snakefile"
-        mv "$oldfile" "$newfile"
+        mv "$newfile" "$oldfile"
         ;;
 esac
 
@@ -36,7 +36,7 @@ echo "[2/5] Updating config.yml..."
 oldfile="${DIR_CLEAN}/config/config.yml"
 newfile="vomix-tmp/config/config.yml"
 if [[ -e "$oldfile" ]]; then 
-    cp "$oldfile" "${original_file%.yml}_old.yml"
+    cp "$oldfile" "${old_file%.yml}_old.yml"
 else 
     : 
 fi
@@ -47,7 +47,7 @@ case $? in
         ;;
     1 | 2) 
         echo "Updating Snakefile"
-        mv "$oldfile" "$newfile"
+        mv "$newfile" "$oldfile"
         ;;
 esac
 
@@ -64,7 +64,7 @@ for newfile in $(find vomix-tmp/workflow/rules/ -maxdepth 1 -type f); do
             ;;
         1 | 2) 
             echo "Updating $BASE"
-            mv "$oldfile" "$newfile"
+            mv "$newfile" "$oldfile"
             ;;
     esac
 done
@@ -82,7 +82,7 @@ for newfile in $(find vomix-tmp/workflow/envs/ -maxdepth 1 -type f); do
             ;;
         1 | 2)
             echo "Updating $BASE"
-            mv "$oldfile" "$newfile"
+            mv "$newfile" "$oldfile"
             ;;
     esac
 done
@@ -107,4 +107,4 @@ done
 
 echo "Done!" 
 
-rm -r vomix-tmp
+rm -rf vomix-tmp
