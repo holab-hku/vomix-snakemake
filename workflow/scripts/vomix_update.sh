@@ -12,7 +12,7 @@ show_help() {
     echo "  -h, --help     Show this help message"
     echo ""
     echo "Description:"
-    echo "  Script used to update a current vOMIX-MEGA development version.\n"
+    echo "  Script used to update a current vOMIX-MEGA development version."
     echo "  e.g."
     echo "  vomix_update.sh  /home/vOMIX-MEGA"
 }
