@@ -38,7 +38,7 @@ rule done_log:
   localrule: True
   input:
     relpath("identify/viral/output/combined.final.vOTUs.fa"), 
-    os.path.join(benchmarks, "summary.tsv")
+    #os.path.join(benchmarks, "summary.tsv")
   output:
     os.path.join(logdir, "done.log")
   params:
