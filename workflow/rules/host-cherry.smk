@@ -102,7 +102,8 @@ rule PhaVIP:
 rule PhaTYP:
   name: "host.smk PhaTYP lifestyle prediction"
   input:
-    fna=fastap
+    fna=fastap, 
+    db=os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl")
   output:
     relpath("host/output/PhaTYP/final_prediction/phatyp_prediction.tsv")
   params:

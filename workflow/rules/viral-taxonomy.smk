@@ -114,7 +114,8 @@ rule genomad_taxonomy:
 rule phagcn_taxonomy:
   name: "viral-taxonomy.smk PhaGCN phage taxonomy"
   input:
-    fna=fastap
+    fna=fastap, 
+    db=os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl")
   output:
     relpath("taxonomy/viral/intermediate/phagcn/taxonomy.tsv")
   params:
