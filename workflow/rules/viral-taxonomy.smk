@@ -45,42 +45,11 @@ rule done_log:
 
 ### RULES
 
-rule prodigalgv_taxonomy:
-  name: "viral-taxonomy.smk prodigal-gv vTOUs [parallelized]"
-  input: 
-    fastap
-  output: 
-    relpath("taxonomy/viral/intermediate/prodigal/proteins.vOTUs.faa")
-  params:
-    script="workflow/scripts/utility/parallel-prodigal-gv.py", 
-    outdir=relpath("taxonomy/viral/intermediate/prodigal/"),
-    tmpdir=os.path.join(tmpd, "prodigal")
-  conda: "../envs/prodigal-gv.yml"
-  log: os.path.join(logdir, "prodigal-gv.log")
-  benchmark: os.path.join(benchmarks, "prodigal-gv.log")
-  threads: 64
-  resources: 
-    mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
-  shell: 
-    """
-    rm -rf {params.tmpdir} {params.outdir}
-    mkdir -p {params.tmpdir} {params.outdir}
-
-    python {params.script} \
-        -i {input} \
-        -a {params.tmpdir}/tmp.faa \
-        -t {threads} &> {log}
-
-    mv {params.tmpdir}/tmp.faa {output}
-
-    rm -rf {params.tmpdir}
-    """
-
-
 rule genomad_classify:
   name: "viral-taxonomy.smk geNomad classify"
   input:
-    fna=fastap
+    fna=fastap, 
+    db=os.path.join(config['genomad-db'], "genomad_db.source")
   output:
     genomad=genomad_out
   params:
@@ -96,8 +65,8 @@ rule genomad_classify:
     mem_mb=lambda wildcards, attempt, input: 24 * 10**3 * attempt
   shell:
     """
-    rm -rf {params.tmpdir} {params.outdir} 2> {log}
-    mkdir -p {params.tmpdir} {params.outdir} 2> {log}
+    rm -rf {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
 
     genomad end-to-end \
         {input.fna} \
@@ -121,7 +90,7 @@ rule genomad_taxonomy:
   output:
     relpath("taxonomy/viral/intermediate/genomad/taxonomy.csv")
   params:
-    script="workflow/scripts/taxonomy/genomad_taxonomy.py",
+    script="workflow/scripts/genomad_taxonomy.py",
     outdir=relpath("taxonomy/viral/intermediate/genomad"),
     tmpdir=os.path.join(tmpd, "genomad")
   conda: "../envs/ete3.yml"
@@ -156,9 +125,9 @@ rule phagcn_taxonomy:
   log: os.path.join(logdir, "phagcn.log")
   benchmark: os.path.join(benchmarks, "phagcn.log")
   conda: "../envs/phabox2.yml"
-  threads: 16
+  threads: 64
   resources:
-    mem_mb=lambda wildcards, attempt: attempt * 32 * 10**3
+    mem_mb=lambda wildcards, attempt: attempt * 128 * 10**3
   shell:
     """
     rm -rf {params.tmpdir} {params.outdir}
@@ -188,7 +157,7 @@ rule merge_taxonomy:
   output:
     relpath("taxonomy/viral/output/merged_taxonomy.csv")
   params:
-    script="workflow/scripts/taxonomy/merge_taxonomy.py",
+    script="workflow/scripts/taxonomy_merge.py",
     outdir=relpath("taxonomy/viral/output/"),
     tmpdir=os.path.join(tmpd, "merge")
   log: os.path.join(logdir, "merge_taxonomy.log")
@@ -203,7 +172,7 @@ rule merge_taxonomy:
         --phagcnout {input.phagcn} \
         --genomadout {input.genomad} \
         --contigs {input.contigs} \
-        --output {params.tmpdir}/tmp.csv
+        --output {params.tmpdir}/tmp.csv &> {log}
     
     mv {params.tmpdir}/tmp.csv {output}
     """

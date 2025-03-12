@@ -81,10 +81,10 @@ rule PhaVIP:
   input:
     relpath("host/output/CHERRY/final_prediction/cherry_prediction.tsv")
   output:
-    relpath("annotation/viral/output/PhaVIP/final_prediction/phavip_prediction.tsv")
+    relpath("annotate/viral/output/PhaVIP/final_prediction/phavip_prediction.tsv")
   params:
     indir=relpath("host/output/CHERRY/final_prediction"),
-    outdir=relpath("annotation/viral/output/PhaVIP/final_prediction"),
+    outdir=relpath("annotate/viral/output/PhaVIP/final_prediction"),
   log: os.path.join(logdir, "PhaVIP_copy.log")
   benchmark: os.path.join(benchmarks, "PhaVIP_copy.log")
   threads: 1
@@ -148,7 +148,7 @@ rule merge_results:
     edges=relpath("host/output/cherry_network_edges.tsv"), 
     nodes=relpath("host/output/cherry_network_nodes.tsv"),
   params: 
-    script="workflow/scripts/host/host_merge.py",
+    script="workflow/scripts/host_merge.py",
     outdir=relpath("host/output/"), 
     tmpdir=os.path.join(tmpd, "merge")
   conda: "../envs/seqkit-biopython.yml"

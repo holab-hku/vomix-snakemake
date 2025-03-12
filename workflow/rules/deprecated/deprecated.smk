@@ -1,3 +1,34 @@
+rule drep:
+  name: "prok-binning.smk dRep final bins"
+  input:
+    expand(relpath("binning/prokaryotic/output/no-drep/ids/{assembly_id}_MAGids.tsv"), assembly_id=assembly_ids),
+    expand(relpath("binning/prokaryotic/output/no-drep/ids/unbinned/{assembly_id}_unbinned.fasta"), assembly_id=assembly_ids)
+  output:
+    relpath("binning/prokaryotic/output/drep/figures/Primary_clustering_dendrogram.pdf")
+  params:
+    parameters=config["drep-params"],
+    indir=relpath("binning/prokaryotic/output/no-drep"),
+    outdir=relpath("binning/prokaryotic/output/drep"),
+    tmpdir=os.path.join(tmpd, "drep")
+  log: os.path.join(logdir, "drep.log")
+  benchmark: os.path.join(benchmarks, "drep.log")
+  conda: "../envs/drep.yml"
+  threads: 64
+  resources:
+    mem_mb=lambda wildcards, attempt, input: 8 * 10**3 * attempt
+  shell:
+    """
+    rm -rf {params.tmpdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    dRep dereplicate \
+        {params.tmpdir} \
+        -g {params.indir}/*.fasta \
+        {params.parameters} 2> {log}
+
+    mv {params.tmpdir}/* {params.outdir}
+    """
+
 ##############################
 # VIRSORTER 2 CLASSIFICATION #
 ##############################

@@ -19,7 +19,7 @@ def extract_taxonomy(input_f, output_f):
 		taxdf = df.loc[:, ['genomad_taxonomy', 'genomad_virus_score']]
 	except KeyError:
 		try:
-			print(df)
+			#print(df)
 			taxdf = df.loc[:, ['taxonomy', 'virus_score']]
 			taxdf.rename(columns={'taxonomy': 'genomad_taxonomy', 'virus_score': 'genomad_virus_score'}, inplace=True)
 		except KeyError:

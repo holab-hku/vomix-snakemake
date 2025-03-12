@@ -20,30 +20,48 @@ def consensus_filtering(classification_summary, genomad_min, summary_out, provir
 	# set sequences identified as proviruses by both checkV and genoad as true pro-viruses
 	# if only one tool says it's a provirus, it will label as lower confidence
 	df['type'] = 'Virus'
-	df.loc[(df['provirus-hit-score'] == 2), 'type'] = 'Provirus'
-	df.loc[(df['provirus-hit-score'] == 1), 'type'] = 'Provirus (Low-Confidence)'
+	df.loc[(df['provirus-hit-score'] == 2), 'type'] = 'Provirus (geNomad+CheckV)'
+	df.loc[(df['provirus-hit-score'] == 1) & (df['genomad_topology'] == 'Provirus'), 'type'] = 'Provirus (geNomad)'
+	df.loc[(df['provirus-hit-score'] == 1) & (df['checkv_provirus'] == 'Yes'), 'type']  = 'Provirus (CheckV)'
 
 	# filter the dataframe if not 'type' is 'Virus' but contamination is higher than 10%
 	df = df[(df['type'] != 'Virus') | (df['checkv_contamination'] <= 10)]
-	
-	# do rigorous filtering based on whether checkv completeness  assessment 
-	# The filtering is done through a loop for code readability reasons
-	filtered_rows = []
-	
-	for index, row in df.iterrows():
-		# 1) Keep every sequence where the  CheckV genome is set as Complete or High-quality
-		if row['checkv_quality'] in ('High-quality', 'Complete'):
-			filtered_rows.append(row)
 
-		# 4) If genome is medium or low-quality or not-determined, keep if genomad score is very high
-		# (according to secondary geNomad threshold) 
-		else: 
-			if row['hit-score'] == 1:
-				filtered_rows.append(row)
-			else:
-				continue
-			
-	filtered_df = pd.concat(filtered_rows, axis=1).transpose()
+	exclusion_warnings = [
+		#"low-confidence DTR",
+		#"low-confidence ITR",
+		#"no viral genes detected",
+		"no viral genes detected; low-confidence DTR",
+		"no viral genes detected; low-confidence ITR",
+		">1 viral region detected; contig >1.5x longer than expected genome length",
+		">1 viral region detected",
+		"high kmer_freq may indicate large duplication; contig >1.5x longer than expected genome length; low-confidence DTR",
+		"high kmer_freq may indicate large duplication; contig >1.5x longer than expected genome length; low-confidence ITR",
+		"no viral genes detected; contig >1.5x longer than expected genome length",
+		"high kmer_freq may indicate large duplication; contig >1.5x longer than expected genome length",
+		"no viral genes detected; high kmer_freq may indicate large duplication; low-confidence ITR",
+		"high kmer_freq may indicate large duplication; low-confidence ITR",
+		"contig >1.5x longer than expected genome length",
+		">1 viral region detected; low-confidence ITR",
+		">1 viral region detected; low-confidence DTR",
+		"contig >1.5x longer than expected genome length; low-confidence Provirus",
+		"no viral genes detected; high kmer_freq may indicate large duplication",
+		"low-confidence Provirus"]
+
+	df_exclusions = df[df["checkv_warnings"].isin(exclusion_warnings)]
+	df_filt = df[~df["checkv_warnings"].isin(exclusion_warnings)]
+
+	df_highqual = df_filt[~df_filt["checkv_quality"].isin(["Not-determined", "Low-quality"])]
+	df_lowqual = df_filt[df_filt["checkv_quality"].isin(["Not-determined", "Low-quality"])]
+	
+	df_lowqual_pass = df_lowqual[
+			((df_lowqual["genomad_n_hallmarks"] == 0) & (df_lowqual["genomad_virus_score"] >= 0.99))
+			| ((df_lowqual["genomad_n_hallmarks"] >= 1) & (df_lowqual["genomad_n_hallmarks"] <= 5) & (df_lowqual["genomad_virus_score"] >= 0.95))
+			| ((df_lowqual["genomad_n_hallmarks"] > 5) & (df_lowqual["genomad_virus_score"] >= 0.90))
+			| ((df_lowqual["genomad_marker_enrichment"] >= df["genomad_marker_enrichment"].quantile(0.90)))
+			]
+
+	df_pass = pd.concat([df_highqual, df_lowqual_pass])
 
 	# drop any sequence where more than one proviruse region has been identified by geNomad
 	# but checkV does not see a provirus
@@ -52,15 +70,15 @@ def consensus_filtering(classification_summary, genomad_min, summary_out, provir
 	# drop duplicate indices 
 	# these regions represent the ones where geNomad found two proviruses 
 	# we can find a cleaner way to handle this later
-	filtered_df = filtered_df[~filtered_df.index.duplicated(keep='first')]
+	df_pass = df_pass[~df_pass.index.duplicated(keep='first')]
 
 	# make all indecies unique 
-	provirusdf = filtered_df[(filtered_df['type'] == 'Provirus') | (filtered_df['type'] == 'Provirus (Low-Confidence)')]
-	virusdf = filtered_df[filtered_df['type'] == 'Virus']
+	provirusdf = df_pass[(df_pass['type'] != 'Virus')]
+	virusdf = df_pass[df_pass['type'] == 'Virus']
 
 
 	# save outputs
-	filtered_df.to_csv(summary_out, index=True)
+	df_pass.to_csv(summary_out, index=True, sep=",")
 	provirusdf.index.to_frame().to_csv(provirus_out, header=False, index=False, sep='\t')
 	virusdf.index.to_frame().to_csv(virus_out, header=False, index=False, sep='\t')
 

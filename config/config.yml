@@ -27,6 +27,7 @@ iphop-dbdir: "workflow/database/iphop/Aug_2023_pub_rw"
 eggNOG-db: "workflow/database/eggNOGv2"
 eggNOG-db-params: ""
 humann-db: "workflow/database/humann"
+checkm2-db: "workflow/database/checkm2"
 
 # preprocess.smk & preprocess-decontam.smk
 
@@ -117,14 +118,16 @@ mpa-indexv: "mpa_vOct22_CHOCOPhlAnSGB_202212"
 
 # prok-binning.smk 
 
-binning-consensus: True
+binning-consensus: False
 strobealign-params: ""
 MetaBAT2-params: "-m 1500"
 MaxBin2-params: "-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9"
 CONCOCT-params: ""
 jgi-summarize-params: "--percentIdentity 97"
 DASTool-params: ""
+checkm2-params: ""
 drep-params: ""
+galah-params: "--ani 95 --min-aligned-fraction 15 --fragment-length 3000"
 VAMB-params: "-m 100"
 
 

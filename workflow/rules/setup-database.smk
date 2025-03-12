@@ -118,7 +118,7 @@ rule virsorter2_db:
 
 rule chocophlan_db:
   name: "setup-database.smk HUMAnN3 chocophlan database (16.4 G)"
-  output: os.path.join(config['humann-db'], "chocophlan/")
+  output: os.path.join(config['humann-db'], "chocophlan/alaS.centroids.v201901_v31.ffn.gz")
   params:
     outdir=config['humann-db'],
     tmpdir=os.path.join(tmpd, "humann/db")
@@ -130,21 +130,18 @@ rule chocophlan_db:
     mem_mb=lambda wildcards, attempt, input, threads: 4000
   shell:
     """
-    rm -rf {params.outdir} {params.tmpdir}
-    mkdir -p {params.outdir}
+    rm -rf {params.outdir}/chocophlan {params.tmpdir}
+    mkdir -p {params.outdir} {params.tmpdir}
 
-    cd {params.tmpdir}
-    wget --no-check-certificate http://huttenhower.sph.harvard.edu/humann_data/chocophlan/full_chocophlan.v201901_v31.tar.gz &> {log}
-    tar -xf full_chocophlan.v201901_v31.tar.gz &> {log}
-    # humann_databases --download chocophlan full {params.tmpdir}/ &> {log}
+    humann_databases --download chocophlan full {params.tmpdir}/ --update-config yes &> {log}
 
     mv {params.tmpdir}/chocophlan {params.outdir}/
     """
 
 
 rule uniref_db:
-  name: "setup-database.smk HUMAnN3 uniref database (20.7 G)"
-  output: os.path.join(config['humann-db'], "uniref/")
+  name: "setup-database.smk HUMAnN3 uniref database (19.7 G)"
+  output: os.path.join(config['humann-db'], "uniref/uniref90_201901b_full.dmnd")
   params:
     outdir=config['humann-db'],
     tmpdir=os.path.join(tmpd, "humann/db")
@@ -156,21 +153,28 @@ rule uniref_db:
     mem_mb=lambda wildcards, attempt, input, threads: 4000
   shell:
     """
-    rm -rf {params.outdir} {params.tmpdir}
-    mkdir -p {params.outdir} 
+    rm -rf {params.outdir}/uniref {params.tmpdir}
+    mkdir -p {params.outdir} {params.tmpdir}
  
-    cd {params.tmpdir} 
-    wget --no-check-certificate http://huttenhower.sph.harvard.edu/humann_data/uniprot/uniref_annotated/uniref90_annotated_v201901b_full.tar.gz &> {log}
-    tar -xf uniref90_annotated_v201901b_full.tar.gz &> {log}
-    # humann_databases --download uniref uniref90_diamond {params.tmpdir}/ &> {log}
+    humann_databases --download uniref uniref90_diamond {params.tmpdir}/ --update-config yes &> {log}
 
     mv {params.tmpdir}/uniref {params.outdir}/
     """
 
 
 rule utilitymap_db:
-  name: "setup-database.smk HUMAnN3 utility mapping database (X.X G)"
-  output: os.path.join(config['humann-db'], "utility_mapping/")
+  name: "setup-database.smk HUMAnN3 utility mapping database (2.5 G)"
+  output: 
+    ecdb=os.path.join(config['humann-db'], "utility_mapping/map_level4ec_uniref90.txt.gz"),
+    eggnogdb=os.path.join(config['humann-db'], "utility_mapping/map_eggnog_uniref90.txt.gz"),
+    godb=os.path.join(config['humann-db'], "utility_mapping/map_go_uniref90.txt.gz"),
+    kodb=os.path.join(config['humann-db'], "utility_mapping/map_ko_uniref90.txt.gz"),
+    pfamdb=os.path.join(config['humann-db'], "utility_mapping/map_pfam_uniref90.txt.gz"),
+    ecnamedb=os.path.join(config['humann-db'], "utility_mapping/map_ec_name.txt.gz"),
+    eggnognamedb=os.path.join(config['humann-db'], "utility_mapping/map_eggnog_name.txt.gz"),
+    gonamedb=os.path.join(config['humann-db'], "utility_mapping/map_go_name.txt.gz"),
+    konamedb=os.path.join(config['humann-db'], "utility_mapping/map_ko_name.txt.gz"),
+    pfamnamedb=os.path.join(config['humann-db'], "utility_mapping/map_pfam_name.txt.gz")
   params:
     outdir=config['humann-db'],
     tmpdir=os.path.join(tmpd, "humann/db")
@@ -182,13 +186,10 @@ rule utilitymap_db:
     mem_mb=lambda wildcards, attempt, input, threads: 4000
   shell:
     """
-    rm -rf {params.outdir} {params.tmpdir}
-    mkdir -p {params.outdir} 
+    rm -rf {params.outdir}/utility_mapping {params.tmpdir}
+    mkdir -p {params.outdir} {params.tmpdir}
  
-    cd {params.tmpdir} 
-    wget --no-check-certificate http://huttenhower.sph.harvard.edu/humann_data/full_mapping_v201901b.tar.gz &> {log}
-    tar -xf full_mapping_v201901b.tar.gz &> {log}
-    # humann_databases --download utility_mapping full {params.tmpdir}/ &> {log}
+    humann_databases --download utility_mapping full {params.tmpdir}/ --update-config yes &> {log}
 
     mv {params.tmpdir}/utility_mapping {params.outdir}/
     """
@@ -218,4 +219,27 @@ rule eggnog_download:
     mv {params.tmpdir}/* {params.outdir}/
 
     rm -rf {params.tmpdir}
+    """
+
+rule checkm2_download:
+  name: "setup-database.smk CheckM2 Database (2.7 G)"
+  output: 
+    os.path.join(config["checkm2-db"], "uniref100.KO.1.dmnd")
+  params:
+    outdir=config['checkm2-db'],
+    tmpdir=os.path.join(tmpd, "checkm2db")
+  conda: "../envs/checkm2.yml"
+  log: os.path.join(logdir, "checkm2_db.log")
+  benchmark: os.path.join(benchmarks, "checkm2_db.log")
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt: attempt * 4 * 10**3
+  shell:
+    """
+    rm -rf {params.outdir} {params.tmpdir}
+    mkdir -p {params.outdir} 
+    
+    checkm2 database --download --path {params.tmpdir} 2> {log}
+
+    mv {params.tmpdir}/CheckM2_database/* {params.outdir}/
     """
