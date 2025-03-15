@@ -13,6 +13,7 @@ n_cores = config['cores']
 ### Check if geNomad is run already 
 if os.path.exists(relpath("identify/viral/output/classification_summary_vOTUs.csv")):
   genomad_out = relpath("identify/viral/output/classification_summary_vOTUs.csv")
+  genomad_f = False
   console.print(Panel.fit(f"[dim] geNomad has already been run. Using its output in '{genomad_out}' for taxonomic annotation.", title = "Warning", subtitle="geNomad taxonomy"))
 else:
   genomad_out = relpath("taxonomy/viral/intermediate/genomad/taxonomy.tsv")
@@ -45,41 +46,42 @@ rule done_log:
 
 ### RULES
 
-rule genomad_classify:
-  name: "viral-taxonomy.smk geNomad classify"
-  input:
-    fna=fastap, 
-    db=os.path.join(config['genomad-db'], "genomad_db.source")
-  output:
-    genomad=genomad_out
-  params:
-    genomadparams=config['genomad-params'],
-    dbdir=config['genomad-db'],
-    outdir=relpath("taxonomy/viral/intermediate/genomad"),
-    tmpdir=os.path.join(tmpd, "genomad")
-  log: os.path.join(logdir, "genomad_taxonomy.log")
-  benchmark: os.path.join(benchmarks, "genomad_taxonomy.log")
-  conda: "../envs/genomad.yml"
-  threads: 64
-  resources:
-    mem_mb=lambda wildcards, attempt, input: 24 * 10**3 * attempt
-  shell:
-    """
-    rm -rf {params.tmpdir} {params.outdir}
-    mkdir -p {params.tmpdir} {params.outdir}
+if genomad_f:
+  rule genomad_classify:
+    name: "viral-taxonomy.smk geNomad classify"
+    input:
+      fna=fastap, 
+      db=os.path.join(config['genomad-db'], "genomad_db.source")
+    output:
+      genomad=genomad_out
+    params:
+      genomadparams=config['genomad-params'],
+      dbdir=config['genomad-db'],
+      outdir=relpath("taxonomy/viral/intermediate/genomad"),
+      tmpdir=os.path.join(tmpd, "genomad")
+    log: os.path.join(logdir, "genomad_taxonomy.log")
+    benchmark: os.path.join(benchmarks, "genomad_taxonomy.log")
+    conda: "../envs/genomad.yml"
+    threads: 64
+    resources:
+      mem_mb=lambda wildcards, attempt, input: 24 * 10**3 * attempt
+    shell:
+      """
+      rm -rf {params.tmpdir} {params.outdir}
+      mkdir -p {params.tmpdir} {params.outdir}
 
-    genomad end-to-end \
-        {input.fna} \
-        {params.tmpdir} \
-        {params.dbdir} \
-        --threads {threads} \
-        --cleanup \
-        {params.genomadparams} &> {log}
+      genomad end-to-end \
+          {input.fna} \
+          {params.tmpdir} \
+          {params.dbdir} \
+          --threads {threads} \
+          --cleanup \
+          {params.genomadparams} &> {log}
 
-    mv {params.tmpdir}/* {params.outdir}
-    cp {params.outdir}/*_summary/*_virus_summary.tsv {output.genomad}
-    rm -rf {params.tmpdir}
-    """
+      mv {params.tmpdir}/* {params.outdir}
+      cp {params.outdir}/*_summary/*_virus_summary.tsv {output.genomad}
+      rm -rf {params.tmpdir}
+      """
 
 
 rule genomad_taxonomy:

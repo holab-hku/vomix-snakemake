@@ -65,7 +65,7 @@ def validate_samples(samples):
 				console.print("[dim] {accs} downloading [{size_gb}GB][/dim]".format(accs=acc, size_gb=sizegb))
 				
 			except Exception as e:
-				console.print(Panel.fit("Accession: {} [dim]Could not be found by efetch in NCBI's Entrez Direct OR is not a valid run OR the NCBI server is limiting the number of requests. Please ensure that it is a valid SRA accession or reduce the number of requests for sample validation. Alternetaively you could change config['email'] parameter.If you intend to use locally stored fastq files, make sure your sample list contains the column 'R1' for single-end and 'R2' for paired-end files.".format(acc), title="Run Error", subtitle="SRA Accession Not Found"))
+				console.print(Panel.fit(f"Sample '{sample}' [dim]with accession '{acc}' could not be processed for the following reasons:\n\n1) The Accession Could noound by efetch in NCBI's Entrez Direct\n2) The accession is not a valid run\n3) The NCBI server is limiting the number of requests\n4) The file is not in correct fasta gunzipped format with a 'fasta.gz' ending.\n\nPlease ensure that it is a valid SRA accession or reduce the number of requests for sample validation. Alternetaively you could change config['email'] parameter.If you intend to use locally stored fastq files, make sure your sample list contains the column 'R1' for single-end and 'R2' for paired-end files.", title="Run Error", subtitle="SRA Accession Not Parsed"))
 				sys.exit(1)
 
 			progress.update(task, advance=1)
