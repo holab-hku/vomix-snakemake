@@ -22,8 +22,9 @@ rule done_log:
     expand(relpath("annotate/prok/samples/{sample_id}/input/{sample_id}_merged.fastq.gz"), sample_id = samples.keys()), 
     expand(relpath("annotate/prok/samples/{sample_id}/{sample_id}_{output_type}.tsv"), sample_id = samples.keys(), output_type = ["pathabundance", "pathcoverage", "genefamilies"]), 
     expand(relpath("annotate/prok/output/{output_type}_merged.tsv"), output_type = ["pathabundance", "pathcoverage", "genefamilies"]),
-    expand(relpath("annotate/prok/output/genefamilies_merged-cpm-{database}.tsv"), database = ["ec", "eggnog", "go", "ko", "pfam"]),
+    expand(relpath("annotate/prok/output/unnamed/genefamilies_merged-cpm-{database}.tsv"), database = ["ec", "eggnog", "go", "ko", "pfam"]),
     expand(relpath("annotate/prok/output/genefamilies_merged-cpm-{database}-named.tsv"), database = ["ec", "eggnog", "go", "ko", "pfam"]),
+    os.path.join(benchmarks, "summary.tsv"),
   output:
     os.path.join(logdir, "done.log")
   params:
@@ -84,7 +85,7 @@ rule humann3:
   benchmark: os.path.join(benchmarks, "HUMAnN3_{sample_id}.log")
   threads: 64
   resources:
-    mem_mb=lambda wildcards, attempt, threads, input: max(64 * 10**3 + 4000, 4000)
+    mem_mb=lambda wildcards, attempt, threads, input: max(48 * 10**3, 4000)
   shell:
     """
     rm -rf {params.tmpdir}
@@ -144,68 +145,214 @@ rule humann_merge:
     rm {params.tmpdir}/*
     """
 
-rule humann_map:
-  name: "prok-annotate.smk HUMAnN3 map results"
+rule humann_normalize:
+  name: "prok-annotate.smk HUMAnN3 normalize results"
   input:
-    tsv=relpath("annotate/prok/output/genefamilies_merged.tsv"),
-    ecdb=os.path.join(config['humann-db'], "utility_mapping/map_level4ec_uniref90.txt.gz"),
-    eggnogdb=os.path.join(config['humann-db'], "utility_mapping/map_eggnog_uniref90.txt.gz"),
-    godb=os.path.join(config['humann-db'], "utility_mapping/map_go_uniref90.txt.gz"),
-    kodb=os.path.join(config['humann-db'], "utility_mapping/map_ko_uniref90.txt.gz"),
-    pfamdb=os.path.join(config['humann-db'], "utility_mapping/map_pfam_uniref90.txt.gz"),
-    unirefnamedb=os.path.join(config['humann-db'], "utility_mapping/map_uniref90_name.txt.bz2"),
-    ecnamedb=os.path.join(config['humann-db'], "utility_mapping/map_ec_name.txt.gz"),
-    eggnognamedb=os.path.join(config['humann-db'], "utility_mapping/map_eggnog_name.txt.gz"),
-    gonamedb=os.path.join(config['humann-db'], "utility_mapping/map_go_name.txt.gz"),
-    konamedb=os.path.join(config['humann-db'], "utility_mapping/map_ko_name.txt.gz"),
-    pfamnamedb=os.path.join(config['humann-db'], "utility_mapping/map_pfam_name.txt.gz"),
+    relpath("annotate/prok/output/genefamilies_merged.tsv")
   output:
-    cpm=relpath("annotate/prok/output/genefamilies_merged-cpm.tsv"),
-    rxn=relpath("annotate/prok/output/genefamilies_merged-cpm-metacycrxn.tsv"),
-    ec=relpath("annotate/prok/output/genefamilies_merged-cpm-ec.tsv"),
-    eggnog=relpath("annotate/prok/output/genefamilies_merged-cpm-eggnog.tsv"),
-    go=relpath("annotate/prok/output/genefamilies_merged-cpm-go.tsv"),
-    ko=relpath("annotate/prok/output/genefamilies_merged-cpm-ko.tsv"),
-    pfam=relpath("annotate/prok/output/genefamilies_merged-cpm-pfam.tsv"),
-    #tsvname=relpath("annotate/prok/output/genefamilies_merged-named.tsv"),
-    rxnname=relpath("annotate/prok/output/genefamilies_merged-cpm-metacycrxn-named.tsv"),
-    ecname=relpath("annotate/prok/output/genefamilies_merged-cpm-ec-named.tsv"),
-    eggnogname=relpath("annotate/prok/output/genefamilies_merged-cpm-eggnog-named.tsv"),
-    goname=relpath("annotate/prok/output/genefamilies_merged-cpm-go-named.tsv"),
-    koname=relpath("annotate/prok/output/genefamilies_merged-cpm-ko-named.tsv"),
-    pfamname=relpath("annotate/prok/output/genefamilies_merged-cpm-pfam-named.tsv"),
+    relpath("annotate/prok/output/genefamilies_merged-cpm.tsv")
   params:
     outdir=relpath("annotate/prok/output"),
-    basename=relpath("annotate/prok/output/genefamilies_merged-cpm"), 
-    tmpdir=os.path.join(tmpd, "humann_map")
+    basename=relpath("annotate/prok/output/genefamilies_merged-cpm"),
+    ecname=relpath("annotate/prok/output/genefamilies_merged-cpm-ec-named.tsv"),
+    tmpdir=os.path.join(tmpd, "humann_normalize")
   conda: "../envs/biobakery3.yml"
-  log: os.path.join(logdir, "humann_map.log")
-  benchmark: os.path.join(benchmarks, "humann_map.log")
+  log: os.path.join(logdir, "humann_normalize.log")
+  benchmark: os.path.join(benchmarks, "humann_normalize.log")
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 1000
+  shell:
+    """
+    rm -rf {params.tmpdir}
+    mkdir -p {params.outdir} {params.tmpdir}
+    
+    humann_renorm_table --input {input} --output {params.tmpdir}/tmp.tsv --units cpm --mode community --special y --update-snames &> {log}
+
+    mv {params.tmpdir}/tmp.tsv {output}
+    """
+
+
+rule humann_map_ec:
+  name: "prok-annotate.smk HUMAnN3 map Level-4 Enzyme Comission"
+  input:
+    tsv=relpath("annotate/prok/output/genefamilies_merged-cpm.tsv"),
+    db=os.path.join(config['humann-db'], "utility_mapping/map_level4ec_uniref90.txt.gz"),
+    dbname=os.path.join(config['humann-db'], "utility_mapping/map_ec_name.txt.gz")
+  output:
+    tsv=relpath("annotate/prok/output/unnamed/genefamilies_merged-cpm-ec.tsv"),
+    tsvname=relpath("annotate/prok/output/genefamilies_merged-cpm-ec-named.tsv"),
+  params:
+    outdir=relpath("annotate/prok/output"),
+    tmpdir=os.path.join(tmpd, "humann_map/ec")
+  conda: "../envs/biobakery3.yml"
+  log: os.path.join(logdir, "humann_map_ec.log")
+  benchmark: os.path.join(benchmarks, "humann_map_ec.log")
   threads: 1
   resources:
     mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 100000
   shell:
     """
     rm -rf {params.tmpdir}
-    mkdir -p {params.outdir} {params.tmpdir}
+    mkdir -p {params.outdir}/unnamed {params.tmpdir}
 
-    humann_renorm_table --input {input.tsv} --output {output.cpm} --units cpm --mode community --special y --update-snames &> {log}
+    humann_regroup_table --input {input.tsv} --output {params.tmpdir}/tmp.tsv --custom {input.db} --function sum --ungrouped Y --protected Y &>> {log}
+    humann_rename_table --input {params.tmpdir}/tmp.tsv --output {params.tmpdir}/tmpname.tsv --custom {input.dbname} &>> {log}
 
-    # humann_regroup_table --input {output.cpm} --output {output.rxn} --groups uniref90_rxn --function sum --ungrouped Y --protected Y &>> {log}
-    humann_regroup_table --input {output.cpm} --output {output.ec} --custom {input.ecdb} --function sum --ungrouped Y --protected Y &>> {log}
-    humann_regroup_table --input {output.cpm} --output {output.eggnog} --custom {input.eggnogdb} --function sum --ungrouped Y --protected Y &>> {log}
-    humann_regroup_table --input {output.cpm} --output {output.go} --custom {input.godb} --function sum --ungrouped Y --protected Y &>> {log}
-    humann_regroup_table --input {output.cpm} --output {output.ko} --custom {input.kodb} --function sum --ungrouped Y --protected Y &>> {log}
-    humann_regroup_table --input {output.cpm} --output {output.pfam} --custom {input.pfamdb} --function sum --ungrouped Y --protected Y &>> {log}
+    mv {params.tmpdir}/tmp.tsv {output.tsv}
+    mv {params.tmpdir}/tmpname.tsv {output.tsvname}
+    """
 
-    humann_rename_table --input {output.rxn} --output {output.rxnname} --names metacyc-rxn &>> {log}
-    humann_rename_table --input {output.ec} --output {output.ecname} --custom {input.ecnamedb} &>> {log}
-    humann_rename_table --input {output.eggnog} --output {output.eggnogname} --custom {input.eggnognamedb} &>> {log}
-    humann_rename_table --input {output.go} --output {output.goname} --custom {input.gonamedb} &>> {log}
-    humann_rename_table --input {output.ko} --output {output.koname} --custom {input.konamedb} &>> {log}
-    humann_rename_table --input {output.pfam} --output {output.pfamname} --custom {input.pfamnamedb} &>> {log}
-  
-    rm -f {params.tmpdir}/*
+rule humann_map_eggnog:
+  name: "prok-annotate.smk HUMAnN3 map EggNOG including COGs"
+  input:
+    tsv=relpath("annotate/prok/output/genefamilies_merged-cpm.tsv"),
+    db=os.path.join(config['humann-db'], "utility_mapping/map_eggnog_uniref90.txt.gz"),
+    dbname=os.path.join(config['humann-db'], "utility_mapping/map_eggnog_name.txt.gz"),
+  output:
+    tsv=relpath("annotate/prok/output/unnamed/genefamilies_merged-cpm-eggnog.tsv"),
+    tsvname=relpath("annotate/prok/output/genefamilies_merged-cpm-eggnog-named.tsv"),
+  params:
+    outdir=relpath("annotate/prok/output"),
+    tmpdir=os.path.join(tmpd, "humann_map/ec")
+  conda: "../envs/biobakery3.yml"
+  log: os.path.join(logdir, "humann_map_ec.log")
+  benchmark: os.path.join(benchmarks, "humann_map_ec.log")
+  threads: 1 
+  resources:
+    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 100000
+  shell:
+    """
+    rm -rf {params.tmpdir}
+    mkdir -p {params.outdir}/unnamed {params.tmpdir}
+
+    humann_regroup_table --input {input.tsv} --output {params.tmpdir}/tmp.tsv --custom {input.db} --function sum --ungrouped Y --protected Y &>> {log}
+    humann_rename_table --input {params.tmpdir}/tmp.tsv --output {params.tmpdir}/tmpname.tsv --custom {input.dbname} &>> {log}
+
+    mv {params.tmpdir}/tmp.tsv {output.tsv}
+    mv {params.tmpdir}/tmpname.tsv {output.tsvname}
+    """
+
+
+rule humann_map_go:
+  name: "prok-annotate.smk HUMAnN3 map Gene Ontology"
+  input:
+    tsv=relpath("annotate/prok/output/genefamilies_merged-cpm.tsv"),
+    db=os.path.join(config['humann-db'], "utility_mapping/map_go_uniref90.txt.gz"),
+    dbname=os.path.join(config['humann-db'], "utility_mapping/map_go_name.txt.gz"),
+  output:
+    tsv=relpath("annotate/prok/output/unnamed/genefamilies_merged-cpm-go.tsv"),
+    tsvname=relpath("annotate/prok/output/genefamilies_merged-cpm-go-named.tsv"),
+  params:
+    outdir=relpath("annotate/prok/output"),
+    tmpdir=os.path.join(tmpd, "humann_map/go")
+  conda: "../envs/biobakery3.yml"
+  log: os.path.join(logdir, "humann_map_go.log")
+  benchmark: os.path.join(benchmarks, "humann_map_go.log")
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 100000
+  shell:
+    """
+    rm -rf {params.tmpdir}
+    mkdir -p {params.outdir}/unnamed {params.tmpdir}
+
+    humann_regroup_table --input {input.tsv} --output {params.tmpdir}/tmp.tsv --custom {input.db} --function sum --ungrouped Y --protected Y &>> {log}
+    humann_rename_table --input {params.tmpdir}/tmp.tsv --output {params.tmpdir}/tmpname.tsv --custom {input.dbname} &>> {log}
+
+    mv {params.tmpdir}/tmp.tsv {output.tsv}
+    mv {params.tmpdir}/tmpname.tsv {output.tsvname}
+    """
+
+rule humann_map_ko:
+  name: "prok-annotate.smk HUMAnN3 map KEGG Orthogroups"
+  input:
+    tsv=relpath("annotate/prok/output/genefamilies_merged-cpm.tsv"),
+    db=os.path.join(config['humann-db'], "utility_mapping/map_ko_uniref90.txt.gz"),
+    dbname=os.path.join(config['humann-db'], "utility_mapping/map_ko_name.txt.gz"),
+  output:
+    tsv=relpath("annotate/prok/output/unnamed/genefamilies_merged-cpm-ko.tsv"),
+    tsvname=relpath("annotate/prok/output/genefamilies_merged-cpm-ko-named.tsv"),
+  params:
+    outdir=relpath("annotate/prok/output"),
+    tmpdir=os.path.join(tmpd, "humann_map/ko")
+  conda: "../envs/biobakery3.yml"
+  log: os.path.join(logdir, "humann_map_ko.log")
+  benchmark: os.path.join(benchmarks, "humann_map_ko.log")
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 100000
+  shell:
+    """
+    rm -rf {params.tmpdir} 
+    mkdir -p {params.outdir}/unnamed {params.tmpdir}
+
+    humann_regroup_table --input {input.tsv} --output {params.tmpdir}/tmp.tsv --custom {input.db} --function sum --ungrouped Y --protected Y &>> {log}
+    humann_rename_table --input {params.tmpdir}/tmp.tsv --output {params.tmpdir}/tmpname.tsv --custom {input.dbname} &>> {log}
+
+    mv {params.tmpdir}/tmp.tsv {output.tsv}
+    mv {params.tmpdir}/tmpname.tsv {output.tsvname}
+    """
+
+
+rule humann_map_pfam:
+  name: "prok-annotate.smk HUMAnN3 map Pfam domains"
+  input:
+    tsv=relpath("annotate/prok/output/genefamilies_merged-cpm.tsv"),
+    db=os.path.join(config['humann-db'], "utility_mapping/map_pfam_uniref90.txt.gz"),
+    dbname=os.path.join(config['humann-db'], "utility_mapping/map_pfam_name.txt.gz"),
+  output:
+    tsv=relpath("annotate/prok/output/unnamed/genefamilies_merged-cpm-pfam.tsv"),
+    tsvname=relpath("annotate/prok/output/genefamilies_merged-cpm-pfam-named.tsv"),
+  params:
+    outdir=relpath("annotate/prok/output"),
+    tmpdir=os.path.join(tmpd, "humann_map/pfam")
+  conda: "../envs/biobakery3.yml"
+  log: os.path.join(logdir, "humann_map_pfam.log")
+  benchmark: os.path.join(benchmarks, "humann_map_pfam.log")
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 100000
+  shell:
+    """
+    rm -rf {params.tmpdir} 
+    mkdir -p {params.outdir}/unnamed {params.tmpdir}
+
+    humann_regroup_table --input {input.tsv} --output {params.tmpdir}/tmp.tsv --custom {input.db} --function sum --ungrouped Y --protected Y &>> {log}
+    humann_rename_table --input {params.tmpdir}/tmp.tsv --output {params.tmpdir}/tmpname.tsv --custom {input.dbname} &>> {log}
+
+    mv {params.tmpdir}/tmp.tsv {output.tsv}
+    mv {params.tmpdir}/tmpname.tsv {output.tsvname}
+    """
+
+rule humann_map_metacyc:
+  name: "prok-annotate.smk HUMAnN3 map MetaCyc reactions"
+  input:
+    tsv=relpath("annotate/prok/output/genefamilies_merged-cpm.tsv"),
+    db=os.path.join(config['humann-db'], "utility_mapping/map_pfam_uniref90.txt.gz"),
+    dbname=os.path.join(config['humann-db'], "utility_mapping/map_pfam_name.txt.gz"),
+  output:
+    tsv=relpath("annotate/prok/output/unnamed/genefamilies_merged-cpm-metacycrxn.tsv"),
+    tsvname=relpath("annotate/prok/output/genefamilies_merged-cpm-metacycrxn-named.tsv"),
+  params:
+    outdir=relpath("annotate/prok/output"),
+    tmpdir=os.path.join(tmpd, "humann_map/metacycrxn")
+  conda: "../envs/biobakery3.yml"
+  log: os.path.join(logdir, "humann_map_metacycrxn.log")
+  benchmark: os.path.join(benchmarks, "humann_map_metacycrxn.log")
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 100000
+  shell:
+    """
+    rm -rf {params.tmpdir} 
+    mkdir -p {params.outdir}/unnamed {params.tmpdir}
+
+    humann_regroup_table --input {input.tsv} --output {params.tmpdir}/tmp.tsv --groups uniref90_rxn --function sum --ungrouped Y --protected Y &>> {log}
+    humann_rename_table --input {params.tmpdir}/tmp.tsv --output {params.tmpdir}/tmpname.tsv --names metacyc-rxn &>> {log}
+
+    mv {params.tmpdir}/tmp.tsv {output.tsv}
+    mv {params.tmpdir}/tmpname.tsv {output.tsvname}
     """
 
 

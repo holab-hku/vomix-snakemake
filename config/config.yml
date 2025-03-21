@@ -35,7 +35,7 @@ dwnld-params : ""
 pigz-params: ""
 fastp-params: ""
 hostile-params: ""
-decontam-host: False
+decontam-host: True
 hostile-aligner: "minimap2" # minimap2 or bowtie2 for long reads
 aligner-params: "-x sr" # parameters to pass to aligner [-x sr for minimap is for short reads]
 index-path: "workflow/database/hostile/human-t2t-hla.fa.gz" # visit https://github.com/bede/hostile to find out how to make your own custom host index
