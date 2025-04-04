@@ -115,7 +115,7 @@ rule spades:
 
 rule assembly_stats:
   name: "assembly.smk aggregate assembly statistics"
-  localrule: True
+  localrule: False
   input:
     expand(relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa")), assembly_id = assemblies.keys())
   output:
@@ -127,6 +127,9 @@ rule assembly_stats:
     tmpdir=os.path.join(tmpd, "report")
   log: os.path.join(logdir, "stats.log")
   conda: "../envs/seqkit-biopython.yml"
+  threads: 1
+  resources:
+    mem_mb = lambda wildcards, attempt, threads, input: 8 * 10**2
   shell:
     """
     rm -rf {params.tmpdir} {params.outdir}/* 

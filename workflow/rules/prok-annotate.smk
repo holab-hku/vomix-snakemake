@@ -21,10 +21,11 @@ rule done_log:
   input:
     expand(relpath("annotate/prok/samples/{sample_id}/input/{sample_id}_merged.fastq.gz"), sample_id = samples.keys()), 
     expand(relpath("annotate/prok/samples/{sample_id}/{sample_id}_{output_type}.tsv"), sample_id = samples.keys(), output_type = ["pathabundance", "pathcoverage", "genefamilies"]), 
-    expand(relpath("annotate/prok/output/{output_type}_merged.tsv"), output_type = ["pathabundance", "pathcoverage", "genefamilies"]),
+    expand(relpath("annotate/prok/output/primary/{output_type}_merged.tsv"), output_type = ["pathabundance", "pathcoverage", "genefamilies"]),
     expand(relpath("annotate/prok/output/unnamed/genefamilies_merged-cpm-{database}.tsv"), database = ["ec", "eggnog", "go", "ko", "pfam"]),
     expand(relpath("annotate/prok/output/genefamilies_merged-cpm-{database}-named.tsv"), database = ["ec", "eggnog", "go", "ko", "pfam"]),
-    os.path.join(benchmarks, "summary.tsv"),
+    expand(relpath("annotate/prok/output/{folder}/genefamilies_merged-cpm-{database}-named_{folder}.tsv"), folder = ["stratified", "unstratified"], database = ["ec", "eggnog", "go", "ko", "pfam"]),
+    #os.path.join(benchmarks, "summary.tsv"),
   output:
     os.path.join(logdir, "done.log")
   params:
@@ -85,7 +86,7 @@ rule humann3:
   benchmark: os.path.join(benchmarks, "HUMAnN3_{sample_id}.log")
   threads: 64
   resources:
-    mem_mb=lambda wildcards, attempt, threads, input: max(48 * 10**3, 4000)
+    mem_mb=lambda wildcards, attempt, threads, input: max(42 * 10**3, 4000)
   shell:
     """
     rm -rf {params.tmpdir}
@@ -115,11 +116,11 @@ rule humann_merge:
     abund=expand(relpath("annotate/prok/samples/{sample_id}/{sample_id}_pathabundance.tsv"), sample_id = assemblies.keys()),
     cov=expand(relpath("annotate/prok/samples/{sample_id}/{sample_id}_pathcoverage.tsv"), sample_id = assemblies.keys())
   output:
-    gene=relpath("annotate/prok/output/genefamilies_merged.tsv"),
-    abund=relpath("annotate/prok/output/pathabundance_merged.tsv"),
-    cov=relpath("annotate/prok/output/pathcoverage_merged.tsv")
+    gene=relpath("annotate/prok/output/primary/genefamilies_merged.tsv"),
+    abund=relpath("annotate/prok/output/primary/pathabundance_merged.tsv"),
+    cov=relpath("annotate/prok/output/primary/pathcoverage_merged.tsv")
   params:
-    outdir=relpath("annotate/prok/output"),
+    outdir=relpath("annotate/prok/output/primary"),
     tmpdir=os.path.join(tmpd, "humann_merge")
   conda: "../envs/biobakery3.yml"
   log: os.path.join(logdir, "humann_merge.log")
@@ -148,20 +149,18 @@ rule humann_merge:
 rule humann_normalize:
   name: "prok-annotate.smk HUMAnN3 normalize results"
   input:
-    relpath("annotate/prok/output/genefamilies_merged.tsv")
+    relpath("annotate/prok/output/primary/genefamilies_merged.tsv")
   output:
-    relpath("annotate/prok/output/genefamilies_merged-cpm.tsv")
+    relpath("annotate/prok/output/primary/genefamilies_merged-cpm.tsv")
   params:
-    outdir=relpath("annotate/prok/output"),
-    basename=relpath("annotate/prok/output/genefamilies_merged-cpm"),
-    ecname=relpath("annotate/prok/output/genefamilies_merged-cpm-ec-named.tsv"),
+    outdir=relpath("annotate/prok/output/primary"),
     tmpdir=os.path.join(tmpd, "humann_normalize")
   conda: "../envs/biobakery3.yml"
   log: os.path.join(logdir, "humann_normalize.log")
   benchmark: os.path.join(benchmarks, "humann_normalize.log")
   threads: 1
   resources:
-    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 1000
+    mem_mb=lambda wildcards, attempt, threads, input: 400 * 10**3
   shell:
     """
     rm -rf {params.tmpdir}
@@ -176,7 +175,7 @@ rule humann_normalize:
 rule humann_map_ec:
   name: "prok-annotate.smk HUMAnN3 map Level-4 Enzyme Comission"
   input:
-    tsv=relpath("annotate/prok/output/genefamilies_merged-cpm.tsv"),
+    tsv=relpath("annotate/prok/output/primary/genefamilies_merged-cpm.tsv"),
     db=os.path.join(config['humann-db'], "utility_mapping/map_level4ec_uniref90.txt.gz"),
     dbname=os.path.join(config['humann-db'], "utility_mapping/map_ec_name.txt.gz")
   output:
@@ -190,7 +189,7 @@ rule humann_map_ec:
   benchmark: os.path.join(benchmarks, "humann_map_ec.log")
   threads: 1
   resources:
-    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 100000
+    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + (200 * 10**3)
   shell:
     """
     rm -rf {params.tmpdir}
@@ -206,7 +205,7 @@ rule humann_map_ec:
 rule humann_map_eggnog:
   name: "prok-annotate.smk HUMAnN3 map EggNOG including COGs"
   input:
-    tsv=relpath("annotate/prok/output/genefamilies_merged-cpm.tsv"),
+    tsv=relpath("annotate/prok/output/primary/genefamilies_merged-cpm.tsv"),
     db=os.path.join(config['humann-db'], "utility_mapping/map_eggnog_uniref90.txt.gz"),
     dbname=os.path.join(config['humann-db'], "utility_mapping/map_eggnog_name.txt.gz"),
   output:
@@ -214,13 +213,13 @@ rule humann_map_eggnog:
     tsvname=relpath("annotate/prok/output/genefamilies_merged-cpm-eggnog-named.tsv"),
   params:
     outdir=relpath("annotate/prok/output"),
-    tmpdir=os.path.join(tmpd, "humann_map/ec")
+    tmpdir=os.path.join(tmpd, "humann_map/eggnog")
   conda: "../envs/biobakery3.yml"
-  log: os.path.join(logdir, "humann_map_ec.log")
-  benchmark: os.path.join(benchmarks, "humann_map_ec.log")
+  log: os.path.join(logdir, "humann_map_eggnog.log")
+  benchmark: os.path.join(benchmarks, "humann_map_eggnog.log")
   threads: 1 
   resources:
-    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 100000
+    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + (200 * 10**3)
   shell:
     """
     rm -rf {params.tmpdir}
@@ -237,7 +236,7 @@ rule humann_map_eggnog:
 rule humann_map_go:
   name: "prok-annotate.smk HUMAnN3 map Gene Ontology"
   input:
-    tsv=relpath("annotate/prok/output/genefamilies_merged-cpm.tsv"),
+    tsv=relpath("annotate/prok/output/primary/genefamilies_merged-cpm.tsv"),
     db=os.path.join(config['humann-db'], "utility_mapping/map_go_uniref90.txt.gz"),
     dbname=os.path.join(config['humann-db'], "utility_mapping/map_go_name.txt.gz"),
   output:
@@ -251,7 +250,7 @@ rule humann_map_go:
   benchmark: os.path.join(benchmarks, "humann_map_go.log")
   threads: 1
   resources:
-    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 100000
+    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + (200 * 10**3)
   shell:
     """
     rm -rf {params.tmpdir}
@@ -267,7 +266,7 @@ rule humann_map_go:
 rule humann_map_ko:
   name: "prok-annotate.smk HUMAnN3 map KEGG Orthogroups"
   input:
-    tsv=relpath("annotate/prok/output/genefamilies_merged-cpm.tsv"),
+    tsv=relpath("annotate/prok/output/primary/genefamilies_merged-cpm.tsv"),
     db=os.path.join(config['humann-db'], "utility_mapping/map_ko_uniref90.txt.gz"),
     dbname=os.path.join(config['humann-db'], "utility_mapping/map_ko_name.txt.gz"),
   output:
@@ -281,7 +280,7 @@ rule humann_map_ko:
   benchmark: os.path.join(benchmarks, "humann_map_ko.log")
   threads: 1
   resources:
-    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 100000
+    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + (200 * 10**3)
   shell:
     """
     rm -rf {params.tmpdir} 
@@ -298,7 +297,7 @@ rule humann_map_ko:
 rule humann_map_pfam:
   name: "prok-annotate.smk HUMAnN3 map Pfam domains"
   input:
-    tsv=relpath("annotate/prok/output/genefamilies_merged-cpm.tsv"),
+    tsv=relpath("annotate/prok/output/primary/genefamilies_merged-cpm.tsv"),
     db=os.path.join(config['humann-db'], "utility_mapping/map_pfam_uniref90.txt.gz"),
     dbname=os.path.join(config['humann-db'], "utility_mapping/map_pfam_name.txt.gz"),
   output:
@@ -312,7 +311,7 @@ rule humann_map_pfam:
   benchmark: os.path.join(benchmarks, "humann_map_pfam.log")
   threads: 1
   resources:
-    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 100000
+    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + (200 * 10**3)
   shell:
     """
     rm -rf {params.tmpdir} 
@@ -328,7 +327,7 @@ rule humann_map_pfam:
 rule humann_map_metacyc:
   name: "prok-annotate.smk HUMAnN3 map MetaCyc reactions"
   input:
-    tsv=relpath("annotate/prok/output/genefamilies_merged-cpm.tsv"),
+    tsv=relpath("annotate/prok/output/primary/genefamilies_merged-cpm.tsv"),
     db=os.path.join(config['humann-db'], "utility_mapping/map_pfam_uniref90.txt.gz"),
     dbname=os.path.join(config['humann-db'], "utility_mapping/map_pfam_name.txt.gz"),
   output:
@@ -342,7 +341,7 @@ rule humann_map_metacyc:
   benchmark: os.path.join(benchmarks, "humann_map_metacycrxn.log")
   threads: 1
   resources:
-    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + 100000
+    mem_mb=lambda wildcards, attempt, threads, input: input.size_mb + (200 * 10**3)
   shell:
     """
     rm -rf {params.tmpdir} 
@@ -356,10 +355,47 @@ rule humann_map_metacyc:
     """
 
 
+rule humann_split:
+  name: "prok-annotate.smk HUMAnN3 split stratified table"
+  localrule: True
+  input:
+    cpm=relpath("annotate/prok/output/primary/genefamilies_merged-cpm.tsv"), 
+    ec=relpath("annotate/prok/output/genefamilies_merged-cpm-ec-named.tsv"), 
+    eggnog=relpath("annotate/prok/output/genefamilies_merged-cpm-eggnog-named.tsv"), 
+    ko=relpath("annotate/prok/output/genefamilies_merged-cpm-ko-named.tsv"), 
+    go=relpath("annotate/prok/output/genefamilies_merged-cpm-go-named.tsv"), 
+    pfam=relpath("annotate/prok/output/genefamilies_merged-cpm-pfam-named.tsv")
+  output:
+    expand(relpath("annotate/prok/output/{folder}/genefamilies_merged-cpm-{database}-named_{folder}.tsv"),
+        folder = ["stratified", "unstratified"], database = ["ec", "eggnog", "go", "ko", "pfam"]),
+  params:
+    outdir=relpath("annotate/prok/output"),
+    tmpdir=os.path.join(tmpd, "humann_split")
+  conda: "../envs/biobakery3.yml"
+  log: os.path.join(logdir, "humann_split.log")
+  benchmark: os.path.join(benchmarks, "humann_split.log")
+  threads: 1
+  shell:
+    """
+    rm -rf {params.tmpdir}
+    mkdir -p {params.outdir}/stratified {params.outdir}/unstratified {params.tmpdir}
+    
+    humann_split_stratified_table --input {input.cpm} --output {params.tmpdir} &>> {log}
+    humann_split_stratified_table --input {input.ec} --output {params.tmpdir} &>> {log}
+    humann_split_stratified_table --input {input.eggnog} --output {params.tmpdir} &>> {log}
+    humann_split_stratified_table --input {input.ko} --output {params.tmpdir} &>> {log}
+    humann_split_stratified_table --input {input.go} --output {params.tmpdir} &>> {log}
+    humann_split_stratified_table --input {input.pfam} --output {params.tmpdir} &>> {log}
+    
+    mv {params.tmpdir}/*_stratified.tsv {params.outdir}/stratified/
+    mv {params.tmpdir}/*_unstratified.tsv {params.outdir}/unstratified/
+    """
+
 rule benchmark_summary:
   name: "prok-annotate.smk summaries performance benchmarks"
+  localrule: True
   input:
-    os.path.join(benchmarks, "humann_merge.log")
+    os.path.join(benchmarks, "humann_split.log")
   output:
     os.path.join(benchmarks, "summary.tsv")
   params:
