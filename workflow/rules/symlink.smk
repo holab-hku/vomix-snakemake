@@ -1,4 +1,8 @@
 os.makedirs(relpath(".vomix/log"), exist_ok=True)
+email=config["email"]
+nowstr=config["latest_run"]
+outdir=config["outdir"]
+datadir=config["datadir"]
 samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
 
 
