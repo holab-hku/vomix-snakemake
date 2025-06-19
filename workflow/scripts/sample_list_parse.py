@@ -10,6 +10,8 @@ import re
 import warnings
 from io import StringIO
 import datetime
+from xml.etree import cElementTree as ET
+from urllib.error import HTTPError
 
 import pandas as pd
 from Bio import Entrez
@@ -32,49 +34,84 @@ def validate_samples(samples):
       	 If a file has no paired {2} label, it is assumed to be single-end.
 
     	"""
-	console.print(Panel.fit("""[dim italic]Validating availability of local and remote SRA raw sequences.\n\nIf you are using local files, you can either:\n1) Provide full file paths in the R1 and R2 columns of sample_list.tsv [only R1 if single-end]\n2) Place the fastq files in the config['datadir'] path with <sample>_{1,2}.fastq.gz naming format.\nCo-assemblies and mix-assemblies can be setup by writing the same <assembly> column for different samples.\n""", title="Sample Validation", subtitle="In Progress..."))
-	with Progress(transient=True) as progress:
-		task = progress.add_task("[cyan]Validating...", total=len(samples))
+	console.print(Panel.fit("""[dim]Validating availability of local and remote SRA raw sequences.\n\nIf you are using local files, you can either:\n1) Provide full file paths in the R1 and R2 columns of sample_list.tsv [only R1 if single-end]\n2) Place the fastq files in the config['datadir'] path with <sample>_{1,2}.fastq.gz naming format.\nCo-assemblies and mix-assemblies can be setup by writing the same <assembly> column for different samples.\n""", title="Sample Validation", subtitle="In Progress..."))
+		
+	# 1) LOCAL SEARCH - search if any files exist in local directory
 
-		for sample, items in samples.items():
+	console.print(f"\nValidating total {len(samples)} samples...")
+	console.print("Performing local sample search...")
 
-			# check if files exist locally
-			R1path = samples[sample]["R1"]
-			R2path = samples[sample]["R2"]
-			if os.path.exists(R1path) and os.path.exists(R2path):
-				R1size = os.path.getsize(R1path) / (1024 ** 3)
-				R2size = os.path.getsize(R2path) / (1024 ** 3)
+	notfound_acc = []
+	err_acc =[]
+	found_local = 0
 
-				sizegb = round((R1size + R2size), 2)
-				console.print("[dim] {accs} pre-downloaded [{size_gb}GB][/dim]".format(accs=sample, size_gb=sizegb))
-				progress.update(task, advance=1)
-				time.sleep(0.5)
-				continue
+	for sample, items in samples.items():
+		R1path = samples[sample]["R1"]
+		R2path = samples[sample]["R2"]
+		if os.path.exists(R1path) and os.path.exists(R2path):
+			R1size = os.path.getsize(R1path) / (1024 ** 3)
+			R2size = os.path.getsize(R2path) / (1024 ** 3)
 
-			# check if it exists in SRA if not present locally
-			acc = items['accession']
+			sizegb = round((R1size + R2size), 2)
+			found_local += 1
+			continue
+		elif items['accession'] == '':
+			err_acc.append(sample)
+		else:
+			notfound_acc.append(items['accession'])
+	
+	if len(err_acc) > 0:
+		console.print(Panel.fit(f"\n[dim]The following samples could not be found locally yet do not have an accession ID provdied for SRA search:\n\n{err_acc}\n\nPlease make sure that files either exists, accession ID is provided, or R1 and R2 path columns are correctly setup in sample_list.csv file.", title="Sample Accession Error", subtitle="File Not Found Locally"))
+		sys.exit(1)
 
+	console.print(f"{found_local} samples pre-downloaded...")
+
+	# 2) REMOTE SEARCH - for entries that could not be found locally 
+	
+
+	if len(notfound_acc) > 0:
+		console.print(f"Performing remote SRA sample search on {len(notfound_acc)} samples...\n")
+		accessions = [] 
+		sizes_gb = []
+		
+		for i in range(0, len(notfound_acc), 500):
+			batch = notfound_acc[i:i+500]
+
+			if i+500 > len(notfound_acc):
+				console.print(f"[dim]Processing SRA accessions {i+1}-{len(notfound_acc)}")
+			else:
+				console.print(f"[dim]Processing SRA accessions {i+1}-{i+500}")
+			
 			try:
-				handle = Entrez.efetch(db="sra", id=acc, retmax=1000, rettype="full", retmode="xml")
-				record = handle.read()
-				if not isinstance(record, str):
-					record = record.decode("utf-8")
-				match = re.search(r'size="(\d+)"', record)
-				sizebyte = match.group(1)
-				sizegb = round(int(sizebyte) /pow(1024, 3), 2)
-				console.print("[dim] {accs} downloading [{size_gb}GB][/dim]".format(accs=acc, size_gb=sizegb))
-				
-			except Exception as e:
-				console.print(Panel.fit(f"Sample '{sample}' [dim]with accession '{acc}' could not be processed for the following reasons:\n\n1) The Accession Could noound by efetch in NCBI's Entrez Direct\n2) The accession is not a valid run\n3) The NCBI server is limiting the number of requests\n4) The file is not in correct fasta gunzipped format with a 'fasta.gz' ending.\n\nPlease ensure that it is a valid SRA accession or reduce the number of requests for sample validation. Alternetaively you could change config['email'] parameter.If you intend to use locally stored fastq files, make sure your sample list contains the column 'R1' for single-end and 'R2' for paired-end files.", title="Run Error", subtitle="SRA Accession Not Parsed"))
+				handle = Entrez.efetch(db="sra", id=batch, retmax=1000, rettype="full", retmode="xml")
+
+			except HTTPError as err:
+				console.print("\n")
+				console.print(Panel.fit(f'[dim]HTTP Error {err.code} has occured when running Entrez.efetch(). NOTE: An  HTTP Error 400 indicates that the server cannot or will not process the request due to a client-side error. This could be becuase NCBI has flagged your IP address due to too many request. To resolve this issue, create an NCBI API key and pass it on to the command line via the "--NCBI-API-key" command line option. Visit https://support.nlm.nih.gov/knowledgebase/article/KA-05317/en-us for more information on how to obtain a key!', title=f"HTTP Error {err.code}", subtitle="NCBI Entrez efetch Error"))
 				sys.exit(1)
 
-			progress.update(task, advance=1)
-			time.sleep(0.5)
+			record = handle.read()
+			if not isinstance(record, str): record = record.decode("utf-8")
+			root = ET.fromstring(record)
+			all_runs = root.findall('.//RUN')
+			
+			for runs in all_runs:
+				accessions.append(runs.attrib['accession'])
+				sizes_byte = runs.attrib['size']
+				sizes_gb.append(round(int(sizes_byte) /pow(1024, 3), 2))
+		
+		missing_acc = set(notfound_acc) - set(accessions)
 
-		progress.stop_task(task)
+		if len(missing_acc) != 0:
+			console.print(Panel.fit(f"[dim]Samples with the following  accessions could not be found locally or on NCBI's Entrez Direct search via the SRA:\n\n{missing_acc}\n\nPlease make sure that:\nA) The Accession can be found by efetch in NCBI's Entrez Direct\nB) The accession is a valid run\n\nIf you intend to use locally stored fastq files, follow the format suggested above\nWARNING: The error could be because NCBI server's are busy and cannot do a large search for > 1000 samples. Try again later!", title="Sample Accession Error", subtitle="SRA Accession Not Parsed"))
+			sys.exit(1)
+
+	console.print("\nDone validating all samples!")
+	console.print(f"Downloading {round(sum(sizes_gb))} GB of data...\n")
+		
 
 
-def parse_sample_list(f, datadir, outdir, email, time):
+def parse_sample_list(f, datadir, outdir, email, api_key, time):
 	"""
 	Parse the sample list. Each sample is stored as a dictionary in the samples{} dictionary.
 	samples{sample_name} will have the following information:
@@ -95,7 +132,15 @@ def parse_sample_list(f, datadir, outdir, email, time):
 	# PARSE SAMPLE DF #
 	###################
 
-	df = pd.read_csv(f, comment='#', header=0, sep='\t', index_col=False, dtype=str)
+	try:
+		if os.path.isfile(f) and f.endswith('.csv'):
+			df = pd.read_csv(f, comment='#', header=0, sep=',', index_col=False, dtype=str)
+		else:
+			console.print(Panel.fit(f"Sample List (sample_list.csv) is not a CSV or does not exist.", title="Sample List Error", subtitle="Sample List not CSV."))
+	except Exception as e:
+		console.print(Panel.fit(f"Sample List (sample_list.csv) could not be read by pd.read_csv()", title="Sample List Error", subtitle="Sample List not CSV."))
+
+
 	df['sample_id'] = df['sample_id'].fillna(df['accession'])
 	df = df.map(lambda x: x.strip() if isinstance(x, str) else x) # strip white space
 	df['sample_id'] = df['sample_id'].astype(str)
@@ -126,7 +171,7 @@ def parse_sample_list(f, datadir, outdir, email, time):
 	
 	df.index[df.index.duplicated()]	
 	if df.index.duplicated().any():
-		console.print(Panel.fit("ValueError on df.set_index('sample_id'). Values in the sample_id column may be non-unique. Please check {}".format(f), title="Value Error", subtitle="Duplicate 'sample_id' Names"))
+		console.print(Panel.fit("ValueError on df.set_index('sample_id'). Values in the sample_id column may be non-unique {}. Please check your Sample List file.".format(df.index[df.index.duplicated()]), title="Value Error", subtitle="Duplicate 'sample_id' Names"))
 		raise ValueError()
 
 	# If it's just a one-column file, expand it by assuming that the
@@ -226,6 +271,7 @@ def parse_sample_list(f, datadir, outdir, email, time):
 				
 	# If not exited already, validate and write
 	Entrez.email = email
+	Entrez.api_key = api_key
 	validate_samples(samples)
 	
 	with open(samplejson, "w") as sampleout:

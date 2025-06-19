@@ -8,6 +8,13 @@ os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
+email=config["email"]
+api_key=config["NCBI-API-key"]
+nowstr=config["latest_run"]
+outdir=config["outdir"]
+datadir=config["datadir"]
+
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr)
 
 rule prodigal_gv:
   name: "viral-binning.py prodigal-gv viral contigs"

@@ -5,6 +5,7 @@ benchmarks=relpath("identify/viral/benchmarks")
 tmpd=relpath("identify/viral/tmp")
 
 email=config["email"]
+api_key=config["NCBI-API-key"]
 nowstr=config["latest_run"]
 outdir=config["outdir"]
 datadir=config["datadir"]

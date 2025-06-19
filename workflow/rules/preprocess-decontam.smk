@@ -3,11 +3,12 @@ benchmarks=relpath("preprocess/benchmarks")
 tmpd = relpath("preprocess/tmp")
 
 email=config["email"]
+api_key=config["NCBI-API-key"]
 nowstr=config["latest_run"]
 outdir=config["outdir"] 
 datadir=config["datadir"]
 
-samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr)
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)

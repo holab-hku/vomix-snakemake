@@ -1,10 +1,12 @@
 os.makedirs(relpath(".vomix/log"), exist_ok=True)
+
 email=config["email"]
+api_key=config["NCBI-API-key"]
 nowstr=config["latest_run"]
 outdir=config["outdir"]
 datadir=config["datadir"]
-samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
 
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr)
 
 ###################
 # DELETE SYMLINKS #

@@ -11,7 +11,13 @@ os.makedirs(tmpd, exist_ok=True)
 methodslist = config["coverm-methods"].split()
 methods_c = ",".join(methodslist)
 
-samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
+email=config["email"]
+api_key=config["NCBI-API-key"]
+nowstr=config["latest_run"]
+outdir=config["outdir"]
+datadir=config["datadir"]
+
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr)
 
 # MASTER RULE 
 

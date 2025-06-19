@@ -5,11 +5,12 @@ benchmarks=relpath("binning/prok/benchmarks")
 tmpd=relpath("binning/prok/tmp")
 
 email=config["email"]
+api_key=config["NCBI-API-key"]
 nowstr=config["latest_run"]
 outdir=config["outdir"]
-datadir=config["datadir"] 
+datadir=config["datadir"]
 
-samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr) 
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr)
 
 os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
@@ -33,8 +34,8 @@ if config["binning-consensus"]:
       expand(relpath("binning/prok/assemblies/{assembly_id}/finalbins_DASTool_summary.tsv"), assembly_id=assemblies.keys()),
       expand(relpath("binning/prok/output/multitool/no-drep/ids/{assembly_id}_MAGids.tsv"), assembly_id=assemblies.keys()),
       expand(relpath("binning/prok/output/multitool/no-drep/unbinned/{assembly_id}_unbinned.fasta"), assembly_id=assemblies.keys()),
-      relpath("binning/prok/output/multitool/no-drep/checkm2/quality_report.tsv"), 
-      relpath("binning/prok/output/multitool/clusters.tsv")
+      #relpath("binning/prok/output/multitool/no-drep/checkm2/quality_report.tsv"), 
+      #relpath("binning/prok/output/multitool/clusters.tsv")
     output:
       os.path.join(logdir, "done.log")
     params:
@@ -192,7 +193,6 @@ rule vamb:
 
 rule metabat2maxbin:
   name: "prok-binning.smk MetaBAT2 2 MaxBin2 coverage file"
-  localrule: True
   input:
     relpath("binning/prok/assemblies/{assembly_id}/MetaBAT2/depthfile.txt")
   output:
@@ -203,6 +203,8 @@ rule metabat2maxbin:
   log: os.path.join(logdir, "MaxBin2_prep_{assembly_id}.log")
   conda: "../envs/seqkit-biopython.yml"
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: (input.size_mb + 2 * 10**3) * attempt
   shell:
     """
     mkdir -p {params.outdir}
@@ -211,7 +213,6 @@ rule metabat2maxbin:
         -inputtxt {input} \
         -outputtxt {output} \
         -ending sorted 2> {log}
-
     """
 
 rule metabat2:
@@ -342,7 +343,7 @@ rule concoct:
     mem_mb=lambda wildcards, attempt, input: 4 * 10**3 * attempt
   shell:
     """
-    rm -rf {params.tmpdir}
+    rm -rf {params.tmpdir} {params.outdir}/bins
     mkdir -p {params.tmpdir}/bins {params.outdir}
 
     concoct \
@@ -360,7 +361,7 @@ rule concoct:
         {params.tmpdir}/tmp.csv \
         --output_path {params.tmpdir}/bins
     
-    mv {params.tmpdir}/bins {params.outdir}
+    mv {params.tmpdir}/bins {params.outdir}/
     mv {params.tmpdir}/tmp.csv {output.csv}
     mv {params.tmpdir}/* {params.outdir}
     """
@@ -412,7 +413,7 @@ rule dastool:
     mem_mb=lambda wildcards, attempt, input: 8 * 10**3 * attempt
   shell:
     """
-    rm -rf {params.tmpdir}
+    rm -rf {params.tmpdir} {params.outdir}/finalbins*
     mkdir -p {params.tmpdir}
 
     DAS_Tool \
@@ -424,7 +425,7 @@ rule dastool:
         -t {threads} \
         --write_bins \
         --write_unbinned \
-        {params.parameters} 2> log
+        {params.parameters} 2> {log}
 
     mv {params.tmpdir}/* {params.outdir}
     """
@@ -451,7 +452,7 @@ rule movemags:
 
     [ -f {params.indir}/unbinned* ] && mv {params.indir}/unbinned* {output.unbinned} || {{ touch {output.unbinned}; }}
 
-    mv {params.indir}/unbinned* {output.unbinned}
+    [ -f {params.indir}/unbinned*] && mv -f {params.indir}/unbinned* {output.unbinned}
 
     ls -v {params.indir} | grep -v "unbinned" | cat -n | \
         while read n f; do \

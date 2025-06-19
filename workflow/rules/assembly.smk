@@ -7,11 +7,12 @@ os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 
 email=config["email"]
+api_key=config["NCBI-API-key"]
 nowstr=config["latest_run"]
-outdir=config["outdir"] 
+outdir=config["outdir"]
 datadir=config["datadir"]
 
-samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
+samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr)
 
 # Check if there are any co-assemblies and abort if using SPAdes and co-assembly
 if (len(assemblies.keys()) != len(samples.keys())) and (assembler == "spades"):
@@ -25,7 +26,7 @@ rule done:
   localrule: True
   input:
     expand(relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa")),  assembly_id = assemblies.keys()),
-    expand(relpath(os.path.join("reports/assembly", assembler, "{summary_type}.tsv")), summary_type = ["assemblystats", "assembly_size_dist"])
+    expand(relpath(os.path.join("assembly", assembler, "reports", "{summary_type}.tsv")), summary_type = ["assemblystats", "assembly_size_dist"])
   output:
     os.path.join(logdir, "done.log")
   shell:
@@ -119,17 +120,17 @@ rule assembly_stats:
   input:
     expand(relpath(os.path.join("assembly", assembler, "samples/{assembly_id}/output/final.contigs.fa")), assembly_id = assemblies.keys())
   output:
-    stats=relpath(os.path.join( "reports/assembly", assembler, "assemblystats.tsv")),
-    sizedist=relpath(os.path.join("reports/assembly", assembler, "assembly_size_dist.tsv"))
+    stats=relpath(os.path.join("assembly", assembler, "reports", "assemblystats.tsv")),
+    sizedist=relpath(os.path.join("assembly", assembler, "reports", "assembly_size_dist.tsv"))
   params:
     script="workflow/scripts/assembly_stats.py",
-    outdir=relpath(os.path.join("reports/assembly", assembler)),
-    tmpdir=os.path.join(tmpd, "report")
+    outdir=relpath(os.path.join("assembly", assembler, "reports")),
+    tmpdir=os.path.join(tmpd, "reports")
   log: os.path.join(logdir, "stats.log")
   conda: "../envs/seqkit-biopython.yml"
   threads: 1
   resources:
-    mem_mb = lambda wildcards, attempt, threads, input: 8 * 10**2
+    mem_mb = lambda wildcards, attempt, threads, input: input.size_mb + 2000
   shell:
     """
     rm -rf {params.tmpdir} {params.outdir}/* 
