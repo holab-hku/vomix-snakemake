@@ -42,11 +42,10 @@ def activate():
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the Pre-processing module'
 )
-@click.option('--decontam-host', prompt='Decontamination host', default=True, 
-required=True)
-@click.option('--outdir', prompt='Output directory', required=True, default=None)
-@click.option('--datadir', prompt='Data directory', required=True, default=None)
-@click.option('--samplelist', prompt='Sample list file', required=True, default=None)
+@click.option('--decontam-host', default=True, required=True)
+@click.option('--outdir', required=True, default=None)
+@click.option('--datadir', required=True, default=None)
+@click.option('--samplelist', required=True, default=None)
 def run_preprocess(decontam_host, outdir, datadir, samplelist):
         logging.info(f"Running module: preprocess")
         logging.info(f"decontamHost: {decontam_host}, outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -68,11 +67,11 @@ def run_preprocess(decontam_host, outdir, datadir, samplelist):
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the Assembly & Co-assembly module'
 )
-@click.option('--assembler', prompt='Assembler', default="megahit", 
+@click.option('--assembler', default="megahit", 
 required=True)
-@click.option('--outdir', prompt='Output directory', required=True, default=None)
-@click.option('--datadir', prompt='Data directory', required=True, default=None)
-@click.option('--samplelist', prompt='Sample list file', required=True, default=None)
+@click.option('--outdir', required=True, default=None)
+@click.option('--datadir', required=True, default=None)
+@click.option('--samplelist', required=True, default=None)
 def run_assembly(assembler, outdir, datadir, samplelist):
         logging.info(f"Running module: assembly")
         logging.info(f"assembler: {assembler}, outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -94,9 +93,9 @@ def run_assembly(assembler, outdir, datadir, samplelist):
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the Viral Identify module'
 )
-@click.option('--outdir', prompt='Output directory', required=True, default=None)
-@click.option('--datadir', prompt='Data directory', required=True, default=None)
-@click.option('--samplelist', prompt='Sample list file', required=True, default=None)
+@click.option('--outdir', required=True, default=None)
+@click.option('--datadir', required=True, default=None)
+@click.option('--samplelist', required=True, default=None)
 def run_viral_identify(outdir, datadir, samplelist):
         logging.info(f"Running module: viral-identify")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -118,8 +117,8 @@ def run_viral_identify(outdir, datadir, samplelist):
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the Viral Taxonomy module'
 )
-@click.option('--fasta', prompt='Fasta', required=True, default=None)
-@click.option('--outdir', prompt='Output directory', required=True, default=None)
+@click.option('--fasta', required=True, default=None)
+@click.option('--outdir', required=True, default=None)
 def run_viral_taxonomy(fasta, outdir):
         logging.info(f"Running module: viral-taxonomy")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
@@ -139,8 +138,8 @@ def run_viral_taxonomy(fasta, outdir):
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the Viral Host module'
 )
-@click.option('--fasta', prompt='Fasta', required=True, default=None)
-@click.option('--outdir', prompt='Output directory', required=True, default=None)
+@click.option('--fasta', required=True, default=None)
+@click.option('--outdir', required=True, default=None)
 def run_viral_host(fasta, outdir):
         logging.info(f"Running module: viral-host")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
@@ -160,9 +159,9 @@ def run_viral_host(fasta, outdir):
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the Viral Community module'
 )
-@click.option('--outdir', prompt='Output directory', required=True, default=None)
-@click.option('--datadir', prompt='Data directory', required=True, default=None)
-@click.option('--samplelist', prompt='Sample list file', required=True, default=None)
+@click.option('--outdir', required=True, default=None)
+@click.option('--datadir', required=True, default=None)
+@click.option('--samplelist', required=True, default=None)
 def run_viral_community(outdir, datadir, samplelist):
         logging.info(f"Running module: viral-community")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -183,9 +182,9 @@ def run_viral_community(outdir, datadir, samplelist):
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the Viral Annotate module'
 )
-@click.option('--outdir', prompt='Output directory', required=True, default=None)
-@click.option('--datadir', prompt='Data directory', required=True, default=None)
-@click.option('--samplelist', prompt='Sample list file', required=True, default=None)
+@click.option('--outdir', required=True, default=None)
+@click.option('--datadir', required=True, default=None)
+@click.option('--samplelist', required=True, default=None)
 def run_viral_annotate(outdir, datadir, samplelist):
         logging.info(f"Running module: viral-annotate")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -206,9 +205,9 @@ def run_viral_annotate(outdir, datadir, samplelist):
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the Prokaryotic Community module'
 )
-@click.option('--outdir', prompt='Output directory', required=True, default=None)
-@click.option('--datadir', prompt='Data directory', required=True, default=None)
-@click.option('--samplelist', prompt='Sample list file', required=True, default=None)
+@click.option('--outdir', required=True, default=None)
+@click.option('--datadir', required=True, default=None)
+@click.option('--samplelist', required=True, default=None)
 def run_prok_community(outdir, datadir, samplelist):
         logging.info(f"Running module: prok-community")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -232,9 +231,9 @@ def run_prok_community(outdir, datadir, samplelist):
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the Prokaryotic Annotate module'
 )
-@click.option('--outdir', prompt='Output directory', required=True, default=None)
-@click.option('--datadir', prompt='Data directory', required=True, default=None)
-@click.option('--samplelist', prompt='Sample list file', required=True, default=None)
+@click.option('--outdir', required=True, default=None)
+@click.option('--datadir', required=True, default=None)
+@click.option('--samplelist', required=True, default=None)
 def run_prok_annotate(outdir, datadir, samplelist):
         logging.info(f"Running module: prok-annotate")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -255,9 +254,9 @@ def run_prok_annotate(outdir, datadir, samplelist):
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the End-To-End module'
 )
-@click.option('--outdir', prompt='Output directory', required=True, default=None)
-@click.option('--datadir', prompt='Data directory', required=True, default=None)
-@click.option('--samplelist', prompt='Sample list file', required=True, default=None)
+@click.option('--outdir', required=True, default=None)
+@click.option('--datadir', required=True, default=None)
+@click.option('--samplelist', required=True, default=None)
 def run_end_to_end(outdir, datadir, samplelist):
         logging.info(f"Running module: end-to-end")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -278,8 +277,8 @@ def run_end_to_end(outdir, datadir, samplelist):
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the Cluster Fast module'
 )
-@click.option('--fasta', prompt='Fasta', required=True, default=None)
-@click.option('--outdir', prompt='Output directory', required=True, default=None)
+@click.option('--fasta', required=True, default=None)
+@click.option('--outdir', required=True, default=None)
 def run_cluster_fast(fasta, outdir):
         logging.info(f"Running module: cluster-fast")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
@@ -299,8 +298,8 @@ def run_cluster_fast(fasta, outdir):
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the CheckV PyHMMER module'
 )
-@click.option('--fasta', prompt='Fasta', required=True, default=None)
-@click.option('--outdir', prompt='Output directory', required=True, default=None)
+@click.option('--fasta', required=True, default=None)
+@click.option('--outdir', required=True, default=None)
 def run_checkv_pyhmmer(fasta, outdir):
         logging.info(f"Running module: checkv-pyhmmer")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
@@ -320,8 +319,8 @@ def run_checkv_pyhmmer(fasta, outdir):
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the Setup Database module'
 )
-@click.option('--fasta', prompt='Fasta', required=True, default=None)
-@click.option('--outdir', prompt='Output directory', required=True, default=None)
+@click.option('--fasta', required=True, default=None)
+@click.option('--outdir', required=True, default=None)
 def run_setup_database(fasta, outdir):
         logging.info(f"Running module: setup-database")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
@@ -335,76 +334,4 @@ def run_setup_database(fasta, outdir):
         vomix_actions_instance = vomix_actions()
         out = vomix_actions_instance.run_module("setup-database", module_obj)
         logging.info(f"End module run: {out}")
-
-
-# @cli.command(
-#     'run',
-#     context_settings=dict(ignore_unknown_options=True),
-#     short_help='Run a vomix module'
-# )
-
-# @click.argument('module')
-# @click.option('--useLastOptions', prompt='Re-use last options from the previous run?', is_flag=True, default=False, callback=useLastOptionsCheck)
-# @click.option('--fasta', prompt='Fasta', required=False, default=None)
-# @click.option('--outdir', prompt='Output directory', required=False, default=None)
-# @click.option('--datadir', prompt='Data directory', required=False, default=None)
-# @click.option('--assembler', prompt='Assembler', default='megahit', required=False)
-# @click.option('--samplelist', prompt='Sample list file', required=False, default=None)
-# @click.option('--decontam-host', prompt='Decontamination host', default=True, required=False)
-# @click.option('--binning-consensus', prompt='Binning consensus', default=False , required=False)
-# @click.option('--email', prompt='Email')
-# def run_module(module, uselastoptions, splits, fasta, outdir, datadir, assembler, samplelist, decontam_host, binning_consensus, email):
-
-#     # Get the module object from the modules dictionary
-#     module_obj = modules.get(module)
-
-#     # Check if the module exists and its name matches the provided module parameter
-#     if not module_obj or getattr(module_obj, "name", None) != module:
-#         logging.error(f"Unknown or mismatched module: {module}")
-#         sys.exit(1)
-
-#     module_options = {
-#         "name": module,
-#         "splits": int(splits),
-#         "fasta": fasta,
-#         "outdir": outdir,
-#         "datadir": datadir,
-#         "assembler": assembler,
-#         "samplelist": samplelist,
-#         "decontam_host": decontam_host,
-#         "binning_consensus": binning_consensus,
-#         "email": email,
-#     }
-
-#     for key, value in module_options.items():
-#         if hasattr(module_obj, key):
-#             setattr(module_obj, key, value)
-
-#     if module in modules_list:
-#         if outdir == None:
-#             logging.info("Re-using last options from the previous run")
-#             out = vomix_actions.run_last_module(module)
-#             logging.info(f"End module run: {out}")
-#         else:
-#             logging.info(f"Running module: {module}")
-#             logging.info(f"outdir: {outdir}, datadir: {datadir}, assembler: {assembler}, samplelist: {samplelist}, decontam_host: {decontam_host}, binning_consensus: {binning_consensus}")
-            
-#             out = vomix_actions.run_module(module, module_obj)
-#         logging.info(f"End module run: {out}")
-
-#     # test case
-#     elif module == "test":
-#         if outdir == None:
-#             logging.info("Re-using last options from the previous run")
-#             out = vomix_actions.run_last_module(module)
-#         else:
-#             logging.info(f"[TEST] Running module: {module}")
-#             logging.info(f"outdir: {outdir}, datadir: {datadir}, assembler: {assembler}, samplelist: {samplelist}, decontam_host: {decontam_host}, binning_consensus: {binning_consensus}")
-
-#             out = vomix_actions.run_module(module, module_obj)
-#         logging.info(f"End module run. Output: {out}")
-
-#     else:
-#         logging.error(f"Unknown module: {module}")
-#         sys.exit(1)
 
