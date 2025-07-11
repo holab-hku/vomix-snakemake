@@ -151,10 +151,7 @@ if config["module"] == "symlink":
 
 # pre-process
 if config["module"] == "preprocess" or config["module"] == "end-to-end":
-  if config["decontam-host"]:
-    include: "rules/preprocess-decontam.smk"
-  else:
-    include: "rules/preprocess.smk"
+  include: "rules/preprocess.smk"
   targets += [relpath("preprocess/logs/done.log")]
 
 
