@@ -136,9 +136,11 @@ def parse_sample_list(f, datadir, outdir, email, api_key, time):
 		if os.path.isfile(f) and f.endswith('.csv'):
 			df = pd.read_csv(f, comment='#', header=0, sep=',', index_col=False, dtype=str)
 		else:
-			console.print(Panel.fit(f"Sample List (sample_list.csv) is not a CSV or does not exist.", title="Sample List Error", subtitle="Sample List not CSV."))
+			console.print(Panel.fit(f'[dim]Sample List input "{f}" is not a comma separated table (.csv format).', title='Sample List Error', subtitle='Sample List not CSV.'))
+			sys.exit(1)
 	except Exception as e:
-		console.print(Panel.fit(f"Sample List (sample_list.csv) could not be read by pd.read_csv()", title="Sample List Error", subtitle="Sample List not CSV."))
+		console.print(Panel.fit(f'Sample List "{f}" could not be read by pd.read_csv() or does not exist', title='Sample List Error', subtitle='Sample List not CSV.'))
+		sys.exit(1)
 
 
 	df['sample_id'] = df['sample_id'].fillna(df['accession'])

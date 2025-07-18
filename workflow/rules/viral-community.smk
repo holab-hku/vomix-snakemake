@@ -60,7 +60,7 @@ rule coverm_endtoend:
   conda: "../envs/coverm.yml"
   threads: 8
   resources:
-    mem_mb=lambda wildcards, attempt: attempt * 8 * 10**3
+    mem_mb=lambda wildcards, attempt: attempt * 12 * 10**3
   shell:
     """
     rm -rf {params.tmpdir} {params.outdir}

@@ -5,6 +5,7 @@ benchmarks=relpath("identify/viral/benchmarks")
 tmpd=relpath("identify/viral/tmp")
 
 email=config["email"]
+api_key=config["NCBI-API-key"]
 nowstr=config["latest_run"]
 outdir=config["outdir"]
 datadir=config["datadir"]
@@ -26,7 +27,7 @@ elif config['fastadir'] != "":
   fastap = readfastadir(config['fastadir'])
   assembly_ids = config["assembly-ids"]
 else:
-  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, nowstr)
+  samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr)
   fastap = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
   assembly_ids = assemblies.keys()
 

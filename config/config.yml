@@ -33,6 +33,7 @@ checkm2-db: "workflow/database/checkm2"
 # preprocess.smk & preprocess-decontam.smk
 
 dwnld-params : ""
+dwnld-only: False
 pigz-params: ""
 fastp-params: ""
 hostile-params: ""

@@ -151,10 +151,7 @@ if config["module"] == "symlink":
 
 # pre-process
 if config["module"] == "preprocess" or config["module"] == "end-to-end":
-  if config["decontam-host"]:
-    include: "rules/preprocess-decontam.smk"
-  else:
-    include: "rules/preprocess.smk"
+  include: "rules/preprocess.smk"
   targets += [relpath("preprocess/logs/done.log")]
 
 
@@ -173,10 +170,7 @@ if config["module"] == "viral-identify" or config["module"] == "end-to-end":
     include: "rules/checkv.smk"
   else:
     include: "rules/checkv-pyhmmer.smk"
-  if config["clustering-fast"]:
-    include: "rules/clustering-fast.smk"
-  else:
-    include: "rules/clustering-sensitive.smk"
+  include: "rules/clustering.smk"
   targets += [relpath("identify/viral/logs/done.log")]
 
 
@@ -194,12 +188,9 @@ if config["module"] == "viral-refilter":
     include: "rules/checkv.smk"
   else:
     include: "rules/checkv-pyhmmer.smk"
-  if config["clusteringfast"]:
-    include: "rules/clustering-fast.smk"
-  else:
-    include: "rules/clustering-sensitive.smk"
+  include: "rules/clustering.smk"
   targets += [relpath("identify/viral/logs/done.log"), 
-      relpath("identify/viral/logs/clustering-fast-done.log"), 
+      relpath("identify/viral/logs/clustering-done.log"), 
       relpath("identify/viral/logs/checkv-done.log")]
 
 # checkv-pyhmmer
@@ -212,8 +203,8 @@ if config["module"] == "checkv-pyhmmer":
 
 # cluster fast
 if config["module"] == "clustering-fast":
-  include: "rules/clustering-fast.smk"
-  targets += [relpath("identify/viral/logs/clustering-fast-done.log")]
+  include: "rules/clustering.smk"
+  targets += [relpath("identify/viral/logs/clustering-done.log")]
 
 # viral taxonomy
 if config["module"] == "viral-taxonomy" or config["module"] == "end-to-end":

@@ -48,7 +48,7 @@ rule genomad_db:
 
 
 rule checkv_db:
-  name: "setup-database.smk geNomad database (7.3 G)"
+  name: "setup-database.smk CheckV database (7.3 G)"
   localrule: True
   output: expand("workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm", index=range(1, 81))
   params:
