@@ -237,18 +237,6 @@ class vomix_actions:
 
             f.write(script)
 
-            # f.write('snakemake --config module="' + module 
-            #         + '" outdir="' + module_options["outdir"] 
-            #         + '" datadir="' + module_options['datadir'] 
-            #         + '" assembler="' + module_options['assembler'] 
-            #         + '" samplelist="' + module_options['samplelist'] 
-            #         + '" decontam-host=' + str(module_options['decontam_host'])
-            #         + ' binning-consensus=' + str(module_options['binning_consensus'])
-            #         + ' --use-conda --rerun-incomplete --rerun-triggers mtime --latency-wait 20 --retries 0 --sdm conda -j 88 --executor  cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 '
-            #         + '-M ' + module_options['email']
-            #         + ' -q cgsd -o qsub.log -e qsub.log -m a"  ' )
-            #         # + ' > nohup.' + module + '.out &') 
-
         cmd = ['bash', script_path]
 
         try:

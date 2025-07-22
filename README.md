@@ -21,10 +21,21 @@ vomix activate
 conda activate vomix
 ```
 
+## Check conda environment has been activated
+
+```bash
+conda info --envs 
+```
+
 ## Usage
 
 ```bash
-vomix <module>
+vomix <module> <params>
+```
+
+Example: 
+```bash
+vomix preprocess --outdir sample/results --datadir sample/fastq --samplelist sample/sample_list.csv
 ```
 
 ctrl-C to abort
