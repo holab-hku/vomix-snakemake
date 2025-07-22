@@ -42,11 +42,15 @@ ctrl-C to abort
 
 ## Structure
 
-* vomix_actions.py -> store vomix actions (conda env set up script)
+* vomix_actions.py -> vomix actions
 
 * vomix.py -> cli
 
-* project structure: follow vomix-wrapper folder = vOMIX-MEGA folder in the original repo
+* modules.py -> module classes 
+
+* runModules folder -> stores the last run command for each module 
+
+* snakemake.sh -> the script that is created and ran when running vomix <module>
 
 ## Tests
 
