@@ -2,12 +2,8 @@
 
 A lightweight wrapper for cli integration and managing Vomix functionalities.
 
-## Installation
-
-```bash
-cd vomix-mega
-pip install .
-```
+## Install pip (for manual vomix installation)
+conda create -n vomix pip
 
 ## Set up conda environment
 
@@ -19,6 +15,13 @@ vomix activate
 
 ```bash
 conda activate vomix
+```
+
+## Installation
+
+```bash
+cd vomix-mega
+pip install .
 ```
 
 ## Check conda environment has been activated
