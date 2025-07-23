@@ -124,13 +124,12 @@ if emptykeys != 1 and config["module"] != "setup-database":
 
 
 ### Save configuration file
-#now = datetime.datetime.now()
-#nowstr = now.strftime("%Y%m%d_%H%M%S")
-#config["latest_run"] = nowstr
-#logdir = relpath(".vomix/log/vomix" + nowstr)
-#os.makedirs(logdir, exist_ok=True)
-
+now = datetime.datetime.now()
+nowstr = now.strftime("%Y%m%d_%H%M%S")
+config["latest_run"] = nowstr
 nowstr = config["latest_run"]
+logdir = relpath(".vomix/log/vomix" + nowstr)
+os.makedirs(logdir, exist_ok=True)
 with open(os.path.join(logdir,  "config.json"), "w") as configf:
   json.dump(config, configf)
 
