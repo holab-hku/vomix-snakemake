@@ -35,12 +35,12 @@ def common_options(function):
     function = click.option('--viral-binning', is_flag=True, default=False, required=False)(function)
     function = click.option('--intermediate', is_flag=True, default=False, required=False)(function)
     function = click.option('--setup-database', is_flag=True, default=True, required=False)(function)
-    function = click.option('--cores', default=4, required=False)(function)
+    function = click.option('--max_cores', default=4, required=False)(function)
     function = click.option('--email', default="", required=False)(function)
     function = click.option('--NCBI-API-key', default="", required=False)(function)
     return function
 
-def setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key):
+def setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key):
     module_obj.workdir = workdir
     module_obj.outdir = outdir 
     module_obj.datadir = datadir
@@ -54,7 +54,7 @@ def setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir
     module_obj.viral_binning = viral_binning
     module_obj.intermediate = intermediate
     module_obj.setup_database = setup_database
-    module_obj.cores = cores
+    module_obj.max_cores = max_cores
     module_obj.email = email
     module_obj.NCBI_API_key = ncbi_api_key
 
@@ -91,14 +91,14 @@ def activate():
 @click.option('--hostilealigner', required=False, default=None)
 @click.option('--alignerparams', required=False, default=None)
 @click.option('--indexpath', required=False, default=None)
-def run_preprocess(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key, decontam_host, dwnldparams, pigzparams, fastpparams, hostileparams, hostilealigner, alignerparams, indexpath):
+def run_preprocess(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, decontam_host, dwnldparams, pigzparams, fastpparams, hostileparams, hostilealigner, alignerparams, indexpath):
         logging.info(f"Running module: preprocess")
         logging.info(f"decontamHost: {decontam_host}, outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
         
         module_obj = PreProcessingModule()
         module_obj.name = "preprocess"
         # Set the attributes of the module object
-        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key)
+        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
 
         module_obj.decontamHost = decontam_host
 
@@ -141,14 +141,14 @@ required=True)
 @click.option('--megahit-params', required=False, default=None)
 @click.option('--spades-params', required=False, default=None)
 @click.option('--spades-memory', required=False, default=None)
-def run_assembly(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key, assembler, megahit_minlen, megahit_params, spades_params, spades_memory):
+def run_assembly(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, assembler, megahit_minlen, megahit_params, spades_params, spades_memory):
         logging.info(f"Running module: assembly")
         logging.info(f"assembler: {assembler}, outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
         
         module_obj = AssemblyCoAssemblyModule()
         module_obj.name = "assembly"
         # Set the attributes of the module object
-        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key)
+        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
 
         module_obj.assembler = assembler
 
@@ -188,14 +188,14 @@ def run_assembly(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_n
 @click.option('--vOTU-ani', required=False, default=None)
 @click.option('--vOTU-targetcov', required=False, default=None)
 @click.option('--vOTU-querycov', required=False, default=None)
-def run_viral_identify(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key, contig_minlen, genomad_db, genomad_minlen, genomad_params, genomad_cutoff, checkv_original, checkv_params, checkv_database, clustering_fast, cdhit_params, votu_ani, votu_targetcov, votu_querycov):
+def run_viral_identify(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, contig_minlen, genomad_db, genomad_minlen, genomad_params, genomad_cutoff, checkv_original, checkv_params, checkv_database, clustering_fast, cdhit_params, votu_ani, votu_targetcov, votu_querycov):
         logging.info(f"Running module: viral-identify")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
         
         module_obj = ViralIdentifyModule()
         module_obj.name = "viral-identify"
         # Set the attributes of the module object
-        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key)
+        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
 
         if contig_minlen:
             module_obj.contig_minlen = contig_minlen
@@ -256,14 +256,14 @@ def run_viral_identify(workdir, outdir, datadir, samplelist, fasta, fastadir, sa
 @click.option('--diamond-params', required=False, default=None)
 @click.option('--genomad-db', required=False, default=None)
 @click.option('--genomad-params', required=False, default=None)
-def run_viral_taxonomy(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key, viphogs_hmmeval, viphogs_prop, PhaBox2_db, phagcn_minlen, phagcn_params, diamond_params, genomad_db, genomad_params):
+def run_viral_taxonomy(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, viphogs_hmmeval, viphogs_prop, PhaBox2_db, phagcn_minlen, phagcn_params, diamond_params, genomad_db, genomad_params):
         logging.info(f"Running module: viral-taxonomy")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
         
         module_obj = ViralTaxonomyModule()
         module_obj.name = "viral-taxonomy"
         # Set the attributes of the module object
-        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key)
+        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
 
         if viphogs_hmmeval:
             module_obj.viphogs_hmmeval = viphogs_hmmeval
@@ -304,14 +304,14 @@ def run_viral_taxonomy(workdir, outdir, datadir, samplelist, fasta, fastadir, sa
 @click.option('--PhaTYP-params', required=False, default=None)
 @click.option('--iphop-cutoff', required=False, default=None)
 @click.option('--iphop-params', required=False, default=None)
-def run_viral_host(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key, CHERRY_params, PhaTYP_params, iphop_cutoff, iphop_params):
+def run_viral_host(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, CHERRY_params, PhaTYP_params, iphop_cutoff, iphop_params):
         logging.info(f"Running module: viral-host")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
         
         module_obj = ViralHostModule()
         module_obj.name = "viral-host"
         # Set the attributes of the module object
-        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key)
+        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
 
         if CHERRY_params:
             module_obj.CERRY_params = CHERRY_params
@@ -338,14 +338,14 @@ def run_viral_host(workdir, outdir, datadir, samplelist, fasta, fastadir, sample
 @common_options
 @click.option('--mpa-indexv', required=False, default=None)
 @click.option('--mpa-params', required=False, default=None)
-def run_viral_community(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key, mpa_indexv, mpa_params):
+def run_viral_community(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, mpa_indexv, mpa_params):
         logging.info(f"Running module: viral-community")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
         
         module_obj = ViralCommunityModule()
         module_obj.name = "viral-community"
         # Set the attributes of the module object
-        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key)
+        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
 
         if mpa_indexv:
             module_obj.mpa_indexv = mpa_indexv
@@ -366,14 +366,14 @@ def run_viral_community(workdir, outdir, datadir, samplelist, fasta, fastadir, s
 @common_options
 @click.option('--eggNOG-params', required=False, default=None)
 @click.option('--PhaVIP-params', required=False, default=None)
-def run_viral_annotate(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key, eggNOG_params, PhaVIP_params):
+def run_viral_annotate(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, eggNOG_params, PhaVIP_params):
         logging.info(f"Running module: viral-annotate")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
         
         module_obj = ViralAnnotateModule()
         module_obj.name = "viral-annotate"
         # Set the attributes of the module object
-        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key)
+        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
 
         if eggNOG_params:
             module_obj.eggNOG_params = eggNOG_params
@@ -394,14 +394,14 @@ def run_viral_annotate(workdir, outdir, datadir, samplelist, fasta, fastadir, sa
 @common_options
 @click.option('--mpa-params', required=False, default=None)
 @click.option('--mpa-indexv', required=False, default=None)
-def run_prok_community(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key, mpa_params, mpa_indexv):
+def run_prok_community(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, mpa_params, mpa_indexv):
         logging.info(f"Running module: prok-community")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
         
         module_obj = ProkaryoticCommunityModule()
         module_obj.name = "prok-community"
         # Set the attributes of the module object
-        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key)
+        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
 
         if mpa_params:
             module_obj.mpa_params = mpa_params
@@ -423,14 +423,14 @@ def run_prok_community(workdir, outdir, datadir, samplelist, fasta, fastadir, sa
     short_help='Run the Prokaryotic Annotate module'
 )
 @common_options
-def run_prok_annotate(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key):
+def run_prok_annotate(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key):
         logging.info(f"Running module: prok-annotate")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
         
         module_obj = ProkaryoticAnnotateModule()
         module_obj.name = "prok-annotate"
         # Set the attributes of the module object
-        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key)
+        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
 
         vomix_actions_instance = vomix_actions()
         vomix_actions_instance.run_module("prok-annotate", module_obj)
@@ -442,14 +442,14 @@ def run_prok_annotate(workdir, outdir, datadir, samplelist, fasta, fastadir, sam
     short_help='Run the End-To-End module'
 )
 @common_options
-def run_end_to_end(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key):
+def run_end_to_end(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key):
         logging.info(f"Running module: end-to-end")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
         
         module_obj = EndToEndModule()
         module_obj.name = "end-to-end"
         # Set the attributes of the module object
-        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key)
+        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
 
         vomix_actions_instance = vomix_actions()
         vomix_actions_instance.run_module("end-to-end", module_obj)
@@ -466,14 +466,14 @@ def run_end_to_end(workdir, outdir, datadir, samplelist, fasta, fastadir, sample
 @click.option('--vOTU-ani', required=False, default=None)
 @click.option('--vOTU-targetcov', required=False, default=None)
 @click.option('--vOTU-querycov', required=False, default=None)
-def run_cluster_fast(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key, clustering_fast, cdhit_params, vOTU_ani, vOTU_targetcov, vOTU_querycov):
+def run_cluster_fast(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, clustering_fast, cdhit_params, vOTU_ani, vOTU_targetcov, vOTU_querycov):
         logging.info(f"Running module: cluster-fast")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
         
         module_obj = ClusterFastModule()
         module_obj.name = "cluster-fast"
         # Set the attributes of the module object
-        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key)
+        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
 
         if clustering_fast:
             module_obj.clustering_fast = clustering_fast
@@ -504,14 +504,14 @@ def run_cluster_fast(workdir, outdir, datadir, samplelist, fasta, fastadir, samp
 @click.option('--checkv-original', required=False, default=None)
 @click.option('--checkv-params', required=False, default=None)
 @click.option('--checkv-database', required=False, default=None)
-def run_checkv_pyhmmer(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key, checkv_original, checkv_params, checkv_database):
+def run_checkv_pyhmmer(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, checkv_original, checkv_params, checkv_database):
         logging.info(f"Running module: checkv-pyhmmer")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
         
         module_obj = CheckVPyHMMERModule()
         module_obj.name = "checkv-pyhmmer"
         # Set the attributes of the module object
-        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key)
+        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
 
         if checkv_original:
             module_obj.checkv_original = checkv_original
@@ -541,15 +541,15 @@ def run_checkv_pyhmmer(workdir, outdir, datadir, samplelist, fasta, fastadir, sa
 @click.option('--virsorter2-db', required=False, default=None)
 @click.option('--iphop-db', required=False, default=None)
 @click.option('--humann-db', required=False, default=None)
-def run_setup_database(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key, PhaBox2_db, genomad_db, checkv_db, eggNOG_db, eggNOG_db_params, virsorter2_db, iphop_db, humann_db):
+def run_setup_database(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, PhaBox2_db, genomad_db, checkv_db, eggNOG_db, eggNOG_db_params, virsorter2_db, iphop_db, humann_db):
         logging.info(f"Running module: setup-database")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
         
         module_obj = SetupDatabaseModule()
         module_obj.name = "setup-pyhdatabasemmer"
         # Set the attributes of the module object
-        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, cores, email, ncbi_api_key)
-        
+        module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
+
         if PhaBox2_db:  
             module_obj.PhaBox2_db = PhaBox2_db
             module_obj.hasOptions = True
