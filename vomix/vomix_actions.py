@@ -2,6 +2,11 @@ import subprocess
 import os
 import sys
 from subprocess import Popen, PIPE, CalledProcessError
+import datetime
+import json
+import yaml
+import shutil
+
 
 class vomix_actions:
     def __init__(self):
@@ -223,19 +228,43 @@ class vomix_actions:
         return script
 
     def run_module(self, module, module_obj):
+        # save_script_path = os.path.realpath("vomix/runModules/" + module +".sh")
 
-        script_path = os.path.realpath("vomix/" + "snakemake" +".sh")
-        save_script_path = os.path.realpath("vomix/runModules/" + module +".sh")
+        outdir = module_obj.outdir
+        datadir = module_obj.datadir
 
+        if not (os.path.exists(outdir) and os.path.exists(os.path.join(outdir, ".vomix"))):
+            os.makedirs(os.path.join(outdir, ".vomix"), exist_ok=True)
+
+        ### Save configuration file
+        now = datetime.datetime.now()
+        latest_run = now.strftime("%Y%m%d_%H%M%S")
+        logdir = os.path.join(outdir, ".vomix/log/vomix" + latest_run)
+
+        os.makedirs(logdir, exist_ok=True)
+        # TODO update the config file to include latest_run
+        # with open(os.path.join(logdir,  "config.json"), "w") as configf:
+        #     json.dump(config, configf)
+
+        # Create a new config file with latest_run
+        shutil.copy(os.path.realpath("config/config.yml"), logdir)
+        with open(logdir + "/config.yml") as f:
+            list_doc = yaml.safe_load(f)
+            list_doc["latest_run"] = latest_run
+
+        with open(logdir + "/config.yml", "w") as f:
+            yaml.dump(list_doc, f)
+
+        script_path = os.path.realpath(logdir + "/snakemake" +".sh")
+        print(f"Running script: {script_path}")
         script = self.createScript(module, module_obj)
 
         # save the script to another location for history
-        with open(save_script_path, "w") as f:   
-            f.write(script)
+        # with open(save_script_path, "w") as f:   
+        #     f.write(script)
         
         # save the script to the main location to run
         with open(script_path, "w") as f:
-
             f.write(script)
 
         cmd = ['bash', script_path]
