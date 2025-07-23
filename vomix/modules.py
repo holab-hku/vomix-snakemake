@@ -32,10 +32,11 @@ class AssemblyCoAssemblyModule:
 class ViralIdentifyModule:
     # snakemake --config module="viral-identify" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" --use-conda -j 4 --latency-wait 20
     name = "viral-identify"
-    def __init__(self, outdir="", datadir="", samplelist="", hasOptions=False, contig_minlen=0, genomad_db="workflow/database/genomad", genomad_minlen=1500, genomad_params="", genomad_cutoff=0.7, checkv_original=False, checkv_params="", checkv_database="workflow/database/checkv", clustering_fast=True, cdhit_params="-c 0.95 -aS 0.85 -d 400 -M 0 -n 5", vOTU_ani=95, vOTU_targetcov=85, vOTU_querycov=0):
+    def __init__(self, outdir="", datadir="", samplelist="", splits=0, hasOptions=False, contig_minlen=0, genomad_db="workflow/database/genomad", genomad_minlen=1500, genomad_params="", genomad_cutoff=0.7, checkv_original=False, checkv_params="", checkv_database="workflow/database/checkv", clustering_fast=True, cdhit_params="-c 0.95 -aS 0.85 -d 400 -M 0 -n 5", vOTU_ani=95, vOTU_targetcov=85, vOTU_querycov=0):
         self.outdir = outdir
         self.datadir = datadir
         self.samplelist = samplelist
+        self.splits = splits
         self.hasOptions = hasOptions
         self.contig_minlen = contig_minlen
         self.genomad_db = genomad_db

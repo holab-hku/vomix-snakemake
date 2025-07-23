@@ -143,6 +143,7 @@ def run_assembly(assembler, outdir, datadir, samplelist, megahit_minlen, megahit
 @click.option('--outdir', required=True, default=None)
 @click.option('--datadir', required=True, default=None)
 @click.option('--samplelist', required=True, default=None)
+@click.option('--splits', required=False, default=0)
 @click.option('--contig-minlen', required=False, default=None)
 @click.option('--genomad-db', required=False, default=None)
 @click.option('--genomad-minlen', required=False, default=None)
@@ -156,7 +157,7 @@ def run_assembly(assembler, outdir, datadir, samplelist, megahit_minlen, megahit
 @click.option('--vOTU-ani', required=False, default=None)
 @click.option('--vOTU-targetcov', required=False, default=None)
 @click.option('--vOTU-querycov', required=False, default=None)
-def run_viral_identify(outdir, datadir, samplelist, contig_minlen, genomad_db, genomad_minlen, genomad_params, genomad_cutoff, checkv_original, checkv_params, checkv_database, clustering_fast, cdhit_params, vOTU_ani, vOTU_targetcov, vOTU_querycov):
+def run_viral_identify(outdir, datadir, samplelist, splits, contig_minlen, genomad_db, genomad_minlen, genomad_params, genomad_cutoff, checkv_original, checkv_params, checkv_database, clustering_fast, cdhit_params, vOTU_ani, vOTU_targetcov, vOTU_querycov):
         logging.info(f"Running module: viral-identify")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
         
@@ -166,6 +167,7 @@ def run_viral_identify(outdir, datadir, samplelist, contig_minlen, genomad_db, g
         module_obj.outdir = outdir 
         module_obj.datadir = datadir
         module_obj.samplelist = samplelist
+        module_obj.splits = splits
 
         if contig_minlen:
             module_obj.contig_minlen = contig_minlen
