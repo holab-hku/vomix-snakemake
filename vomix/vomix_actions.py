@@ -1,6 +1,7 @@
 import subprocess
 import os
 import sys
+from subprocess import Popen, PIPE, CalledProcessError
 
 class vomix_actions:
     def __init__(self):
@@ -221,7 +222,7 @@ class vomix_actions:
 
         return script
 
-    def run_module(self, module, module_obj) -> str:
+    def run_module(self, module, module_obj):
 
         script_path = os.path.realpath("vomix/" + "snakemake" +".sh")
         save_script_path = os.path.realpath("vomix/runModules/" + module +".sh")
@@ -240,8 +241,21 @@ class vomix_actions:
         cmd = ['bash', script_path]
 
         try:
-            result = subprocess.run(cmd, stdout=open('out.log', 'w'), stderr=open('error.log', 'a'),)
-            return result.stdout
+            # stdout=open('out.log', 'w'), stderr=open('error.log', 'a')
+            # result = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True)
+            
+            with Popen(cmd, stdout=PIPE, bufsize=1, universal_newlines=True) as p:
+                for line in p.stdout:
+                    print(line, end='') 
+            if p.returncode != 0:
+                raise CalledProcessError(p.returncode, p.args)
+            # for stdout_line in iter(result.stdout.readline, ""):
+                # yield stdout_line 
+            # out = result.stdout.close()
+            # return_code = result.wait()
+            # if return_code:
+            #     raise subprocess.CalledProcessError(return_code, cmd)            
+            # return out
         except subprocess.CalledProcessError as e:
             return f"Error: {e.stderr}"
         
