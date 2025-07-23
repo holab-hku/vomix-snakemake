@@ -6,10 +6,10 @@ os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
-if isinstance(config['cores'], int):
- n_cores = config['cores']
+if isinstance(config['max-cores'], int):
+ n_cores = config['max-cores']
 else:
-  console.print(Panel.fit(f"config['cores'] is not an integer: {config['cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['cores'] not integer"))
+  console.print(Panel.fit(f"config['max-cores'] is not an integer: {config['max-cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['max-cores'] not integer"))
   sys.exit(1)
 
 

@@ -8,7 +8,7 @@ os.makedirs(logdir, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
-n_cores = config['cores']
+n_cores = config['max-cores']
 
 
 rule done:

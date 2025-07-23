@@ -110,8 +110,8 @@ if assembler not in ["megahit", "spades"]:
   console.print(Panel.fit("""Assembler '{}' does not exists. Currently 'megahit' and 'spades' are supported and their parameters can be defined in the config.yml file. Default assembler is 'megahit'""".format(assembler), title="Error", subtitle="Wrong Assembler"))
   sys.exit(1)
 
-if not isinstance(config['cores'], int):
-  console.print(Panel.fit(f"config['cores'] is not an integer: {config['cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['cores'] not integer"))
+if not isinstance(config['max-cores'], int):
+  console.print(Panel.fit(f"config['max-cores'] is not an integer: {config['max-cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['max-cores'] not integer"))
   sys.exit(1)
 
 
@@ -124,12 +124,13 @@ if emptykeys != 1 and config["module"] != "setup-database":
 
 
 ### Save configuration file
-now = datetime.datetime.now()
-nowstr = now.strftime("%Y%m%d_%H%M%S")
-config["latest_run"] = nowstr
-logdir = relpath(".vomix/log/vomix" + nowstr)
+#now = datetime.datetime.now()
+#nowstr = now.strftime("%Y%m%d_%H%M%S")
+#config["latest_run"] = nowstr
+#logdir = relpath(".vomix/log/vomix" + nowstr)
+#os.makedirs(logdir, exist_ok=True)
 
-os.makedirs(logdir, exist_ok=True)
+nowstr = config["latest_run"]
 with open(os.path.join(logdir,  "config.json"), "w") as configf:
   json.dump(config, configf)
 
