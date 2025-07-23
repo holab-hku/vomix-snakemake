@@ -70,7 +70,7 @@ class vomix_actions:
                     script += ' spades_memory=' + str(module_obj.spades_memory)
 
         elif module == "viral-identify":
-            script += 'snakemake --config module="viral-identify" ' + 'outdir="' + module_obj.outdir + '" datadir="' + module_obj.datadir + '" samplelist="' + module_obj.samplelist  + '" splits="' + module_obj.splits + '" --use-conda -j 4 --latency-wait 20'
+            script += 'snakemake --config module="viral-identify" ' + 'outdir="' + str(module_obj.outdir) + '" datadir="' + str(module_obj.datadir) + '" samplelist="' + str(module_obj.samplelist)  + '" splits="' + str(module_obj.splits) + '" --use-conda -j 4 --latency-wait 20'
             if module_obj.hasOptions:
                 script += " --config"
                 if module_obj.contig_minlen:

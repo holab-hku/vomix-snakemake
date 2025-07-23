@@ -44,8 +44,8 @@ def activate():
 )
 @click.option('--decontam-host', default=True, required=True)
 @click.option('--outdir', required=True, default=None)
-@click.option('--datadir', required=True, default=None)
-@click.option('--samplelist', required=True, default=None)
+@click.option('--datadir', required=False, default=None)
+@click.option('--samplelist', required=False, default=None)
 @click.option('--dwnldparams', required=False, default=None)
 @click.option('--pigzparams', required=False, default=None)
 @click.option('--fastpparams', required=False, default=None)
@@ -89,8 +89,8 @@ def run_preprocess(decontam_host, outdir, datadir, samplelist, dwnldparams, pigz
             module_obj.hasOptions = True
 
         vomix_actions_instance = vomix_actions()
-        out = vomix_actions_instance.run_module("preprocess", module_obj)
-        logging.info(f"End module run: {out}")
+        vomix_actions_instance.run_module("preprocess", module_obj)
+        logging.info(f"End module run")
 
 @cli.command(
     'assembly',
@@ -100,8 +100,8 @@ def run_preprocess(decontam_host, outdir, datadir, samplelist, dwnldparams, pigz
 @click.option('--assembler', default="megahit", 
 required=True)
 @click.option('--outdir', required=True, default=None)
-@click.option('--datadir', required=True, default=None)
-@click.option('--samplelist', required=True, default=None)
+@click.option('--datadir', required=False, default=None)
+@click.option('--samplelist', required=False, default=None)
 @click.option('--megahit-minlen', required=False, default=None)
 @click.option('--megahit-params', required=False, default=None)
 @click.option('--spades-params', required=False, default=None)
@@ -132,8 +132,8 @@ def run_assembly(assembler, outdir, datadir, samplelist, megahit_minlen, megahit
             module_obj.hasOptions = True
 
         vomix_actions_instance = vomix_actions()
-        out = vomix_actions_instance.run_module("assembler", module_obj)
-        logging.info(f"End module run: {out}")
+        vomix_actions_instance.run_module("assembler", module_obj)
+        logging.info(f"End module run")
 
 @cli.command(
     'viral-identify',
@@ -141,8 +141,9 @@ def run_assembly(assembler, outdir, datadir, samplelist, megahit_minlen, megahit
     short_help='Run the Viral Identify module'
 )
 @click.option('--outdir', required=True, default=None)
-@click.option('--datadir', required=True, default=None)
-@click.option('--samplelist', required=True, default=None)
+@click.option('--datadir', required=False, default=None)
+@click.option('--fasta', required=False, default=None)
+@click.option('--samplelist', required=False, default=None)
 @click.option('--splits', required=False, default=0)
 @click.option('--contig-minlen', required=False, default=None)
 @click.option('--genomad-db', required=False, default=None)
@@ -157,7 +158,7 @@ def run_assembly(assembler, outdir, datadir, samplelist, megahit_minlen, megahit
 @click.option('--vOTU-ani', required=False, default=None)
 @click.option('--vOTU-targetcov', required=False, default=None)
 @click.option('--vOTU-querycov', required=False, default=None)
-def run_viral_identify(outdir, datadir, samplelist, splits, contig_minlen, genomad_db, genomad_minlen, genomad_params, genomad_cutoff, checkv_original, checkv_params, checkv_database, clustering_fast, cdhit_params, vOTU_ani, vOTU_targetcov, vOTU_querycov):
+def run_viral_identify(outdir, datadir, fasta, samplelist, splits, contig_minlen, genomad_db, genomad_minlen, genomad_params, genomad_cutoff, checkv_original, checkv_params, checkv_database, clustering_fast, cdhit_params, votu_ani, votu_targetcov, votu_querycov):
         logging.info(f"Running module: viral-identify")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
         
@@ -168,6 +169,7 @@ def run_viral_identify(outdir, datadir, samplelist, splits, contig_minlen, genom
         module_obj.datadir = datadir
         module_obj.samplelist = samplelist
         module_obj.splits = splits
+        module_obj.fasta = fasta
 
         if contig_minlen:
             module_obj.contig_minlen = contig_minlen
@@ -199,19 +201,19 @@ def run_viral_identify(outdir, datadir, samplelist, splits, contig_minlen, genom
         if cdhit_params:
             module_obj.cdhit_params = cdhit_params
             module_obj.hasOptions = True
-        if vOTU_ani:
-            module_obj.vOTU_ani = vOTU_ani
+        if votu_ani:
+            module_obj.vOTU_ani = votu_ani
             module_obj.hasOptions = True
-        if vOTU_targetcov:
-            module_obj.vOTU_targetcov = vOTU_targetcov
+        if votu_targetcov:
+            module_obj.vOTU_targetcov = votu_targetcov
             module_obj.hasOptions = True
-        if vOTU_querycov:
-            module_obj.vOTU_querycov = vOTU_querycov
+        if votu_querycov:
+            module_obj.vOTU_querycov = votu_querycov
             module_obj.hasOptions = True
 
         vomix_actions_instance = vomix_actions()
-        out = vomix_actions_instance.run_module("viral-identify", module_obj)
-        logging.info(f"End module run: {out}")
+        vomix_actions_instance.run_module("viral-identify", module_obj)
+        logging.info(f"End module run")
 
 
 @cli.command(
@@ -265,8 +267,8 @@ def run_viral_taxonomy(fasta, outdir, viphogs_hmmeval, viphogs_prop, PhaBox2_db,
             module_obj.hasOptions = True
 
         vomix_actions_instance = vomix_actions()
-        out = vomix_actions_instance.run_module("viral-taxonomy", module_obj)
-        logging.info(f"End module run: {out}")
+        vomix_actions_instance.run_module("viral-taxonomy", module_obj)
+        logging.info(f"End module run")
 
 @cli.command(
     'viral-host',
@@ -303,8 +305,8 @@ def run_viral_host(fasta, outdir, CHERRY_params, PhaTYP_params, iphop_cutoff, ip
             module_obj.hasOptions = True
 
         vomix_actions_instance = vomix_actions()
-        out = vomix_actions_instance.run_module("viral-host", module_obj)
-        logging.info(f"End module run: {out}")
+        vomix_actions_instance.run_module("viral-host", module_obj)
+        logging.info(f"End module run")
 
 @cli.command(
     'viral-community',
@@ -312,8 +314,8 @@ def run_viral_host(fasta, outdir, CHERRY_params, PhaTYP_params, iphop_cutoff, ip
     short_help='Run the Viral Community module'
 )
 @click.option('--outdir', required=True, default=None)
-@click.option('--datadir', required=True, default=None)
-@click.option('--samplelist', required=True, default=None)
+@click.option('--datadir', required=False, default=None)
+@click.option('--samplelist', required=False, default=None)
 @click.option('--mpa-indexv', required=False, default=None)
 @click.option('--mpa-params', required=False, default=None)
 def run_viral_community(outdir, datadir, samplelist, mpa_indexv, mpa_params):
@@ -335,8 +337,8 @@ def run_viral_community(outdir, datadir, samplelist, mpa_indexv, mpa_params):
             module_obj.hasOptions = True
 
         vomix_actions_instance = vomix_actions()
-        out = vomix_actions_instance.run_module("viral-community", module_obj)
-        logging.info(f"End module run: {out}")
+        vomix_actions_instance.run_module("viral-community", module_obj)
+        logging.info(f"End module run")
 
 @cli.command(
     'viral-annotate',
@@ -344,8 +346,8 @@ def run_viral_community(outdir, datadir, samplelist, mpa_indexv, mpa_params):
     short_help='Run the Viral Annotate module'
 )
 @click.option('--outdir', required=True, default=None)
-@click.option('--datadir', required=True, default=None)
-@click.option('--samplelist', required=True, default=None)
+@click.option('--datadir', required=False, default=None)
+@click.option('--samplelist', required=False, default=None)
 @click.option('--eggNOG-params', required=False, default=None)
 @click.option('--PhaVIP-params', required=False, default=None)
 def run_viral_annotate(outdir, datadir, samplelist, eggNOG_params, PhaVIP_params):
@@ -367,8 +369,8 @@ def run_viral_annotate(outdir, datadir, samplelist, eggNOG_params, PhaVIP_params
             module_obj.hasOptions = True
 
         vomix_actions_instance = vomix_actions()
-        out = vomix_actions_instance.run_module("viral-annotate", module_obj)
-        logging.info(f"End module run: {out}")
+        vomix_actions_instance.run_module("viral-annotate", module_obj)
+        logging.info(f"End module run")
 
 @cli.command(
     'prok-community',
@@ -376,8 +378,8 @@ def run_viral_annotate(outdir, datadir, samplelist, eggNOG_params, PhaVIP_params
     short_help='Run the Prokaryotic Community module'
 )
 @click.option('--outdir', required=True, default=None)
-@click.option('--datadir', required=True, default=None)
-@click.option('--samplelist', required=True, default=None)
+@click.option('--datadir', required=False, default=None)
+@click.option('--samplelist', required=False, default=None)
 @click.option('--mpa-params', required=False, default=None)
 @click.option('--mpa-indexv', required=False, default=None)
 def run_prok_community(outdir, datadir, samplelist, mpa_params, mpa_indexv):
@@ -399,8 +401,8 @@ def run_prok_community(outdir, datadir, samplelist, mpa_params, mpa_indexv):
             module_obj.hasOptions = True
 
         vomix_actions_instance = vomix_actions()
-        out = vomix_actions_instance.run_module("prok-community", module_obj)
-        logging.info(f"End module run: {out}")
+        vomix_actions_instance.run_module("prok-community", module_obj)
+        logging.info(f"End module run")
 
 # TBD ProkaryoticBinningModule
 
@@ -411,8 +413,8 @@ def run_prok_community(outdir, datadir, samplelist, mpa_params, mpa_indexv):
     short_help='Run the Prokaryotic Annotate module'
 )
 @click.option('--outdir', required=True, default=None)
-@click.option('--datadir', required=True, default=None)
-@click.option('--samplelist', required=True, default=None)
+@click.option('--datadir', required=False, default=None)
+@click.option('--samplelist', required=False, default=None)
 def run_prok_annotate(outdir, datadir, samplelist):
         logging.info(f"Running module: prok-annotate")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -425,8 +427,8 @@ def run_prok_annotate(outdir, datadir, samplelist):
         module_obj.samplelist = samplelist
 
         vomix_actions_instance = vomix_actions()
-        out = vomix_actions_instance.run_module("prok-annotate", module_obj)
-        logging.info(f"End module run: {out}")
+        vomix_actions_instance.run_module("prok-annotate", module_obj)
+        logging.info(f"End module run")
 
 @cli.command(
     'end-to-end',
@@ -434,8 +436,8 @@ def run_prok_annotate(outdir, datadir, samplelist):
     short_help='Run the End-To-End module'
 )
 @click.option('--outdir', required=True, default=None)
-@click.option('--datadir', required=True, default=None)
-@click.option('--samplelist', required=True, default=None)
+@click.option('--datadir', required=False, default=None)
+@click.option('--samplelist', required=False, default=None)
 def run_end_to_end(outdir, datadir, samplelist):
         logging.info(f"Running module: end-to-end")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -448,8 +450,8 @@ def run_end_to_end(outdir, datadir, samplelist):
         module_obj.samplelist = samplelist
 
         vomix_actions_instance = vomix_actions()
-        out = vomix_actions_instance.run_module("end-to-end", module_obj)
-        logging.info(f"End module run: {out}")
+        vomix_actions_instance.run_module("end-to-end", module_obj)
+        logging.info(f"End module run")
 
 @cli.command(
     'cluster-fast',
@@ -490,8 +492,8 @@ def run_cluster_fast(fasta, outdir, clustering_fast, cdhit_params, vOTU_ani, vOT
             module_obj.hasOptions = True
 
         vomix_actions_instance = vomix_actions()
-        out = vomix_actions_instance.run_module("cluster-fast", module_obj)
-        logging.info(f"End module run: {out}")
+        vomix_actions_instance.run_module("cluster-fast", module_obj)
+        logging.info(f"End module run")
 
 @cli.command(
     'checkv-pyhmmer',
@@ -524,8 +526,8 @@ def run_checkv_pyhmmer(fasta, outdir, checkv_original, checkv_params, checkv_dat
             module_obj.hasOptions = True
 
         vomix_actions_instance = vomix_actions()
-        out = vomix_actions_instance.run_module("checkv-pyhmmer", module_obj)
-        logging.info(f"End module run: {out}")
+        vomix_actions_instance.run_module("checkv-pyhmmer", module_obj)
+        logging.info(f"End module run")
 
 @cli.command(
     'setup-database',
@@ -578,6 +580,6 @@ def run_setup_database(fasta, outdir, PhaBox2_db, genomad_db, checkv_db, eggNOG_
             module_obj.hasOptions = True
 
         vomix_actions_instance = vomix_actions()
-        out = vomix_actions_instance.run_module("setup-database", module_obj)
-        logging.info(f"End module run: {out}")
+        vomix_actions_instance.run_module("setup-database", module_obj)
+        logging.info(f"End module run")
 
