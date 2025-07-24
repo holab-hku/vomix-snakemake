@@ -50,17 +50,11 @@ class vomix_actions:
         script += "snakemake --config module=\"" + module + "\" "
 
         for attr, value in module_obj.__dict__.items():
-            if value is not None and attr != 'custom_config':
+            if value is not None and attr != 'custom_config' and attr != 'name':
                 attr = str.replace(attr, "_", "-")
                 script += f'{attr}="{value}" '
-                # if isinstance(value, str):
-                #     script += f'{attr}="{value}" '
-                # elif isinstance(value, bool):
-                #     script += f'{attr}={str(value).lower()} '
-                # else:
-                #     script += f'{attr}={value} '
 
-        script += "—-sdm conda -—use-conda"
+        script += "--sdm conda --use-conda"
 
         return script
 
