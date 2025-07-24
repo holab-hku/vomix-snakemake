@@ -6,7 +6,9 @@ import datetime
 import json
 import yaml
 import shutil
+import logging
 
+logging.basicConfig(level=logging.INFO)
 
 class vomix_actions:
     def __init__(self):
@@ -30,7 +32,7 @@ class vomix_actions:
     def env_setup_script() -> str:
 
         script_path = os.path.realpath("vomix/env_setup.sh")
-        print(f"Running script: {script_path}")
+        logging.info(f"Running script: {script_path}")
 
         cmd = ['bash', script_path]
         try:
@@ -246,12 +248,13 @@ class vomix_actions:
 
         # if custom config is specified
         if module_obj.custom_config is not None:
-            print(f"Using custom config: {module_obj.custom_config}")
+            logging.info(f"Using custom config: {module_obj.custom_config}")
+            logging.info(f"REMINDER - Any command line flags spefied will override those options in your custom config.")
             shutil.copy(os.path.realpath(module_obj.custom_config), outdir_folder)
             os.rename(outdir_folder + "/" + module_obj.custom_config, outdir_folder + "/config.yml")
         else:
             # Create a new config file from the config template
-            print(f"Using template config: config/config.yml")
+            logging.info(f"Using template config: config/config.yml")
             shutil.copy(os.path.realpath("config/config.yml"), outdir_folder)
     
         # edit new config with user options + latest_run
@@ -264,7 +267,7 @@ class vomix_actions:
                 if value is not None and module != 'custom_config':
                     module = str.replace(module, "_", "-")
                     list_doc[module] = value
-                    # print(f"///////TEST: {module} // " , {value})
+                    # logging.info(f"///////TEST: {module} // " , {value})
 
 
         with open(outdir_folder + "/config.yml", "w") as f:
@@ -285,7 +288,7 @@ class vomix_actions:
             f.write(script)
 
         # Run script
-        print(f"Running script: {script_path}")
+        logging.info(f"Running script: {script_path}")
         cmd = ['bash', script_path]
 
         try:
