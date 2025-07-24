@@ -251,7 +251,7 @@ class vomix_actions:
         # edit new config with user options + latest_run
         with open(outdir_folder + "/config.yml") as f:
             list_doc = yaml.safe_load(f)
-            list_doc["latest_run"] = latest_run
+            list_doc["latest-run"] = latest_run
 
         with open(outdir_folder + "/config.yml", "w") as f:
             yaml.dump(list_doc, f)
