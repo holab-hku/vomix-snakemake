@@ -44,13 +44,18 @@ class vomix_actions:
             return f"Error: {e.stderr}"
     
 
-    def createScript(self, module, module_obj):
+    def createScript(self, module, module_obj, snakemake_obj):
         script = ""
 
         script += "snakemake --config module=\"" + module + "\" "
 
         for attr, value in module_obj.__dict__.items():
             if value is not None and attr != 'custom_config' and attr != 'name':
+                attr = str.replace(attr, "_", "-")
+                script += f'{attr}="{value}" '
+
+        for attr, value in snakemake_obj.__dict__.items():
+            if value is not None and attr != 'add_args':
                 attr = str.replace(attr, "_", "-")
                 script += f'{attr}="{value}" '
 
@@ -103,13 +108,13 @@ class vomix_actions:
 
         return outdir_folder
 
-    def run_module(self, module, module_obj):
+    def run_module(self, module, module_obj, snakemake_obj):
 
         outdir_folder = self.createFoldersAndUpdateConfig(module_obj)
 
         # create the script to run the module 
         script_path = os.path.realpath(outdir_folder + "/snakemake" +".sh")
-        script = self.createScript(module, module_obj)
+        script = self.createScript(module, module_obj, snakemake_obj)
         
         # save the script
         # TODO run .sh in vomix
