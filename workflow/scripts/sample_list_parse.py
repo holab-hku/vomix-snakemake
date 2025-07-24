@@ -68,11 +68,10 @@ def validate_samples(samples):
 
 	# 2) REMOTE SEARCH - for entries that could not be found locally 
 	
-
+	accessions = []
+	sizes_gb = []
 	if len(notfound_acc) > 0:
 		console.print(f"Performing remote SRA sample search on {len(notfound_acc)} samples...\n")
-		accessions = [] 
-		sizes_gb = []
 		
 		for i in range(0, len(notfound_acc), 500):
 			batch = notfound_acc[i:i+500]
@@ -107,7 +106,8 @@ def validate_samples(samples):
 			sys.exit(1)
 
 	console.print("\nDone validating all samples!")
-	console.print(f"Downloading {round(sum(sizes_gb))} GB of data...\n")
+	if sum(sizes_gb) > 0:
+		console.print(f"Downloading {round(sum(sizes_gb))} GB of data...\n")
 		
 
 
