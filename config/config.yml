@@ -9,7 +9,7 @@ fasta: ""
 fastadir: ""
 sample-name: ""
 assembly-ids: ""
-latest_run : ""
+latest-run : ""
 splits: 0
 viral-binning: False
 intermediate: False
