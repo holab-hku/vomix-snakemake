@@ -22,22 +22,22 @@ def useLastOptionsCheck(ctx, param, value):
 
 # common options decorator
 def common_options(function):
-    function = click.option('--workdir', default=".", required=False, help = 'Set the working directory for Snakefile (We recommend not changing this)')(function)
-    function = click.option('--outdir', default="results/", required=False, help = 'Select the output directory for hierarchal results formatting || default: "./results"')(function)
-    function = click.option('--datadir', default="fastq/", required=False, help = '')(function)
-    function = click.option('--samplelist', default="sample/sample_list.tsv", required=False, help = '')(function)
-    function = click.option('--fasta', default="", required=False, help = '')(function)
-    function = click.option('--fastadir', default="", required=False, help = '')(function)
-    function = click.option('--sample-name', default="", required=False, help = '')(function)
-    function = click.option('--assembly-ids', default="", required=False, help = '')(function)
-    function = click.option('--latest-run', default="", required=False, help = '')(function)
+    function = click.option('--workdir', default=None, required=False, help = 'Set the working directory for Snakefile (We recommend not changing this)')(function)
+    function = click.option('--outdir', default=None, required=False, help = 'Select the output directory for hierarchal results formatting || default: "./results"')(function)
+    function = click.option('--datadir', default=None, required=False, help = '')(function)
+    function = click.option('--samplelist', default=None, required=False, help = '')(function)
+    function = click.option('--fasta', default=None, required=False, help = '')(function)
+    function = click.option('--fastadir', default=None, required=False, help = '')(function)
+    function = click.option('--sample-name', default=None, required=False, help = '')(function)
+    function = click.option('--assembly-ids', default=None, required=False, help = '')(function)
+    function = click.option('--latest-run', default=None, required=False, help = '')(function)
     function = click.option('--splits', default=0, required=False, help = 'Splits data into N chunks to reduce memory usage wherever possible || default: 0')(function)
     function = click.option('--viral-binning', is_flag=True, default=False, required=False, help = '')(function)
     function = click.option('--intermediate', is_flag=True, default=False, required=False, help = 'Flag to keep LARGE intermediate files generated during analysis || default: False')(function)
     function = click.option('--setup-database', is_flag=True, default=True, required=False, help = '')(function)
     function = click.option('--max-cores', default=4, required=False, help = '')(function)
-    function = click.option('--email', default="", required=False, help = '')(function)
-    function = click.option('--NCBI-API-key', default="", required=False, help = '')(function)
+    function = click.option('--email', default=None, required=False, help = '')(function)
+    function = click.option('--NCBI-API-key', default=None, required=False, help = '')(function)
     return function
 
 def setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key):
@@ -85,7 +85,7 @@ def activate():
 @click.option('--configfile', default=None, required=False, help='Path to your custom config.yml')
 def custom_config(configfile):
     logging.info(f"Adding custom config: {configfile}")
-    
+
 
 @cli.command(
     'preprocess',
@@ -94,14 +94,14 @@ def custom_config(configfile):
 )
 @common_options
 @click.option('--decontam-host', default=True, required=False, help='')
-@click.option('--dwnldparams', required=False, default=None, help='Parameters for fasterq-dump for downloading from sra tools https://github.com/ncbi/sra-tools/wiki/HowTo:-fasterq-dump || default: ""')
-@click.option('--pigzparams', required=False, default=None, help='Parameters of pigz for compressing downloaded fastq files https://github.com/madler/pigz || default: ""')
-@click.option('--fastpparams', required=False, default=None, help='Parameters to pass on fastp software https://github.com/OpenGene/fastp || default: ""')
-@click.option('--hostileparams', required=False, default=None, help='Parameters for hostile decontamination https://github.com/bede/hostile|| default: ""')
-@click.option('--hostilealigner', required=False, default=None, help='Which mapper to use for host decontamination- bowtie2 or minimap2 (recommended) || default: "minimap2"')
-@click.option('--alignerparams', required=False, default=None, help='PLEASE DO NOT change the -x sr for minimap2 to make sure it can accurately map short reads || default: "-x sr"')
-@click.option('--indexpath', required=False, default=None, help='Path to host contamination || default: "./workflow/database/hostile/human-t2t-hla.fa.gz"')
-def run_preprocess(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, decontam_host, dwnldparams, pigzparams, fastpparams, hostileparams, hostilealigner, alignerparams, indexpath):
+@click.option('--dwnld-params', required=False, default=None, help='Parameters for fasterq-dump for downloading from sra tools https://github.com/ncbi/sra-tools/wiki/HowTo:-fasterq-dump || default: ""')
+@click.option('--pigz-params', required=False, default=None, help='Parameters of pigz for compressing downloaded fastq files https://github.com/madler/pigz || default: ""')
+@click.option('--fastp-params', required=False, default=None, help='Parameters to pass on fastp software https://github.com/OpenGene/fastp || default: ""')
+@click.option('--hostile-params', required=False, default=None, help='Parameters for hostile decontamination https://github.com/bede/hostile|| default: ""')
+@click.option('--hostile-aligner', required=False, default=None, help='Which mapper to use for host decontamination- bowtie2 or minimap2 (recommended) || default: "minimap2"')
+@click.option('--aligner-params', required=False, default=None, help='PLEASE DO NOT change the -x sr for minimap2 to make sure it can accurately map short reads || default: "-x sr"')
+@click.option('--index-path', required=False, default=None, help='Path to host contamination || default: "./workflow/database/hostile/human-t2t-hla.fa.gz"')
+def run_preprocess(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, decontam_host, dwnld_params, pigz_params, fastp_params, hostile_params, hostile_aligner, aligner_params, index_path):
         logging.info(f"Running module: preprocess")
         logging.info(f"decontamHost: {decontam_host}, outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
         
@@ -110,29 +110,29 @@ def run_preprocess(workdir, outdir, datadir, samplelist, fasta, fastadir, sample
         # Set the attributes of the module object
         module_obj = setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key)
 
-        module_obj.decontamHost = decontam_host
+        module_obj.decontam_host = decontam_host
 
         # optional params
-        if dwnldparams:
-            module_obj.dwnldparams = dwnldparams
+        if dwnld_params:
+            module_obj.dwnld_params = dwnld_params
             module_obj.hasOptions = True
-        if pigzparams:
-            module_obj.pigzparams = pigzparams  
+        if pigz_params:
+            module_obj.pigz_params = pigz_params  
             module_obj.hasOptions = True
-        if fastpparams:
-            module_obj.fastpparams = fastpparams 
+        if fastp_params:
+            module_obj.fastp_params = fastp_params 
             module_obj.hasOptions = True
-        if hostileparams:
-            module_obj.hostileparams = hostileparams
+        if hostile_params:
+            module_obj.hostile_params = hostile_params
             module_obj.hasOptions = True
-        if hostilealigner:
-            module_obj.hostilealigner = hostilealigner
+        if hostile_aligner:
+            module_obj.hostile_aligner = hostile_aligner
             module_obj.hasOptions = True
-        if alignerparams:
-            module_obj.alignerparams = alignerparams
+        if aligner_params:
+            module_obj.aligner_params = aligner_params
             module_obj.hasOptions = True
-        if indexpath:
-            module_obj.indexpath = indexpath
+        if index_path:
+            module_obj.index_path = index_path
             module_obj.hasOptions = True
 
         vomix_actions_instance = vomix_actions()
@@ -145,7 +145,7 @@ def run_preprocess(workdir, outdir, datadir, samplelist, fasta, fastadir, sample
     short_help='Run the Assembly & Co-assembly module'
 )
 @common_options
-@click.option('--assembler', default="megahit", required=False, help = '')
+@click.option('--assembler', default=None, required=False, help = '')
 @click.option('--megahit-minlen', required=False, default=None, help = 'Minimum length for MEGAHIT to use for contig building || default: 300')
 @click.option('--megahit-params', required=False, default=None, help = 'Extra parameters to hand off to MEGAHIT software https://github.com/voutcn/megahit || default: "--prune-level 3"')
 @click.option('--spades-params', required=False, default=None, help = 'Parameters to pass on fastp software https://github.com/OpenGene/fastp || default: "--meta"')

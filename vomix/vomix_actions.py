@@ -39,27 +39,28 @@ class vomix_actions:
         except subprocess.CalledProcessError as e:
             return f"Error: {e.stderr}"
         
+    # TODO update
     def createScript(self, module, module_obj):
         script = ""
 
         if module == "preprocess":
-            script += 'snakemake --config module="preprocess" decontam-host=' + str(module_obj.decontamHost) + ' outdir="' + module_obj.outdir + '" datadir="' + module_obj.datadir + '" samplelist="' + module_obj.samplelist + '" --use-conda -j 4 --latency-wait 20'
+            script += 'snakemake --config module="preprocess" decontam-host=' + str(module_obj.decontam_host) + ' outdir="' + module_obj.outdir + '" datadir="' + module_obj.datadir + '" samplelist="' + module_obj.samplelist + '" --use-conda -j 4 --latency-wait 20'
             if module_obj.hasOptions:
                 script += " --config"
                 if module_obj.dwnldparams:
-                    script += ' dwnldparams="' + module_obj.dwnldparams + '"'
+                    script += ' dwnldparams="' + module_obj.dwnld_params + '"'
                 if module_obj.pigzparams:
-                    script += ' pigzparams="' + module_obj.pigzparams + '"'
+                    script += ' pigzparams="' + module_obj.pigz_params + '"'
                 if module_obj.fastpparams:
-                    script += ' fastpparams="' + module_obj.fastpparams + '"'
+                    script += ' fastpparams="' + module_obj.fastp_params + '"'
                 if module_obj.hostileparams:
-                    script += ' hostileparams="' + module_obj.hostileparams + '"'
+                    script += ' hostileparams="' + module_obj.hostile_params + '"'
                 if module_obj.hostilealigner:   
-                    script += ' hostilealigner="' + module_obj.hostilealigner + '"'
+                    script += ' hostilealigner="' + module_obj.hostile_aligner + '"'
                 if module_obj.alignerparams:    
-                    script += ' alignerparams="' + module_obj.alignerparams + '"'
+                    script += ' alignerparams="' + module_obj.aligner_params + '"'
                 if module_obj.indexpath:    
-                    script += ' indexpath="' + module_obj.indexpath + '"'
+                    script += ' indexpath="' + module_obj.index_path + '"'
             
         elif module == "assembly":
             script += 'snakemake --config module="assembly" assembler=' + module_obj.assembler + ' outdir="' + module_obj.outdir + '" datadir="' + module_obj.datadir + '" samplelist="' + module_obj.samplelist + '" --use-conda -j 4 --latency-wait 20'
@@ -227,9 +228,7 @@ class vomix_actions:
 
         return script
 
-    def run_module(self, module, module_obj):
-        # save_script_path = os.path.realpath("vomix/runModules/" + module +".sh")
-
+    def createFoldersAndUpdateConfig(self, module_obj):
         # Create outdir + datadir folders 
         outdir = module_obj.outdir
         datadir = module_obj.datadir
@@ -253,8 +252,22 @@ class vomix_actions:
             list_doc = yaml.safe_load(f)
             list_doc["latest-run"] = latest_run
 
+            for module in module_obj.__dict__:
+                value = module_obj.__dict__[module]
+                if value is not None :
+                    module = str.replace(module, "_", "-")
+                    list_doc[module] = value
+                    # print(f"///////TEST: {module} // " , {value})
+
+
         with open(outdir_folder + "/config.yml", "w") as f:
             yaml.dump(list_doc, f)
+
+        return outdir_folder
+
+    def run_module(self, module, module_obj):
+
+        outdir_folder = self.createFoldersAndUpdateConfig(module_obj)
 
         # create the script to run the module 
         script_path = os.path.realpath(outdir_folder + "/snakemake" +".sh")
