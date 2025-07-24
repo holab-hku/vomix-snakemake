@@ -22,22 +22,22 @@ def useLastOptionsCheck(ctx, param, value):
 
 # common options decorator
 def common_options(function):
-    function = click.option('--workdir', default=".", required=False)(function)
-    function = click.option('--outdir', default="results/", required=False)(function)
-    function = click.option('--datadir', default="fastq/", required=False)(function)
-    function = click.option('--samplelist', default="sample/sample_list.tsv", required=False)(function)
-    function = click.option('--fasta', default="", required=False)(function)
-    function = click.option('--fastadir', default="", required=False)(function)
-    function = click.option('--sample-name', default="", required=False)(function)
-    function = click.option('--assembly-ids', default="", required=False)(function)
-    function = click.option('--latest-run', default="", required=False)(function)
-    function = click.option('--splits', default=0, required=False)(function)
-    function = click.option('--viral-binning', is_flag=True, default=False, required=False)(function)
-    function = click.option('--intermediate', is_flag=True, default=False, required=False)(function)
-    function = click.option('--setup-database', is_flag=True, default=True, required=False)(function)
-    function = click.option('--max-cores', default=4, required=False)(function)
-    function = click.option('--email', default="", required=False)(function)
-    function = click.option('--NCBI-API-key', default="", required=False)(function)
+    function = click.option('--workdir', default=".", required=False, help = 'Set the working directory for Snakefile (We recommend not changing this)')(function)
+    function = click.option('--outdir', default="results/", required=False, help = 'Select the output directory for hierarchal results formatting || default: "./results"')(function)
+    function = click.option('--datadir', default="fastq/", required=False, help = '')(function)
+    function = click.option('--samplelist', default="sample/sample_list.tsv", required=False, help = '')(function)
+    function = click.option('--fasta', default="", required=False, help = '')(function)
+    function = click.option('--fastadir', default="", required=False, help = '')(function)
+    function = click.option('--sample-name', default="", required=False, help = '')(function)
+    function = click.option('--assembly-ids', default="", required=False, help = '')(function)
+    function = click.option('--latest-run', default="", required=False, help = '')(function)
+    function = click.option('--splits', default=0, required=False, help = 'Splits data into N chunks to reduce memory usage wherever possible || default: 0')(function)
+    function = click.option('--viral-binning', is_flag=True, default=False, required=False, help = '')(function)
+    function = click.option('--intermediate', is_flag=True, default=False, required=False, help = 'Flag to keep LARGE intermediate files generated during analysis || default: False')(function)
+    function = click.option('--setup-database', is_flag=True, default=True, required=False, help = '')(function)
+    function = click.option('--max-cores', default=4, required=False, help = '')(function)
+    function = click.option('--email', default="", required=False, help = '')(function)
+    function = click.option('--NCBI-API-key', default="", required=False, help = '')(function)
     return function
 
 def setOptions(module_obj, workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key):
@@ -83,14 +83,14 @@ def activate():
     short_help='Run the Pre-processing module'
 )
 @common_options
-@click.option('--decontam-host', default=True, required=True)
-@click.option('--dwnldparams', required=False, default=None)
-@click.option('--pigzparams', required=False, default=None)
-@click.option('--fastpparams', required=False, default=None)
-@click.option('--hostileparams', required=False, default=None)
-@click.option('--hostilealigner', required=False, default=None)
-@click.option('--alignerparams', required=False, default=None)
-@click.option('--indexpath', required=False, default=None)
+@click.option('--decontam-host', default=True, required=False, help='')
+@click.option('--dwnldparams', required=False, default=None, help='Parameters for fasterq-dump for downloading from sra tools https://github.com/ncbi/sra-tools/wiki/HowTo:-fasterq-dump || default: ""')
+@click.option('--pigzparams', required=False, default=None, help='Parameters of pigz for compressing downloaded fastq files https://github.com/madler/pigz || default: ""')
+@click.option('--fastpparams', required=False, default=None, help='Parameters to pass on fastp software https://github.com/OpenGene/fastp || default: ""')
+@click.option('--hostileparams', required=False, default=None, help='Parameters for hostile decontamination https://github.com/bede/hostile|| default: ""')
+@click.option('--hostilealigner', required=False, default=None, help='Which mapper to use for host decontamination- bowtie2 or minimap2 (recommended) || default: "minimap2"')
+@click.option('--alignerparams', required=False, default=None, help='PLEASE DO NOT change the -x sr for minimap2 to make sure it can accurately map short reads || default: "-x sr"')
+@click.option('--indexpath', required=False, default=None, help='Path to host contamination || default: "./workflow/database/hostile/human-t2t-hla.fa.gz"')
 def run_preprocess(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, decontam_host, dwnldparams, pigzparams, fastpparams, hostileparams, hostilealigner, alignerparams, indexpath):
         logging.info(f"Running module: preprocess")
         logging.info(f"decontamHost: {decontam_host}, outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -135,12 +135,11 @@ def run_preprocess(workdir, outdir, datadir, samplelist, fasta, fastadir, sample
     short_help='Run the Assembly & Co-assembly module'
 )
 @common_options
-@click.option('--assembler', default="megahit", 
-required=True)
-@click.option('--megahit-minlen', required=False, default=None)
-@click.option('--megahit-params', required=False, default=None)
-@click.option('--spades-params', required=False, default=None)
-@click.option('--spades-memory', required=False, default=None)
+@click.option('--assembler', default="megahit", required=False, help = '')
+@click.option('--megahit-minlen', required=False, default=None, help = 'Minimum length for MEGAHIT to use for contig building || default: 300')
+@click.option('--megahit-params', required=False, default=None, help = 'Extra parameters to hand off to MEGAHIT software https://github.com/voutcn/megahit || default: "--prune-level 3"')
+@click.option('--spades-params', required=False, default=None, help = 'Parameters to pass on fastp software https://github.com/OpenGene/fastp || default: "--meta"')
+@click.option('--spades-memory', required=False, default=None, help = 'Parameters for hostile decontamination https://github.com/bede/hostile|| default: 250 NUM')
 def run_assembly(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, assembler, megahit_minlen, megahit_params, spades_params, spades_memory):
         logging.info(f"Running module: assembly")
         logging.info(f"assembler: {assembler}, outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -175,19 +174,19 @@ def run_assembly(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_n
     short_help='Run the Viral Identify module'
 )
 @common_options
-@click.option('--contig-minlen', required=False, default=None)
-@click.option('--genomad-db', required=False, default=None)
-@click.option('--genomad-minlen', required=False, default=None)
-@click.option('--genomad-params', required=False, default=None)
-@click.option('--genomad-cutoff', required=False, default=None)
-@click.option('--checkv-original', required=False, default=None)
-@click.option('--checkv-params', required=False, default=None)
-@click.option('--checkv-database', required=False, default=None)
-@click.option('--clustering-fast', required=False, default=None)
-@click.option('--cdhit-params', required=False, default=None)
-@click.option('--vOTU-ani', required=False, default=None)
-@click.option('--vOTU-targetcov', required=False, default=None)
-@click.option('--vOTU-querycov', required=False, default=None)
+@click.option('--contig-minlen', required=False, default=None, help = 'Minimum contig length to filter BEFORE viral identification || default: 0 [INT]')
+@click.option('--genomad-db', required=False, default=None, help = 'Path to geNomad databases || default: "workflow/database/genomad" [STR]')
+@click.option('--genomad-minlen', required=False, default=None, help = 'Minimum viral contig length for the geNomad cutoff || default: 1500 [INT]')
+@click.option('--genomad-params', required=False, default=None, help = 'Additional parameters to hand off to geNomad\'s analysis || default: "" [STR]')
+@click.option('--genomad-cutoff', required=False, default=None, help = 'Parameters for hostile decontamination https://github.com/bede/hostile|| default: 0.7 [INT]')
+@click.option('--checkv-original', required=False, default=None, help = 'Flag to use CheckV original instead of the much faster version in vOMIX-MEGA, CheckV-PyHMMER. || default: False [True or False]')
+@click.option('--checkv-params', required=False, default=None, help = 'Additional parameters to pass on to CheckV. Read more at https://bitbucket.org/berkeleylab/CheckV/src || default: "" [STR]')
+@click.option('--checkv-database', required=False, default=None, help = 'Path to CheckV\'s database || default: "workflow/database/checkv" [STR]')
+@click.option('--clustering-fast', required=False, default=None, help = 'Flag to run fast clustering using CheckV\'s MEGABLAST approach. If set to False, CD-HIT will be used. Proceed with caution as it can be extremely slow at large sequence numbers. || default: True [True or False]')
+@click.option('--cdhit-params', required=False, default=None, help = 'Additional parameters to pass on to CD-HIT if clustering-fast is set to False. Read more at https://github.com/weizhongli/cdhit/blob/master/doc/cdhit-user-guide.wiki || default: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5" [STR]')
+@click.option('--vOTU-ani', required=False, default=None, help = 'Minimum average nucleotide identity for fast clustering algorithm of viral contigs || default: 95 [INT]')
+@click.option('--vOTU-targetcov', required=False, default=None, help = 'Minimum target coverage for fast clustering algorithm of viral contigs || default: 85 [NUM]')
+@click.option('--vOTU-querycov', required=False, default=None, help = 'Minimum query coverage for fast clustering algorithm of viral contigs || default: 0 [NUM]')
 def run_viral_identify(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, contig_minlen, genomad_db, genomad_minlen, genomad_params, genomad_cutoff, checkv_original, checkv_params, checkv_database, clustering_fast, cdhit_params, votu_ani, votu_targetcov, votu_querycov):
         logging.info(f"Running module: viral-identify")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -248,14 +247,14 @@ def run_viral_identify(workdir, outdir, datadir, samplelist, fasta, fastadir, sa
     short_help='Run the Viral Taxonomy module'
 )
 @common_options
-@click.option('--viphogs-hmmeval', required=False, default=None)
-@click.option('--viphogs-prop', required=False, default=None)
-@click.option('--PhaBox2-db', required=False, default=None)
-@click.option('--phagcn-minlen', required=False, default=None)
-@click.option('--phagcn-params', required=False, default=None)
-@click.option('--diamond-params', required=False, default=None)
-@click.option('--genomad-db', required=False, default=None)
-@click.option('--genomad-params', required=False, default=None)
+@click.option('--viphogs-hmmeval', required=False, default=None, help = 'Minimum e value for ViPhogs hmms to be considered a hit || default: 0.01 [NUM]')
+@click.option('--viphogs-prop', required=False, default=None, help = 'Minimum proportion of annotated genes required for taxonomic assignment || default: 0.6 [NUM]')
+@click.option('--PhaBox2-db', required=False, default=None, help = 'Path to phabox database directory || default: "workflow/database/phabox_db_v2"')
+@click.option('--phagcn-minlen', required=False, default=None, help = 'Minimum contig length to filter before PaGCN taxonomy annotation || default: 1500 [INT]')
+@click.option('--phagcn-params', required=False, default=None, help = 'Additional parameters to pass on to PhaGCN || default: "" [STR]')
+@click.option('--diamond-params', required=False, default=None, help = 'Parameters for taxonomic classification using diamond || default: "--query-cover 50 --subject-cover 50 --evalue 1e-5 --max-target-seqs 1000" [INT] || WARNING: strongly recommend not changing this as it has been extensively tested by https://doi.org/10.1038/s41564-021-00928-6')
+@click.option('--genomad-db', required=False, default=None, help = 'Path to geNomad database directory || default: "workflow/database/genomad" [STR]')
+@click.option('--genomad-params', required=False, default=None, help = 'Additional parameters to pass on to geNomad || default: "--enable-score-calibration --relaxed" [INT]')
 def run_viral_taxonomy(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, viphogs_hmmeval, viphogs_prop, PhaBox2_db, phagcn_minlen, phagcn_params, diamond_params, genomad_db, genomad_params):
         logging.info(f"Running module: viral-taxonomy")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
@@ -300,10 +299,10 @@ def run_viral_taxonomy(workdir, outdir, datadir, samplelist, fasta, fastadir, sa
     short_help='Run the Viral Host module'
 )
 @common_options
-@click.option('--CHERRY-params', required=False, default=None)
-@click.option('--PhaTYP-params', required=False, default=None)
-@click.option('--iphop-cutoff', required=False, default=None)
-@click.option('--iphop-params', required=False, default=None)
+@click.option('--CHERRY-params', required=False, default=None, help = 'Parameters to pass on to CHERRY for host identification. Read more at https://phage.ee.cityu.edu.hk/wiki || default: "" [STR]')
+@click.option('--PhaTYP-params', required=False, default=None, help = 'Parameters to pass on to MaxBin2 for lifestyle identification. Read more at https://phage.ee.cityu.edu.hk/wiki || default: "" [STR]')
+@click.option('--iphop-cutoff', required=False, default=None, help = 'The number of correct host predictions was evaluated for 3 different score cutoffs corresponding to 20%, 10%, and 5% estimated FDR || default: 90 [NUM]')
+@click.option('--iphop-params', required=False, default=None, help = 'Parameters to pass on to iPhOp for consensus host analysis. Read more at https://bitbucket.org/srouxjgi/iphop/src || default: "" [STR]')
 def run_viral_host(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, CHERRY_params, PhaTYP_params, iphop_cutoff, iphop_params):
         logging.info(f"Running module: viral-host")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
@@ -336,8 +335,8 @@ def run_viral_host(workdir, outdir, datadir, samplelist, fasta, fastadir, sample
     short_help='Run the Viral Community module'
 )
 @common_options
-@click.option('--mpa-indexv', required=False, default=None)
-@click.option('--mpa-params', required=False, default=None)
+@click.option('--mpa-indexv', required=False, default=None, help = 'The version of the MetaPhlAn4 database to download || default: "mpa_vOct22_CHOCOPhlAnSGB_202212" [STR]')
+@click.option('--mpa-params', required=False, default=None, help = 'Additional parameters to pass on to metaphlan function. See https://huttenhower.sph.harvard.edu/metaphlan/ for more. || default: "--ignore_eukaryotes" [STR]')
 def run_viral_community(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, mpa_indexv, mpa_params):
         logging.info(f"Running module: viral-community")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -364,8 +363,8 @@ def run_viral_community(workdir, outdir, datadir, samplelist, fasta, fastadir, s
     short_help='Run the Viral Annotate module'
 )
 @common_options
-@click.option('--eggNOG-params', required=False, default=None)
-@click.option('--PhaVIP-params', required=False, default=None)
+@click.option('--eggNOG-params', required=False, default=None, help = 'Parameters for running eggNOG-mapper v2. See more at https://github.com/eggnogdb/eggnog-mapper/wiki || default: "-m diamond --hmm_evalue 0.001 --hmm_score 60 --query-cover 20 --subject-cover 20 --tax_scope auto --target_orthologs all --go_evidence non-electronic --report_orthologs" [INT]')
+@click.option('--PhaVIP-params', required=False, default=None, help = 'Minimum contig length to filter BEFORE viral identification || default: "" [STR]')
 def run_viral_annotate(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, eggNOG_params, PhaVIP_params):
         logging.info(f"Running module: viral-annotate")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -392,8 +391,8 @@ def run_viral_annotate(workdir, outdir, datadir, samplelist, fasta, fastadir, sa
     short_help='Run the Prokaryotic Community module'
 )
 @common_options
-@click.option('--mpa-params', required=False, default=None)
-@click.option('--mpa-indexv', required=False, default=None)
+@click.option('--mpa-params', required=False, default=None, help = 'Parameters for metaphlan function. See more at https://huttenhower.sph.harvard.edu/metaphlan/ || default: "--ignore_eukaryotes" [STR]')
+@click.option('--mpa-indexv', required=False, default=None, help = 'Database version for metaphlan to use. See more at https://huttenhower.sph.harvard.edu/metaphlan/ || default: "mpa_vOct22_CHOCOPhlAnSGB_202212" [STR]')
 def run_prok_community(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, mpa_params, mpa_indexv):
         logging.info(f"Running module: prok-community")
         logging.info(f"outdir: {outdir}, datadir: {datadir}, samplelist: {samplelist}")
@@ -461,11 +460,11 @@ def run_end_to_end(workdir, outdir, datadir, samplelist, fasta, fastadir, sample
     short_help='Run the Cluster Fast module'
 )
 @common_options
-@click.option('--clustering-fast', required=False, default=None)
-@click.option('--cdhit-params', required=False, default=None)
-@click.option('--vOTU-ani', required=False, default=None)
-@click.option('--vOTU-targetcov', required=False, default=None)
-@click.option('--vOTU-querycov', required=False, default=None)
+@click.option('--clustering-fast', required=False, default=None, help = 'Flag to run fast clustering using CheckV\'s MEGABLAST approach. If set to False, CD-HIT will be used. Proceed with caution as it can be extremely slow at large sequence numbers. || default: True [True or False]')
+@click.option('--cdhit-params', required=False, default=None, help = 'Additional parameters to pass on to CD-HIT if clustering-fast is set to False. Read more at https://github.com/weizhongli/cdhit/blob/master/doc/cdhit-user-guide.wiki || default: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5" [STR]')
+@click.option('--vOTU-ani', required=False, default=None, help = 'Minimum average nucleotide identity for fast clustering algorithm of viral contigs || default: 95 [INT]')
+@click.option('--vOTU-targetcov', required=False, default=None, help = 'Minimum target coverage for fast clustering algorithm of viral contigs || default: 85 [NUM]')
+@click.option('--vOTU-querycov', required=False, default=None, help = 'Minimum query coverage for fast clustering algorithm of viral contigs || default: 0 [NUM]')
 def run_cluster_fast(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, clustering_fast, cdhit_params, vOTU_ani, vOTU_targetcov, vOTU_querycov):
         logging.info(f"Running module: cluster-fast")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
@@ -501,9 +500,9 @@ def run_cluster_fast(workdir, outdir, datadir, samplelist, fasta, fastadir, samp
     short_help='Run the CheckV PyHMMER module'
 )
 @common_options
-@click.option('--checkv-original', required=False, default=None)
-@click.option('--checkv-params', required=False, default=None)
-@click.option('--checkv-database', required=False, default=None)
+@click.option('--checkv-original', required=False, default=None, help = 'Flag to use CheckV original instead of the much faster version in vOMIX-MEGA, CheckV-PyHMMER. || default: False [True or False]')
+@click.option('--checkv-params', required=False, default=None, help = 'Additional parameters to pass on to CheckV. Read more at https://bitbucket.org/berkeleylab/CheckV/src || default: "" [STR]')
+@click.option('--checkv-database', required=False, default=None, help = 'Path to CheckV\'s database || default: "workflow/database/checkv" [STR]')
 def run_checkv_pyhmmer(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, checkv_original, checkv_params, checkv_database):
         logging.info(f"Running module: checkv-pyhmmer")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
@@ -533,14 +532,14 @@ def run_checkv_pyhmmer(workdir, outdir, datadir, samplelist, fasta, fastadir, sa
     short_help='Run the Setup Database module'
 )
 @common_options
-@click.option('--PhaBox2-db', required=False, default=None)
-@click.option('--genomad-db', required=False, default=None)
-@click.option('--checkv-db', required=False, default=None)
-@click.option('--eggNOG-db', required=False, default=None)
-@click.option('--eggNOG-db-params', required=False, default=None)
-@click.option('--virsorter2-db', required=False, default=None)
-@click.option('--iphop-db', required=False, default=None)
-@click.option('--humann-db', required=False, default=None)
+@click.option('--PhaBox2-db', required=False, default=None, help = 'Path to PhaBox2 database for download || default: "workflow/database/phabox_db_v2" [STR]')
+@click.option('--genomad-db', required=False, default=None, help = 'Path to geNomad database for download || default: "workflow/database/genomad" [STR]')
+@click.option('--checkv-db', required=False, default=None, help = 'Path to CheckV database for download || default: "workflow/database/phabox_db_v2" [STR]')
+@click.option('--eggNOG-db', required=False, default=None, help = 'Path to eggNOG v2 database for download || default: "workflow/database/eggNOGv2" [STR]')
+@click.option('--eggNOG-db-params', required=False, default=None, help = 'Parameters for downloading eggNOG v2 database || default: "" [STR]')
+@click.option('--virsorter2-db', required=False, default=None, help = 'Path to VirSorter2 database for download || default: "workflow/database/virsorter2" [STR]')
+@click.option('--iphop-db', required=False, default=None, help = 'Path to iPHoP database for download || default: "workflow/database/iphop/Aug_2023_pub_rw" [STR]')
+@click.option('--humann-db', required=False, default=None, help = 'Path to HUMAnN3 databases for download || default: "workflow/database/humann" [STR]')
 def run_setup_database(workdir, outdir, datadir, samplelist, fasta, fastadir, sample_name, assembly_ids, latest_run, splits, viral_binning, intermediate, setup_database, max_cores, email, ncbi_api_key, PhaBox2_db, genomad_db, checkv_db, eggNOG_db, eggNOG_db_params, virsorter2_db, iphop_db, humann_db):
         logging.info(f"Running module: setup-database")
         logging.info(f"fasta: {fasta}, outdir: {outdir}")
