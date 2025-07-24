@@ -7,6 +7,8 @@ import json
 import yaml
 import shutil
 import logging
+from inspect import getsourcefile
+from os.path import abspath
 
 logging.basicConfig(level=logging.INFO)
 
@@ -40,193 +42,25 @@ class vomix_actions:
             return result.stdout
         except subprocess.CalledProcessError as e:
             return f"Error: {e.stderr}"
-        
-    # TODO update
+    
+
     def createScript(self, module, module_obj):
         script = ""
 
-        if module == "preprocess":
-            script += 'snakemake --config module="preprocess" decontam-host=' + str(module_obj.decontam_host) + ' outdir="' + module_obj.outdir + '" datadir="' + module_obj.datadir + '" samplelist="' + module_obj.samplelist + '" --use-conda -j 4 --latency-wait 20'
-            if module_obj.hasOptions:
-                script += " --config"
-                if module_obj.dwnldparams:
-                    script += ' dwnldparams="' + module_obj.dwnld_params + '"'
-                if module_obj.pigzparams:
-                    script += ' pigzparams="' + module_obj.pigz_params + '"'
-                if module_obj.fastpparams:
-                    script += ' fastpparams="' + module_obj.fastp_params + '"'
-                if module_obj.hostileparams:
-                    script += ' hostileparams="' + module_obj.hostile_params + '"'
-                if module_obj.hostilealigner:   
-                    script += ' hostilealigner="' + module_obj.hostile_aligner + '"'
-                if module_obj.alignerparams:    
-                    script += ' alignerparams="' + module_obj.aligner_params + '"'
-                if module_obj.indexpath:    
-                    script += ' indexpath="' + module_obj.index_path + '"'
-            
-        elif module == "assembly":
-            script += 'snakemake --config module="assembly" assembler=' + module_obj.assembler + ' outdir="' + module_obj.outdir + '" datadir="' + module_obj.datadir + '" samplelist="' + module_obj.samplelist + '" --use-conda -j 4 --latency-wait 20'
-            if module_obj.hasOptions:
-                script += " --config"
-                if module_obj.megahit_minlen:
-                    script += ' megahit_minlen=' + str(module_obj.megahit_minlen)
-                if module_obj.megahit_params:   
-                    script += ' megahit_params="' + module_obj.megahit_params + '"'
-                if module_obj.spades_params:
-                    script += ' spades_params="' + module_obj.spades_params + '"'
-                if module_obj.spades_memory:
-                    script += ' spades_memory=' + str(module_obj.spades_memory)
+        script += "snakemake --config module=\"" + module + "\" "
 
-        elif module == "viral-identify":
-            script += 'snakemake --config module="viral-identify" ' + 'outdir="' + str(module_obj.outdir) + '" datadir="' + str(module_obj.datadir) + '" samplelist="' + str(module_obj.samplelist)  + '" splits="' + str(module_obj.splits) + '" --use-conda -j 4 --latency-wait 20'
-            if module_obj.hasOptions:
-                script += " --config"
-                if module_obj.contig_minlen:
-                    script += ' contig_minlen=' + str(module_obj.contig_minlen)
-                if module_obj.genomad_db:
-                    script += ' genomad_db="' + module_obj.genomad_db + '"'
-                if module_obj.genomad_minlen:
-                    script += ' genomad_minlen=' + str(module_obj.genomad_minlen)
-                if module_obj.genomad_params:
-                    script += ' genomad_params="' + module_obj.genomad_params + '"'
-                if module_obj.genomad_cutoff:
-                    script += ' genomad_cutoff=' + str(module_obj.genomad_cutoff)
-                if module_obj.checkv_original:
-                    script += ' checkv_original=' + str(module_obj.checkv_original)
-                if module_obj.checkv_params:
-                    script += ' checkv_params="' + module_obj.checkv_params + '"'
-                if module_obj.checkv_database:
-                    script += ' checkv_database="' + module_obj.checkv_database + '"'
-                if module_obj.clustering_fast:
-                    script += ' clustering_fast=' + str(module_obj.clustering_fast)
-                if module_obj.cdhit_params:
-                    script += ' cdhit_params="' + module_obj.cdhit_params + '"'
-                if module_obj.vOTU_ani:
-                    script += ' vOTU_ani=' + str(module_obj.vOTU_ani)
-                if module_obj.vOTU_targetcov:
-                    script += ' vOTU_targetcov=' + str(module_obj.vOTU_targetcov)
-                if module_obj.vOTU_querycov:
-                    script += ' vOTU_querycov=' + str(module_obj.vOTU_querycov)
-                        
-        elif module == "viral-taxonomy":
-            script += 'snakemake --config module="viral-taxonomy" ' + 'fasta="' + module_obj.fasta + '" outdir="' + module_obj.outdir + '" --use-conda -j 4 --latency-wait 20'
-            if module_obj.hasOptions:
-                script += " --config"
-                if module_obj.viphogs_hmmeval:
-                    script += ' viphogs_hmmeval=' + str(module_obj.viphogs_hmmeval)
-                if module_obj.viphogs_prop:
-                    script += ' viphogs_prop=' + str(module_obj.viphogs_prop)
-                if module_obj.PhaBox2_db:
-                    script += ' PhaBox2_db="' + module_obj.PhaBox2_db + '"'
-                if module_obj.phagcn_minlen:
-                    script += ' phagcn_minlen=' + str(module_obj.phagcn_minlen)
-                if module_obj.phagcn_params:
-                    script += ' phagcn_params="' + module_obj.phagcn_params + '"'
-                if module_obj.diamond_params:
-                    script += ' diamond_params="' + module_obj.diamond_params + '"'
-                if module_obj.genomad_db:
-                    script += ' genomad_db="' + module_obj.genomad_db + '"'
-                if module_obj.genomad_params:
-                    script += ' genomad_params="' + module_obj.genomad_params + '"'
+        for attr, value in module_obj.__dict__.items():
+            if value is not None and attr != 'custom_config':
+                attr = str.replace(attr, "_", "-")
+                script += f'{attr}="{value}" '
+                # if isinstance(value, str):
+                #     script += f'{attr}="{value}" '
+                # elif isinstance(value, bool):
+                #     script += f'{attr}={str(value).lower()} '
+                # else:
+                #     script += f'{attr}={value} '
 
-        elif module == "viral-host":
-            script += 'snakemake --config module="viral-host" ' + 'fasta="' + module_obj.fasta + '" outdir="' + module_obj.outdir + '" --use-conda -j 4 --latency-wait 20'
-            if module_obj.hasOptions:
-                script += " --config"
-                if module_obj.CHERRY_params:
-                    script += ' CHERRY_params="' + module_obj.CHERRY_params + '"'
-                if module_obj.PhaTYP_params:
-                    script += ' PhaTYP_params="' + module_obj.PhaTYP_params + '"'
-                if module_obj.iphop_cutoff:
-                    script += ' iphop_cutoff=' + str(module_obj.iphop_cutoff)
-                if module_obj.iphop_params:
-                    script += ' iphop_params="' + module_obj.iphop_params + '"'
-
-        elif module == "viral-community":
-            script += 'snakemake --config module="viral-community" ' + 'outdir="' + module_obj.outdir + '" datadir="' + module_obj.datadir + '" samplelist="' + module_obj.samplelist + '" --use-conda -j 4 -c 4 --latency-wait 20'
-            if module_obj.hasOptions:   
-                script += " --config"
-                if module_obj.mpa_indexv:
-                    script += ' mpa_indexv="' + module_obj.mpa_indexv + '"'
-                if module_obj.mpa_params:
-                    script += ' mpa_params="' + module_obj.mpa_params + '"'
-        
-        elif module == "viral-annotate":
-            script += 'snakemake --config module="viral-annotate" ' + 'outdir="' + module_obj.outdir + '" datadir="' + module_obj.datadir + '" samplelist="' + module_obj.samplelist + '" --use-conda -j 4 --latency-wait 20'
-            if module_obj.hasOptions:
-                script += " --config"
-                if module_obj.eggNOG_params:
-                    script += ' eggNOG_params="' + module_obj.eggNOG_params + '"'
-                if module_obj.PhaVIP_params:
-                    script += ' PhaVIP_params="' + module_obj.PhaVIP_params + '"'
-            
-        elif module == "prok-community":
-            script += 'snakemake --config module="prok-community" ' + 'outdir="' + module_obj.outdir + '" datadir="' + module_obj.datadir + '" samplelist="' + module_obj.samplelist + '" --use-conda -j 4 -c 4 --latency-wait 20'
-            if module_obj.hasOptions:
-                script += " --config"
-                if module_obj.mpa_indexv:
-                    script += ' mpa_indexv="' + module_obj.mpa_indexv + '"'
-                if module_obj.mpa_params:
-                    script += ' mpa_params="' + module_obj.mpa_params + '"'
-        
-        elif module == "prok-binning":
-            script += f"echo 'Running prok-binning with options: {module_obj}'\n"
-
-        elif module == "prok-annotate":
-            script += 'snakemake --config module="prok-annotate" ' + 'outdir="' + module_obj.outdir + '" datadir="' + module_obj.datadir + '" samplelist="' + module_obj.samplelist + '" --use-conda -j 4 --latency-wait 20'
-
-        elif module == "end-to-end":
-           script += 'snakemake --config module="end-to-end" ' + 'outdir="' + module_obj.outdir + '" datadir="' + module_obj.datadir + '" samplelist="' + module_obj.samplelist + '" --use-conda -j 4 -c 4 --latency-wait 20'
-        
-        elif module == "cluster-fast":
-            script += 'snakemake --config module="cluster-fast" ' + 'fasta="' + module_obj.fasta + '" outdir="' + module_obj.outdir + '" --use-conda -j 4 --latency-wait 20'
-            if module_obj.hasOptions:
-                script += " --config"
-                if module_obj.clustering_fast:
-                    script += ' clustering_fast=' + str(module_obj.clustering_fast)
-                if module_obj.cdhit_params:
-                    script += ' cdhit_params="' + module_obj.cdhit_params + '"'
-                if module_obj.vOTU_ani:
-                    script += ' vOTU_ani=' + str(module_obj.vOTU_ani)
-                if module_obj.vOTU_targetcov:
-                    script += ' vOTU_targetcov=' + str(module_obj.vOTU_targetcov)
-                if module_obj.vOTU_querycov:
-                    script += ' vOTU_querycov=' + str(module_obj.vOTU_querycov)
-        
-        elif module == "checkv-pyhmmer":
-            script += 'snakemake --config module="checkv-pyhmmer" ' + 'fasta="' + module_obj.fasta + '" outdir="' + module_obj.outdir + '" --use-conda -j 4 --latency-wait 20'
-            if module_obj.hasOptions:
-                script += " --config"
-                if module_obj.checkv_original:
-                    script += ' checkv_original=' + str(module_obj.checkv_original)
-                if module_obj.checkv_params:
-                    script += ' checkv_params="' + module_obj.checkv_params + '"'
-                if module_obj.checkv_database:
-                    script += ' checkv_database="' + module_obj.checkv_database + '"'
-        
-        elif module == "setup-database":
-            script += 'snakemake --config module="setup-database" ' + 'fasta="' + module_obj.fasta + '" outdir="' + module_obj.outdir + '" --use-conda -j 4 --latency-wait 20'
-            if module_obj.hasOptions:
-                script += " --config"
-                if module_obj.PhaBox2_db:
-                    script += ' PhaBox2_db="' + module_obj.PhaBox2_db + '"'
-                if module_obj.genomad_db:
-                    script += ' genomad_db="' + module_obj.genomad_db + '"'
-                if module_obj.checkv_db:
-                    script += ' checkv_db="' + module_obj.checkv_db + '"'
-                if module_obj.eggNOG_db:
-                    script += ' eggNOG_db="' + module_obj.eggNOG_db + '"'
-                if module_obj.eggNOG_db_params:
-                    script += ' eggNOG_db_params="' + module_obj.eggNOG_db_params + '"'
-                if module_obj.virsorter2_db:
-                    script += ' virsorter2_db="' + module_obj.virsorter2_db + '"'
-                if module_obj.iphop_db:
-                    script += ' iphop_db="' + module_obj.iphop_db + '"'
-                if module_obj.humann_db:
-                    script += ' humann_db="' + module_obj.humann_db + '"'
-        
-        else:
-            script += f"echo 'Unknown module: {module}'\n"
+        script += "—-sdm conda -—use-conda"
 
         return script
 
@@ -284,6 +118,10 @@ class vomix_actions:
         script = self.createScript(module, module_obj)
         
         # save the script
+        # TODO run .sh in vomix
+        script_path = os.path.realpath("snakemake" +".sh")
+        # script_path = str.replace(abspath(getsourcefile(lambda:0)), "vomix_actions.py", "snakemake.sh")
+        # logging.info(f"///////////////// script: {script_path}")
         with open(script_path, "w") as f:
             f.write(script)
 
