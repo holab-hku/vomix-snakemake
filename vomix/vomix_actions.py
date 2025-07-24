@@ -244,8 +244,15 @@ class vomix_actions:
         os.makedirs(outdir_folder, exist_ok=True)
         os.makedirs(datadir_folder, exist_ok=True)
 
-        # Create a new config file from the config template
-        shutil.copy(os.path.realpath("config/config.yml"), outdir_folder)
+        # if custom config is specified
+        if module_obj.custom_config is not None:
+            print(f"Using custom config: {module_obj.custom_config}")
+            shutil.copy(os.path.realpath(module_obj.custom_config), outdir_folder)
+            os.rename(outdir_folder + "/" + module_obj.custom_config, outdir_folder + "/config.yml")
+        else:
+            # Create a new config file from the config template
+            print(f"Using template config: config/config.yml")
+            shutil.copy(os.path.realpath("config/config.yml"), outdir_folder)
     
         # edit new config with user options + latest_run
         with open(outdir_folder + "/config.yml") as f:
@@ -254,7 +261,7 @@ class vomix_actions:
 
             for module in module_obj.__dict__:
                 value = module_obj.__dict__[module]
-                if value is not None :
+                if value is not None and module != 'custom_config':
                     module = str.replace(module, "_", "-")
                     list_doc[module] = value
                     # print(f"///////TEST: {module} // " , {value})
