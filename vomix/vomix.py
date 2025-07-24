@@ -78,6 +78,16 @@ def activate():
     logging.info(message)
 
 @cli.command(
+    'custom-config',
+    context_settings=dict(ignore_unknown_options=True),
+    short_help='Add a custom config.yml file to the vomix workflow'
+)
+@click.option('--configfile', default=None, required=False, help='Path to your custom config.yml')
+def custom_config(configfile):
+    logging.info(f"Adding custom config: {configfile}")
+    
+
+@cli.command(
     'preprocess',
     context_settings=dict(ignore_unknown_options=True),
     short_help='Run the Pre-processing module'
