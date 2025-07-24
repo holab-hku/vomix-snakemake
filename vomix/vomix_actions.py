@@ -230,90 +230,80 @@ class vomix_actions:
     def run_module(self, module, module_obj):
         # save_script_path = os.path.realpath("vomix/runModules/" + module +".sh")
 
+        # Create outdir + datadir folders 
         outdir = module_obj.outdir
         datadir = module_obj.datadir
 
         if not (os.path.exists(outdir) and os.path.exists(os.path.join(outdir, ".vomix"))):
             os.makedirs(os.path.join(outdir, ".vomix"), exist_ok=True)
 
-        ### Save configuration file
         now = datetime.datetime.now()
         latest_run = now.strftime("%Y%m%d_%H%M%S")
-        logdir = os.path.join(outdir, ".vomix/log/vomix" + latest_run)
+        outdir_folder = os.path.join(outdir, ".vomix/log/vomix" + latest_run)
+        datadir_folder = datadir
 
-        os.makedirs(logdir, exist_ok=True)
-        # TODO update the config file to include latest_run
-        # with open(os.path.join(logdir,  "config.json"), "w") as configf:
-        #     json.dump(config, configf)
+        os.makedirs(outdir_folder, exist_ok=True)
+        os.makedirs(datadir_folder, exist_ok=True)
 
-        # Create a new config file with latest_run
-        shutil.copy(os.path.realpath("config/config.yml"), logdir)
-        with open(logdir + "/config.yml") as f:
+        # Create a new config file from the config template
+        shutil.copy(os.path.realpath("config/config.yml"), outdir_folder)
+    
+        # edit new config with user options + latest_run
+        with open(outdir_folder + "/config.yml") as f:
             list_doc = yaml.safe_load(f)
             list_doc["latest_run"] = latest_run
 
-        with open(logdir + "/config.yml", "w") as f:
+        with open(outdir_folder + "/config.yml", "w") as f:
             yaml.dump(list_doc, f)
 
-        script_path = os.path.realpath(logdir + "/snakemake" +".sh")
-        print(f"Running script: {script_path}")
+        # create the script to run the module 
+        script_path = os.path.realpath(outdir_folder + "/snakemake" +".sh")
         script = self.createScript(module, module_obj)
-
-        # save the script to another location for history
-        # with open(save_script_path, "w") as f:   
-        #     f.write(script)
         
-        # save the script to the main location to run
+        # save the script
         with open(script_path, "w") as f:
             f.write(script)
 
+        # Run script
+        print(f"Running script: {script_path}")
         cmd = ['bash', script_path]
 
         try:
-            # stdout=open('out.log', 'w'), stderr=open('error.log', 'a')
-            # result = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True)
-            
             with Popen(cmd, stdout=PIPE, bufsize=1, universal_newlines=True) as p:
                 for line in p.stdout:
                     print(line, end='') 
             if p.returncode != 0:
                 raise CalledProcessError(p.returncode, p.args)
-            # for stdout_line in iter(result.stdout.readline, ""):
-                # yield stdout_line 
-            # out = result.stdout.close()
-            # return_code = result.wait()
-            # if return_code:
-            #     raise subprocess.CalledProcessError(return_code, cmd)            
-            # return out
+
         except subprocess.CalledProcessError as e:
             return f"Error: {e.stderr}"
         
-    def run_last_module(module) -> str:
-        try:
-            script_path = os.path.realpath("vomix/snakemake.sh")
+    # def run_last_module(module) -> str:
+    #     try:
+    #         script_path = os.path.realpath("vomix/snakemake.sh")
 
-            with open(script_path, "r") as file:
-                lines = file.readlines()
+    #         with open(script_path, "r") as file:
+    #             lines = file.readlines()
 
-            if not lines:
-                return f"Error: The script file is empty."
+    #         if not lines:
+    #             return f"Error: The script file is empty."
 
-            with open(script_path, "w") as file:
-                for line in lines:
-                    if 'snakemake --config module=' in line:
-                        # Replace the module value in the line
-                        parts = line.split('module="')
-                        if len(parts) > 1:
-                            rest = parts[1].split('"', 1)
-                            if len(rest) > 1:
-                                line = parts[0] + f'module="{module}' + '"' + rest[1][rest[1].find('"'):]
-                    file.write(line)
+    #         with open(script_path, "w") as file:
+    #             for line in lines:
+    #                 if 'snakemake --config module=' in line:
+    #                     # Replace the module value in the line
+    #                     parts = line.split('module="')
+    #                     if len(parts) > 1:
+    #                         rest = parts[1].split('"', 1)
+    #                         if len(rest) > 1:
+    #                             line = parts[0] + f'module="{module}' + '"' + rest[1][rest[1].find('"'):]
+    #                 file.write(line)
 
-            cmd = ['bash', script_path]
+    #         cmd = ['bash', script_path]
 
-            # result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    #         # result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-            result = subprocess.run(cmd, stdout=open('out.log', 'w'), stderr=open('error.log', 'a'),)
-            return result.stdout 
-        except subprocess.CalledProcessError as e:
-            return f"Error: {e.stderr}"
+    #         result = subprocess.run(cmd, stdout=open('out.log', 'w'), stderr=open('error.log', 'a'),)
+    #         return result.stdout 
+    #     except subprocess.CalledProcessError as e:
+    #         return f"Error: {e.stderr}"
