@@ -58,6 +58,8 @@ class vomix_actions:
             if value is not None and attr != 'add_args':
                 attr = str.replace(attr, "_", "-")
                 script += f'{attr}="{value}" '
+            if attr == 'add_args' and value is not None and value != '':
+                script += f'{value} '
 
         script += "--sdm conda --use-conda"
 
