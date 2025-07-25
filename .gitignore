@@ -1,0 +1,11 @@
+/build/
+vomix/vomix.py
+error.log
+out.log
+/o/.vomix/log/
+/vomix.egg-info/
+/results/.vomix/log/
+/.snakemake/
+.gitignore
+/sample/
+/workflow/

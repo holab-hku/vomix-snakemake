@@ -1,45 +1,62 @@
-# vOMIX-MEGA 
+# vomix-wrapper
 
-vOMIX-MEGA is a reproducible, scalable, and fast viral metagenomic pipeline with rigorously benchmarked backing on its results. It is built on a snakemake backend, can be containerized, and is ready for cloud deployment.
+A lightweight wrapper for cli integration and managing Vomix functionalities.
 
+## Install pip (for manual vomix installation)
+conda create -n vomix pip
 
-# Quick Start 
-
-**1.1 Install the vOMIX-MEGA base environment:**
+## Set up conda environment
 
 ```bash
-# Set channel priority to strict before running vOMIX-MEGA to ensure reproducibility [IMPORTANT]
-conda config --add channels bioconda
-conda config --add channels conda-forge
-conda config --set channel_priority strict
+vomix activate
+```
 
-# Update conda for snakemake compatibility
-conda update -n base -c defaults conda
+## Activate conda environment
 
-# Install base environment
-conda create -n vomix -c conda-forge snakemake=8.25.5 biopython=1.84 -y # does not include cluster execution plugs. See more at https://snakemake.github.io/snakemake-plugin-catalog/index.html
+```bash
 conda activate vomix
-
-# Verify the two essential base tools are running
-snakemake -v
 ```
 
-**1.2 Download the GitHub repository:**
+## Installation
 
 ```bash
-# clone from GitHub
-git clone https://github.com/holab-hku/vOMIX-MEGA
-cd vOMIX-MEGA
+cd vomix-mega
+pip install .
 ```
 
-**1.3 Test Viral Contig Identification using Sample Data**
+## Check conda environment has been activated
+
 ```bash
-snakemake --use-conda --config module="viral-identify" outdir="test_res" splits=8  fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20                              
+conda info --envs 
 ```
 
+## Usage
 
-# Wiki
+```bash
+vomix <module> <params>
+```
 
-For the full documentation on inputs, outputs, configurations, and modules of vOMIX-MEGA, please visit our Wiki page on github at https://github.com/holab-hku/vOMIX-MEGA/wiki ! 
+Example: 
+```bash
+vomix preprocess --outdir sample/results --datadir sample/fastq --samplelist sample/sample_list.csv
+```
 
+ctrl-C to abort
 
+## Structure
+
+* vomix_actions.py -> vomix actions
+
+* vomix.py -> cli
+
+* modules.py -> module classes 
+
+* runModules folder -> stores the last run command for each module 
+
+* snakemake.sh -> the script that is created and ran when running vomix <module>
+
+## Tests
+
+```bash
+pytest tests
+```

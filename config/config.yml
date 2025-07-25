@@ -4,7 +4,7 @@ module: "end-to-end"
 workdir : "."
 outdir : "results/"
 datadir : "fastq/"
-samplelist : ""
+samplelist : "sample/sample_list.tsv"
 fasta: ""
 fastadir: ""
 sample-name: ""
@@ -16,7 +16,7 @@ intermediate: False
 setup-database: True
 max-cores: 4
 email: "vomixtest@gmail.com"
-NCBI-API-key: ""
+NCBI-API-key: "ad4774fd01842f9b95dad79ee660b972d808"
 
 # setup-database.smk
 
