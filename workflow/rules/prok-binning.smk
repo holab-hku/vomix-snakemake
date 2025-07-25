@@ -32,10 +32,11 @@ if config["binning-consensus"]:
       expand(relpath("binning/prok/assemblies/{assembly_id}/MetaBAT2/bins/metabat2.unbinned.fa"), assembly_id=assemblies.keys()), 
       expand(relpath("binning/prok/assemblies/{assembly_id}/CONCOCT/concoct_clustering_merged.csv"), assembly_id=assemblies.keys()),
       expand(relpath("binning/prok/assemblies/{assembly_id}/finalbins_DASTool_summary.tsv"), assembly_id=assemblies.keys()),
-      expand(relpath("binning/prok/output/multitool/no-drep/ids/{assembly_id}_MAGids.tsv"), assembly_id=assemblies.keys()),
-      expand(relpath("binning/prok/output/multitool/no-drep/unbinned/{assembly_id}_unbinned.fasta"), assembly_id=assemblies.keys()),
-      #relpath("binning/prok/output/multitool/no-drep/checkm2/quality_report.tsv"), 
-      #relpath("binning/prok/output/multitool/clusters.tsv")
+      expand(relpath("binning/prok/output/no-drep/ids/{assembly_id}_MAGids.tsv"), assembly_id=assemblies.keys()),
+      expand(relpath("binning/prok/output/no-drep/unbinned/{assembly_id}_unbinned.fasta"), assembly_id=assemblies.keys()),
+      relpath("binning/prok/output/no-drep/checkm2/quality_report.tsv"), 
+      relpath("binning/prok/output/clusters.tsv"), 
+      relpath("binning/prok/output/taxonomy/gtdbtk/identify/gtdbtk.log")
     output:
       os.path.join(logdir, "done.log")
     params:
@@ -54,10 +55,10 @@ else:
       expand(relpath("binning/prok/samples/{sample_id}/strobealign/{sample_id}.sorted.{ext}"), sample_id=samples.keys(), ext = ["bam", "bai"]),
       expand(relpath("binning/prok/assemblies/{assembly_id}/{software}/depthfile.txt"), assembly_id=assemblies.keys(), software=["MetaBAT2"]),
       expand(relpath("binning/prok/assemblies/{assembly_id}/VAMB/vae_clusters_metadata.tsv"), assembly_id=assemblies.keys())
-      #expand(relpath("binning/prok/output/vamb/no-drep/ids/{assembly_id}_MAGids.tsv"), assembly_id=assemblies.keys()),
-      #expand(relpath("binning/prok/output/vamb/no-drep/ids/unbinned/{assembly_id}_unbinned.fasta"), assembly_id=assemblies.keys()),
-      #relpath("binning/prok/output/vamb/no-drep/checkm2/quality_report.tsv"),
-      #relpath("binning/prok/output/vamb/clusters.tsv")
+      #expand(relpath("binning/prok/output/no-drep/ids/{assembly_id}_MAGids.tsv"), assembly_id=assemblies.keys()),
+      #expand(relpath("binning/prok/output/no-drep/ids/unbinned/{assembly_id}_unbinned.fasta"), assembly_id=assemblies.keys()),
+      #relpath("binning/prok/output/no-drep/checkm2/quality_report.tsv"),
+      #relpath("binning/prok/output/clusters.tsv")
     output:
       os.path.join(logdir, "done.log")
     params:
@@ -437,11 +438,11 @@ rule movemags:
   input:
     relpath("binning/prok/assemblies/{assembly_id}/finalbins_DASTool_summary.tsv")
   output:
-    tsv=relpath("binning/prok/output/multitool/no-drep/ids/{assembly_id}_MAGids.tsv"), 
-    unbinned=relpath("binning/prok/output/multitool/no-drep/unbinned/{assembly_id}_unbinned.fasta")
+    tsv=relpath("binning/prok/output/no-drep/ids/{assembly_id}_MAGids.tsv"), 
+    unbinned=relpath("binning/prok/output/no-drep/unbinned/{assembly_id}_unbinned.fasta")
   params:
     indir=relpath("binning/prok/assemblies/{assembly_id}/finalbins_DASTool_bins"),
-    outdir=relpath("binning/prok/output/multitool/no-drep")
+    outdir=relpath("binning/prok/output/no-drep")
   log: os.path.join(logdir, "move_mags_{assembly_id}.log")
   benchmark: os.path.join(logdir, "move_mags_{assembly_id}.log")
   threads: 1
@@ -468,14 +469,14 @@ rule checkm2:
   name: "prok-binning.smk Checkm2 predict"
   input:
     os.path.join(config["checkm2-db"], "uniref100.KO.1.dmnd"), 
-    expand(relpath("binning/prok/output/multitool/no-drep/ids/{assembly_id}_MAGids.tsv"), assembly_id=assemblies.keys()),
-    expand(relpath("binning/prok/output/multitool/no-drep/unbinned/{assembly_id}_unbinned.fasta"), assembly_id=assemblies.keys())
+    expand(relpath("binning/prok/output/no-drep/ids/{assembly_id}_MAGids.tsv"), assembly_id=assemblies.keys()),
+    expand(relpath("binning/prok/output/no-drep/unbinned/{assembly_id}_unbinned.fasta"), assembly_id=assemblies.keys())
   output:
-    relpath("binning/prok/output/multitoolno-drep/checkm2/quality_report.tsv"),
+    relpath("binning/prok/output/no-drep/checkm2/quality_report.tsv"),
   params:
     parameters=config["checkm2-params"],
-    indir=relpath("binning/prok/output/multitool/no-drep"),
-    outdir=relpath("binning/prok/output/multitool/no-drep/checkm2"), 
+    indir=relpath("binning/prok/output/no-drep"),
+    outdir=relpath("binning/prok/output/no-drep/checkm2"), 
     dbdir=config["checkm2-db"],
     tmpdir=os.path.join(tmpd, "CheckM2")
   log: os.path.join(logdir, "checkm2_predict.log")
@@ -486,7 +487,7 @@ rule checkm2:
     mem_mb=lambda wildcards, attempt, input: 16 * 10**3 * attempt
   shell:
     """
-    rm -rf {params.tmpdir}
+    rm -rf {params.tmpdir} {params.outdir}
     mkdir -p {params.outdir} {params.tmpdir}/bins
 
     ln -s $(pwd)/{params.indir}/*.fasta $(pwd)/{params.tmpdir}/bins/
@@ -505,13 +506,13 @@ rule checkm2:
 rule galah:
   name: "prok-binning.smk Galah dereplicate bins"
   input:
-    tsv=relpath("binning/prok/output/multitool/no-drep/checkm2/quality_report.tsv"),
+    tsv=relpath("binning/prok/output/no-drep/checkm2/quality_report.tsv"),
   output:
-    tsv=relpath("binning/prok/output/multitool/clusters.tsv")
+    tsv=relpath("binning/prok/output/clusters.tsv")
   params:
     parameters=config["galah-params"], 
-    outdir=relpath("binning/prok/output/multitool"),
-    indir=relpath("binning/prok/output/multitool/no-drep"),
+    outdir=relpath("binning/prok/output"),
+    indir=relpath("binning/prok/output/no-drep"),
     tmpdir=os.path.join(tmpd, "galah")
   log: os.path.join(logdir, "galah_dereplicate.log")
   benchmark: os.path.join(benchmarks, "galah_dereplicate.log")
@@ -532,4 +533,80 @@ rule galah:
         {params.parameters} 2> {log}
 
     mv {params.tmpdir}/tmp.tsv {output.tsv}
+    """
+
+rule GTDBTk_identify:
+  name: "prok-binning.smk GTDB-Tk identify"
+  input:
+    tsv=relpath("binning/prok/output/clusters.tsv"), 
+    db=os.path.join(config["GTDBTk-db"], "done.log")
+  output:
+    relpath("binning/prok/output/taxonomy/gtdbtk/identify/gtdbtk.log")
+  params:
+    parameters=config["GTDBTk-identify-params"], 
+    outdir=relpath("binning/prok/output/taxonomy/gtdbtk/identify"), 
+    indir=relpath("binning/prok/output/drep"), 
+    tmpdir=os.path.join(tmpd, "gtdbtk/identify")
+  log: os.path.join(logdir, "gtdbtk_identify.log")
+  benchmark: os.path.join(benchmarks, "gtdbtk_identify.log")
+  conda: "../envs/gtdbtk.yml"
+  threads: 64
+  resources:
+    mem_mb=lambda wildcards, attempt, input: 8 * 10**3 * attempt
+  shell:
+    """
+    rm -rf {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    gtdbtk identify \
+        --genome_dir {params.indir} \
+        --out_dir {params.tmpdir} \
+        --extension fasta \
+        --cpus {threads} \
+        {params.parameters} 2> {log}
+
+    mv {params.tmpdir}/* {params.outdir}
+    """
+
+rule GTDBTk_align:
+  name: "prok-binning.smk GTDB-Tk align"
+  input:
+    relpath("binning/prok/output/taxonomy/gtdbtk/identify/gtdbtk.log")
+  output:
+    relpath("binning/prok/output/taxonomy/gtdbtk/align/gtdbtk.log")
+  params:
+    parameters=config["GTDBTk-align-params"],
+    outdir=relpath("binning/prok/output/taxonomy/gtdbtk/align"),
+    indir=relpath("binning/prok/output/taxonomy/gtdbtk/identify"),
+    tmpdir=os.path.join(tmpd, "gtdbtk/align")
+  log: os.path.join(logdir, "gtdbtk_align.log")
+  benchmark: os.path.join(benchmarks, "gtdbtk_align.log")
+  conda: "../envs/gtdbtk.yml"
+  threads: 64
+  resources:
+    mem_mb=lambda wildcards, attempt, input: 100 * 10**3 * attempt
+  shell:
+    """ 
+    """
+
+rule GTDBTk_classify:
+  name: "prok-binning.smk GTDB-Tk classify"
+  input:
+    relpath("binning/prok/output/taxonomy/gtdbtk/align/gtdbtk.log")
+  output:
+    relpath("binning/prok/output/taxonomy/gtdbtk/classify/gtdbtk.log"),
+  params:
+    parameters=config["GTDBTk-classify-params"],
+    outdir=relpath("binning/prok/output/taxonomy/gtdbtk/classify"),
+    genomedir=relpath("binning/prok/output/drep"),
+    aligndir=relpath("binning/prok/output/taxonomy/gtdbtk/align"),
+    tmpdir=os.path.join(tmpd, "gtdbtk/classify")
+  log: os.path.join(logdir, "gtdbtk_classify.log")
+  benchmark: os.path.join(benchmarks, "gtdbtk_classify.log")
+  conda: "../envs/gtdbtk.yml"
+  threads: 64
+  resources:
+    mem_mb=lambda wildcards, attempt, input: 8 * 10**3 * attempt
+  shell:
+    """ 
     """

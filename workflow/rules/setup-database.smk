@@ -116,6 +116,30 @@ rule virsorter2_db:
     mv {params.tmpdir}/* {params.outdir}
     """
 
+rule vibrant_db:
+  name: "setup-database.smk VirSorter2 setup database (11.1 G)"
+  output: os.path.join(config['vibrant-db'], "files/VIBRANT_machine_model.sav")
+  params:
+    outdir=config['vibrant-db'],
+    tpmdir=os.path.join(tmpd, "vibrant/db")
+  log: os.path.join(logdir, "vibrant_database.log")
+  benchmark: os.path.join(benchmarks, "vibrant_database.log")
+  conda: "../envs/vibrant.yml"
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input, threads: 8000
+  shell:
+    """
+    rm -rf {params.outdir} {params.tmpdir}
+    mkdir -p {params.outdir}
+
+    download-db.sh {params.tmpdir}
+    python3 {params.tmpdir}/database/VIBRANT_setup.py
+
+    mv {params.tmpdir}/* {params.output}
+    """
+
+
 rule chocophlan_db:
   name: "setup-database.smk HUMAnN3 chocophlan database (16.4 G)"
   output: os.path.join(config['humann-db'], "chocophlan/alaS.centroids.v201901_v31.ffn.gz")
@@ -242,4 +266,28 @@ rule checkm2_download:
     checkm2 database --download --path {params.tmpdir} 2> {log}
 
     mv {params.tmpdir}/CheckM2_database/* {params.outdir}/
+    """
+
+rule GTDBTk_download:
+  name: "setup-database.smk GTDB-Tk Database (63.3 G)"
+  output:
+    os.path.join(config["GTDBTk-db"], "done.log")
+  params:
+    outdir=config["GTDBTk-db"], 
+    tmpdir=os.path.join(tmpd, "gtdbtkdb")
+  conda: "../envs/gtdbtk.yml"
+  log: os.path.join(logdir, "gtdbtk_db.log")
+  benchmark: os.path.join(benchmarks, "gtdbtk_db.log")
+  threads: 1
+  resources: 
+    mem_mb=lambda wildcards, attempt: attempt * 4 * 10**3
+  shell:
+    """
+    rm -rf {params.outdir} {params.tmpdir}
+    mkdir -p {params.outdir} 
+
+    download-db.sh {params.tmpdir} 2> {log}
+    touch {output}
+
+    mv {params.tmpdir}/* {params.outdir}/
     """
