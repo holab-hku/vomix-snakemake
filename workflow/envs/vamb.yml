@@ -1,7 +1,0 @@
-name: vamb
-channels:
-  - bioconda
-  - conda-forge
-  - defaults
-dependencies:
-  - vamb=3.0.2=py37h8902056_2
