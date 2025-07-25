@@ -23,12 +23,14 @@ NCBI-API-key: ""
 PhaBox2-db: "workflow/database/phabox_db_v2"
 genomad-db: "workflow/database/genomad"
 virsorter2-db: "workflow/database/virsorter2"
+vibrant-db: "workflow/database/vibrant"
 checkv-database: "workflow/database/checkv"
 iphop-dbdir: "workflow/database/iphop/Aug_2023_pub_rw"
 eggNOG-db: "workflow/database/eggNOGv2"
 eggNOG-db-params: ""
 humann-db: "workflow/database/humann"
 checkm2-db: "workflow/database/checkm2"
+GTDBTk-db: "workflow/database/GTDB-Tk"
 
 # preprocess.smk & preprocess-decontam.smk
 
@@ -51,7 +53,7 @@ spades-params: "--meta"
 spades-memory: 250
 
 
-# viral-identify.smk
+# viral-identify.smk and viral-benchmark.smk
 
 contig-minlen: 0
 genomad-minlen: 1000
@@ -63,12 +65,21 @@ dvf-params: ""
 phamer-params: ""
 virsorter2-params: ""
 vf-params: ""
+vibrant-params: ""
+seeker-params: ""
+ppr-params: ""
+metaphinder-params: ""
 
 genomad-cutoff: 0.7
 dvf-cutoff: 0.7
 dvf-pval: 0.05
 phamer-cutoff: 0.7
 phamer-pred: "phage"
+vf-cutoff: ""
+virsorter2-cutoff: ""
+seeker-params: ""
+ppr-params: ""
+metaphinder-params: ""
 
 genomad-cutoff-s: 0
 phamer-cutoff-s: 0
@@ -130,6 +141,9 @@ DASTool-params: ""
 checkm2-params: ""
 drep-params: ""
 galah-params: "--ani 95 --min-aligned-fraction 15 --fragment-length 3000"
+GTDBTk-identify-params: ""
+GTDBTk-align-params: ""
+GTDBTk-classify-params: ""
 VAMB-params: "-m 100"
 
 
