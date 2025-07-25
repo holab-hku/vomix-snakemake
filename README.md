@@ -20,7 +20,7 @@ conda update -n base -c defaults conda
 conda create -n vomix -c conda-forge snakemake=8.25.5 biopython=1.84 pip=25.1.1 -y # does not include cluster execution plugs. See more at https://snakemake.github.io/snakemake-plugin-catalog/index.html
 conda activate vomix
 
-# Verify the snakemake backedn is running
+# Verify the snakemake backend is running
 snakemake -v
 ```
 
