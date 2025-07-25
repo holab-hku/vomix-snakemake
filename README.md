@@ -32,7 +32,7 @@ git clone https://github.com/holab-hku/vOMIX-MEGA
 cd vOMIX-MEGA
 
 # Ensure conda env is activated
-conda info --envs # you do not want to pip install into your main environment
+conda info --envs | grep '^vomix' # you do not want to pip install into your main environment
 
 # Install vOMIX-MEGA using pip 
 pip install .
