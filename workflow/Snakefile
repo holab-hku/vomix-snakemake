@@ -165,12 +165,9 @@ if config["module"] == "assembly" or config["module"] == "end-to-end":
 # identify (viral)
 if config["module"] == "viral-identify" or config["module"] == "end-to-end":
   include: "rules/viral-identify.smk"
+  include: "rules/checkv-pyhmmer.smk"
   if config["viral-binning"]:
     include: "rules/viral-binning.smk"
-  if config["checkv-original"]:
-    include: "rules/checkv.smk"
-  else:
-    include: "rules/checkv-pyhmmer.smk"
   include: "rules/clustering.smk"
   targets += [relpath("identify/viral/logs/done.log")]
 
@@ -183,12 +180,9 @@ if config["module"] == "viral-benchmark":
 # viral refilter
 if config["module"] == "viral-refilter":
   include: "rules/refilter-genomad.smk"
+  include: "rules/checkv-pyhmmer.smk"
   if config["viralbinning"]:
     include: "rules/viral-binning.smk"
-  if config["checkv-original"]:
-    include: "rules/checkv.smk"
-  else:
-    include: "rules/checkv-pyhmmer.smk"
   include: "rules/clustering.smk"
   targets += [relpath("identify/viral/logs/done.log"), 
       relpath("identify/viral/logs/clustering-done.log"), 
@@ -196,10 +190,7 @@ if config["module"] == "viral-refilter":
 
 # checkv-pyhmmer
 if config["module"] == "checkv-pyhmmer":
-  if config["checkv-original"]:
-    include: "rules/checkv.smk"
-  else:
-    include: "rules/checkv-pyhmmer.smk"
+  include: "rules/checkv-pyhmmer.smk"
   targets += [relpath("identify/viral/logs/checkv-done.log")]
 
 # cluster fast
