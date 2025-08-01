@@ -47,7 +47,7 @@ rule megahit:
     fasta=relpath("assembly/megahit/samples/{assembly_id}/output/final.contigs.fa")
   params:
     parameters=config['megahit-params'],
-    minlen=config["megahit-minlen"],
+    minlen=config["megahit-min-len"],
     outdir=relpath("assembly/megahit/samples/{assembly_id}/output"),
     tmpdir=os.path.join(tmpd, "megahit")
   log: os.path.join(logdir, "megahit_{assembly_id}.log")
@@ -141,4 +141,3 @@ rule assembly_stats:
     mv {params.tmpdir}/tmp1.tsv {output.sizedist}
     mv {params.tmpdir}/tmp2.tsv {output.stats}
     """
-

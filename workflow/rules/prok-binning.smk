@@ -535,11 +535,12 @@ rule galah:
     mv {params.tmpdir}/tmp.tsv {output.tsv}
     """
 
+
 rule GTDBTk_identify:
   name: "prok-binning.smk GTDB-Tk identify"
   input:
     tsv=relpath("binning/prok/output/clusters.tsv"), 
-    db=os.path.join(config["GTDBTk-db"], "done.log")
+    db=os.path.abspath(os.path.join(config["GTDBTk-db"], ("gtdbtk_r" + config["GTDBTk-db-version"] + "_data.tar.gz")))
   output:
     relpath("binning/prok/output/taxonomy/gtdbtk/identify/gtdbtk.log")
   params:
@@ -557,6 +558,8 @@ rule GTDBTk_identify:
     """
     rm -rf {params.tmpdir} {params.outdir}
     mkdir -p {params.tmpdir} {params.outdir}
+
+    conda env config vars set GTDBTK_DATA_PATH="{input.db}"
 
     gtdbtk identify \
         --genome_dir {params.indir} \

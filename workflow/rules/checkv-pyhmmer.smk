@@ -37,7 +37,8 @@ if config["checkv-original"]:
   rule checkv:
     name: "checkv.smk CheckV dereplicated contigs"
     input:
-      fna=fastap
+      fna=fastap, 
+      dbdir=config["checkv-db"]
     output:
       relpath("identify/viral/output/checkv/viruses.fna"),
       relpath("identify/viral/output/checkv/proviruses.fna"),
@@ -46,12 +47,11 @@ if config["checkv-original"]:
       checkvparams= config['checkv-params'],
       outdir=relpath("identify/viral/output/checkv"),
       tmpdir=os.path.join(tmpd, "checkv"),
-      dbdir=config["checkv-database"]
     log: os.path.join(logdir, "checkv.log")
     benchmark: os.path.join(benchmarks, "checkv.log")
     threads: 64
     resources:
-      mem_mb=lambda wildcards, attempt, input: attempt * 72 * 10**3 * 3
+      mem_mb=lambda wildcards, attempt, input: attempt * 500 * 10**3
     conda: "../envs/checkv.yml"
     shell:
       """
@@ -61,7 +61,7 @@ if config["checkv-original"]:
       checkv end_to_end \
           {input.fna} \
           {params.outdir} \
-          -d {params.dbdir} \
+          -d {input.dbdir} \
           -t {threads} \
           {params.checkvparams} 2> {log}
 
@@ -81,6 +81,7 @@ else:
       outdir=relpath("identify/viral/output/checkv/tmp"),
       tmpdir=os.path.join(tmpd, "checkv/prodigal-gv")
     log: os.path.join(logdir, "checkv_prodigal-gv.log")
+    benchmark: os.path.join(benchmarks, "checkv_prodigal-gv.log")
     conda: "../envs/prodigal-gv.yml"
     threads: 128
     resources:
@@ -104,8 +105,8 @@ else:
     localrule: False
     input:
       faa=relpath("identify/viral/output/checkv/tmp/proteins.faa"), 
-      db=os.path.join(config["checkv-database"], "hmm_db/checkv_hmms/{index}.hmm"), 
-      checkpoint=expand(os.path.join(config["checkv-database"], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
+      db=os.path.join(config["checkv-db"], "hmm_db/checkv_hmms/{index}.hmm"), 
+      checkpoint=expand(os.path.join(config["checkv-db"], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
     output:
       relpath("identify/viral/output/checkv/tmp/hmmsearch/{index}.hmmout")
     params:
@@ -167,7 +168,8 @@ else:
     name: "checkv-pyhmmer.smk CheckV dereplicated contigs"
     input:
       checkpoint=relpath("identify/viral/output/checkv/tmp/hmmsearch_checkpoint"),
-      fna=fastap
+      fna=fastap, 
+      dbdir=config["checkv-db"]
     output:
       relpath("identify/viral/output/checkv/viruses.fna"),
       relpath("identify/viral/output/checkv/proviruses.fna"),
@@ -175,8 +177,7 @@ else:
     params:
       checkvparams= config['checkv-params'],
       outdir=relpath("identify/viral/output/checkv"),
-      tmpdir=os.path.join(tmpd, "checkv"),
-      dbdir=config["checkv-database"]
+      tmpdir=os.path.join(tmpd, "checkv")
     log: os.path.join(logdir, "checkv.log")
     benchmark: os.path.join(benchmarks, "checkv.log")
     threads: 1
@@ -191,7 +192,7 @@ else:
       checkv end_to_end \
           {input.fna} \
           {params.outdir} \
-          -d {params.dbdir} \
+          -d {input.dbdir} \
           -t {threads} \
           {params.checkvparams} 2> {log}
 

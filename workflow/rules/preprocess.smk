@@ -35,7 +35,7 @@ if config['dwnld-only']:
       touch {output}
       """
 
-elif config['intermediate']:
+elif config['intermediates']:
   rule done:
     name: "preprocessing.py Done. deleting all tmp files"
     localrule: True
@@ -165,8 +165,8 @@ if config["decontam-host"]:
     params:
       parameters=config["hostile-params"], 
       aligner=config["hostile-aligner"],
-      alignerp=config["aligner-params"],
-      indexpath=config["index-path"], 
+      alignerp=config["hostile-aligner-params"],
+      indexpath=config["hostile-index-path"], 
       outdir=relpath("preprocess/samples/{sample_id}/output"),
       tmpdir=os.path.join(tmpd, "hostile/{sample_id}")
     log: os.path.join(logdir, "hostile_{sample_id}.log")

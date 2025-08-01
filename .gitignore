@@ -13,6 +13,7 @@
 
 # but not these subdirectories 
 !config/
+!config/depracated/*
 !docs/
 !resources/
 !workflow/

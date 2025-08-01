@@ -65,7 +65,7 @@ rule filter_contigs:
   output:
     relpath("identify/viral/samples/{sample_id}/tmp/final.contigs.filtered.fa")
   params:
-    minlen=config['contig-minlen'],
+    minlen=config['contig-min-len'],
     outdir=relpath("identify/viral/samples/{sample_id}/tmp"),
     tmpdir=os.path.join(tmpd, "contigs/{sample_id}")
   log: os.path.join(logdir, "filtercontig_{sample_id}.log")
@@ -291,5 +291,3 @@ rule VIBRANT:
 
 #rule ppr-meta:
 #rule seeker:
-#rule metaphinder:
-#rule VIBRANT:

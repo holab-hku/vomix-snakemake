@@ -268,12 +268,18 @@ rule checkm2_download:
     mv {params.tmpdir}/CheckM2_database/* {params.outdir}/
     """
 
+
+gtdbtk_db_base_url = "https://data.ace.uq.edu.au/public/gtdb/data/releases/release"
+gtdbtk_db_version = config["GTDBTk-db-version"]
+gtdbtk_dwnld_lnk =f"{gtdbtk_db_base_url}{gtdbtk_db_version}/{gtdbtk_db_version}.0/auxillary_files/gtdbtk_package/full_package/gtdbtk_r{gtdbtk_db_version}_data.tar.gz"
+
 rule GTDBTk_download:
   name: "setup-database.smk GTDB-Tk Database (63.3 G)"
   output:
-    os.path.join(config["GTDBTk-db"], "done.log")
+    os.path.abspath(os.path.join(config["GTDBTk-db"], ("gtdbtk_r" + config["GTDBTk-db-version"] + "_data.tar.gz")))
   params:
     outdir=config["GTDBTk-db"], 
+    dwnldlink=gtdbtk_dwnld_lnk,
     tmpdir=os.path.join(tmpd, "gtdbtkdb")
   conda: "../envs/gtdbtk.yml"
   log: os.path.join(logdir, "gtdbtk_db.log")
@@ -286,8 +292,11 @@ rule GTDBTk_download:
     rm -rf {params.outdir} {params.tmpdir}
     mkdir -p {params.outdir} 
 
-    download-db.sh {params.tmpdir} 2> {log}
-    touch {output}
+    wget -P {params.tmpdir} {params.dwnldlink} 2> {log}
+    conda env config vars set GTDBTK_DATA_PATH="{output}"
+
+    #download-db.sh {params.tmpdir} 2> {log}
+    #touch {output}
 
     mv {params.tmpdir}/* {params.outdir}/
     """
