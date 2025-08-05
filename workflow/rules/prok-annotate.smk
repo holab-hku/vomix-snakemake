@@ -43,8 +43,8 @@ rule done_log:
 rule pair_fastq:
   name: "prok-annotate.smk merge paired files"
   input: 
-    R1=relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
-    R2=relpath("preprocess/samples/{sample_id}/{sample_id}_R2.fastq.gz"),
+    R1=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
+    R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"),
   output:
     relpath("annotate/prok/samples/{sample_id}/input/{sample_id}_merged.fastq.gz")
   params:

@@ -76,8 +76,8 @@ else:
 rule strobealign:
   name: "prok-binning.smk strobealign SR mapping"
   input:
-    R1=relpath("preprocess/samples/{sample_id}/{sample_id}_R1.fastq.gz"),
-    R2=relpath("preprocess/samples/{sample_id}/{sample_id}_R2.fastq.gz"),
+    R1=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R1_cut.trim.filt.fastq.gz"),
+    R2=relpath("preprocess/samples/{sample_id}/output/{sample_id}_R2_cut.trim.filt.fastq.gz"),
     fasta=lambda wildcards: relpath(os.path.join("assembly", assembler, "samples", samples[wildcards.sample_id]["assembly"], "output/final.contigs.fa")),
   output:
     bam=relpath("binning/prok/samples/{sample_id}/strobealign/{sample_id}.sorted.bam")
@@ -540,7 +540,7 @@ rule GTDBTk_identify:
   name: "prok-binning.smk GTDB-Tk identify"
   input:
     tsv=relpath("binning/prok/output/clusters.tsv"), 
-    db=os.path.abspath(os.path.join(config["GTDBTk-db"], ("gtdbtk_r" + config["GTDBTk-db-version"] + "_data.tar.gz")))
+    db=os.path.join(config["GTDBTk-db"], ("gtdbtk_r" + config["GTDBTk-db-version"] + "_data.tar.gz"))
   output:
     relpath("binning/prok/output/taxonomy/gtdbtk/identify/gtdbtk.log")
   params:

@@ -2,6 +2,7 @@
 
 module: "end-to-end"
 workdir : "."
+basedir: ""
 outdir : "results/"
 datadir : "fastq/"
 samplelist : ""
@@ -11,7 +12,7 @@ sample-name: ""
 assembly-ids: ""
 latest-run : ""
 splits: 0
-intermediates: False
+keep-intermediates: False
 setup-database: True
 max-cores: 4
 email: "vomixtest@gmail.com"
