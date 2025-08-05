@@ -24,7 +24,9 @@ genomad-db: "workflow/database/genomad"
 virsorter2-db: "workflow/database/virsorter2"
 vibrant-db: "workflow/database/vibrant"
 checkv-db: "workflow/database/checkv"
-iphop-db: "workflow/database/iphop/Aug_2023_pub_rw"
+iphop-db: "workflow/database/iphop"
+iphop-db-version: "iPHoP_db_Aug23_rw"
+iphop-db-basename: "Aug_2023_pub_rw" # make sure base name is compatible with version https://bitbucket.org/srouxjgi/iphop/src/main/#markdown-header-host-databases-and-versions
 eggNOG-db: "workflow/database/eggNOGv2"
 eggNOG-db-params: ""
 humann-db: "workflow/database/humann"
@@ -48,7 +50,7 @@ hostile-index-path: "workflow/database/hostile/human-t2t-hla.fa.gz" # visit http
 # assembly.smk 
 
 assembler: "megahit" #["megahit", "spades"]
-megahit-minlen: 300
+megahit-min-len: 300
 megahit-params: "--prune-level 3"
 spades-params: "--meta"
 spades-memory: 250
@@ -117,6 +119,7 @@ coverm-methods : "tpm rpkm" # a space delimited list from coverm options
 
 # viral-host.smk
 
+iphop-host: False
 iphop-cutoff: 90
 iphop-params: ""
 CHERRY-params: ""
