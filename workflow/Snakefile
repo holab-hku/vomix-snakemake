@@ -28,10 +28,7 @@ db_list = ["PhaBox2-db", "genomad-db", "virsorter2-db", "vibrant-db",
     "checkv-db", "iphop-db", "eggNOG-db", "humann-db", "checkm2-db", "GTDBTk-db"]
 
 for db_dir in db_list:
-  print(config[db_dir])
-  print(config["basedir"])
   config[db_dir] = os.path.join(config["basedir"], "..", config[db_dir])
-  print(config[db_dir])
 
 
 # Important utility functions
@@ -159,7 +156,7 @@ targets = []
 if config["setup-database"] or config["module"] == "setup-database":
   include: "rules/setup-database.smk"
   if config["module"] == "setup-database":
-    targets += ["workflow/database/.benchmarks/done.log"]
+    targets += [os.path.join(config["basedir"], "workflow/database/.benchmarks/done.log")]
 
 
 # fix symlink
@@ -207,7 +204,7 @@ if config["module"] == "checkv-pyhmmer":
   targets += [relpath("identify/viral/logs/checkv-done.log")]
 
 # cluster fast
-if config["module"] == "clustering-fast":
+if config["module"] == "cluster-fast":
   include: "rules/clustering.smk"
   targets += [relpath("identify/viral/logs/clustering-done.log")]
 
