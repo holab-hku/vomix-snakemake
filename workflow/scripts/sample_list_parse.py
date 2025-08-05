@@ -273,7 +273,8 @@ def parse_sample_list(f, datadir, outdir, email, api_key, time):
 				
 	# If not exited already, validate and write
 	Entrez.email = email
-	Entrez.api_key = api_key
+	if api_key != "":
+		Entrez.api_key = api_key
 	validate_samples(samples)
 	
 	with open(samplejson, "w") as sampleout:
