@@ -17,6 +17,7 @@ if os.path.exists(relpath("identify/viral/output/classification_summary_vOTUs.cs
   console.print(Panel.fit(f"[dim] geNomad has already been run. Using its output in '{genomad_out}' for taxonomic annotation.", title = "Warning", subtitle="geNomad taxonomy"))
 else:
   genomad_out = relpath("taxonomy/viral/intermediate/genomad/taxonomy.tsv")
+  genomad_f = True
 
 ### Read single fasta file if input
 if config['fasta'] != "":

@@ -51,7 +51,7 @@ if config["checkv-original"]:
     benchmark: os.path.join(benchmarks, "checkv.log")
     threads: 64
     resources:
-      mem_mb=lambda wildcards, attempt, input: attempt * 500 * 10**3
+      mem_mb=lambda wildcards, attempt, input: attempt * 72 * 10**3
     conda: "../envs/checkv.yml"
     shell:
       """
