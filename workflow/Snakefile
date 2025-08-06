@@ -140,7 +140,7 @@ if emptykeys != 1 and (config["module"] not in ["setup-database","containerize"]
 ### Save configuration file [WARNING: THIS DECTION IS DIFFERENT BETWEEN THE SNAKEMAKE BACKEND AND WRAPPER SOFTWARES]
 now = datetime.datetime.now()
 nowstr = now.strftime("%Y%m%d_%H%M%S")
-config["latest_run"] = nowstr
+config["latest-run"] = nowstr
 
 logdir = relpath(".vomix/log/vomix" + nowstr)
 os.makedirs(logdir, exist_ok=True)
