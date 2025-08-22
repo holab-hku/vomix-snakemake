@@ -55,7 +55,7 @@ rule megahit:
   conda: "../envs/megahit.yml"
   threads: 24
   resources:
-    mem_mb = lambda wildcards, attempt, threads, input: max(attempt * input.size_mb * 5, 8000)
+    mem_mb = lambda wildcards, attempt, threads, input: 16000
   shell:
     """
     rm -rf {params.tmpdir}/{wildcards.assembly_id} {params.outdir}/*

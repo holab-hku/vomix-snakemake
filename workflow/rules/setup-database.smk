@@ -16,7 +16,7 @@ rule done:
   localrule: True
   input:
     os.path.join(config['genomad-db'], "genomad_db.source"), 
-    expand("workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm", index=range(1, 81)), 
+    expand(os.path.join(config['checkv-db'], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81)),
     os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl"), 
     os.path.join(config["GTDBTk-db"], ("gtdbtk_r" + config["GTDBTk-db-version"] + "_data.tar.gz"))
   output:
@@ -99,7 +99,7 @@ rule genomad_db:
 rule checkv_db:
   name: "setup-database.smk CheckV database (7.3 G)"
   localrule: True
-  output: expand("workflow/database/checkv/hmm_db/checkv_hmms/{index}.hmm", index=range(1, 81))
+  output: expand(os.path.join(config['checkv-db'], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
   params:
     outdir=config['checkv-db'],
     tmpdir=os.path.join(tmpd, "checkv/db")

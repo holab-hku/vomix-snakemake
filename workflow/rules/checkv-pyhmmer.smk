@@ -38,14 +38,15 @@ if config["checkv-original"]:
     name: "checkv.smk CheckV dereplicated contigs"
     input:
       fna=fastap, 
-      dbdir=config["checkv-db"]
+      db=expand(os.path.join(config['checkv-db'], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
     output:
       relpath("identify/viral/output/checkv/viruses.fna"),
       relpath("identify/viral/output/checkv/proviruses.fna"),
       relpath("identify/viral/output/checkv/quality_summary.tsv")
     params:
-      checkvparams= config['checkv-params'],
+      parameters= config['checkv-params'],
       outdir=relpath("identify/viral/output/checkv"),
+      dbdir=config["checkv-db"], 
       tmpdir=os.path.join(tmpd, "checkv"),
     log: os.path.join(logdir, "checkv.log")
     benchmark: os.path.join(benchmarks, "checkv.log")
@@ -61,9 +62,9 @@ if config["checkv-original"]:
       checkv end_to_end \
           {input.fna} \
           {params.outdir} \
-          -d {input.dbdir} \
+          -d {params.dbdir} \
           -t {threads} \
-          {params.checkvparams} 2> {log}
+          {params.parameters} 2> {log}
 
       rm -rf {params.tmpdir}
       """
