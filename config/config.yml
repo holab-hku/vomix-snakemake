@@ -15,7 +15,7 @@ splits: 0
 keep-intermediates: False
 setup-database: True
 max-cores: 4
-email: "vomixtest@gmail.com"
+NCBI-email: "vomixtest@gmail.com"
 NCBI-API-key: ""
 
 # setup-database.smk

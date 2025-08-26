@@ -13,6 +13,9 @@ from rich.console import Console
 from rich.progress import Progress
 from rich.layout import Layout
 from rich.panel import Panel
+
+from snakemake.utils import validate
+
 console = Console()
 
 configfile: "config/config.yml"

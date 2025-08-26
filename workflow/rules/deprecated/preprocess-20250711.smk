@@ -1,7 +1,7 @@
 logdir=relpath("preprocess/logs")
 tmpd = relpath("preprocess/tmp")
 
-email=config["email"]
+email=config["NCBI-email"]
 api_key=config["NCBI-API-key"]
 nowstr=config["latest_run"]
 outdir=config["outdir"]
