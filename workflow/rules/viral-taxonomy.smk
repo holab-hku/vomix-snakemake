@@ -56,7 +56,7 @@ if genomad_f:
     output:
       genomad=genomad_out
     params:
-      genomadparams=config['genomad-params'],
+      genomadparams=config['genomad-params-tax'],
       dbdir=config['genomad-db'],
       outdir=relpath("taxonomy/viral/intermediate/genomad"),
       tmpdir=os.path.join(tmpd, "genomad")

@@ -110,7 +110,7 @@ vibrant-cutoff: 0
 
 phagcn-min-len: 1000 # the minimum tested
 phagcn-params: ""
-genomad-params: "--enable-score-calibration --relaxed"
+genomad-params-tax: "--enable-score-calibration --relaxed"
 
 
 # viral-community.smk
