@@ -21,6 +21,10 @@
 !resources/
 !workflow/
 !workflow/software/
+!workflow/envs
+!workflow/envs/**
+!workflow/docker
+!workflow/docker/**
 !workflow/software/DeepVirFinder
 !vomix/
 !sample/contigs
