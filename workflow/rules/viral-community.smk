@@ -1,3 +1,8 @@
+container: "docker://vomix/viral-community:v0.1.0-beta.1"
+
+
+
+
 import os
 
 logdir = relpath("community/viral/logs")

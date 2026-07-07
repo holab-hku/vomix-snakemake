@@ -1,3 +1,8 @@
+container: "docker://vomix/prok-binning:v0.1.0-beta.1"
+
+
+
+
 import os 
 
 logdir=relpath("binning/prok/logs")
