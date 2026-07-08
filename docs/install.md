@@ -11,7 +11,7 @@ You can install vOMIX-snakemake in you computer using general-purpose package ma
 
 ```bash
 # Install base environment
-mamba create -n vomix -c conda-forge snakemake=8.25.5 biopython=1.84 -y
+mamba create -n vomix -c conda-forge snakemake=8.25.5 biopython=1.84 snakemake-executor-plugin-cluster-generic=1.0.9 -y
 
 # Activate environment
 mamba activate vomix
@@ -19,6 +19,7 @@ mamba activate vomix
 # Verify Installation
 snakemake -v
 ```
+
 :::
 
 :::{tab-item} Conda
@@ -26,7 +27,7 @@ snakemake -v
 
 ```bash
 # Install base environment
-conda create -n vomix -c conda-forge snakemake=8.25.5 biopython=1.84 -y
+conda create -n vomix -c conda-forge snakemake=8.25.5 biopython=1.84 snakemake-executor-plugin-cluster-generic=1.0.9 -y
 
 # Activate environment
 conda activate vomix
@@ -34,6 +35,7 @@ conda activate vomix
 # Verify Installation
 snakemake -v
 ```
+
 :::
 
 ::::
@@ -45,20 +47,24 @@ If you are using conda or mamba, make sure to set channel orders correctly and s
 
 ## Docker & Apptainer
 
-vOMIX-snakemake is built on a snakemake back-end, which facilitates native `Docker` and `Apptainer` employment. The container image generated contains explicitly each conda environment mounted on top of a base operating system. Containers are preferred for the most robus forms of reproducibility, whereas `conda` and `mamba` installations might not work on Windows or Mac-ARM systems. 
+vOMIX-snakemake is built on a snakemake back-end, which facilitates native `Docker` and `Apptainer` employment. The container image generated contains explicitly each conda environment mounted on top of a base operating system. Containers are preferred for the most robus forms of reproducibility, whereas `conda` and `mamba` installations might not work on Windows or Mac-ARM systems.
 
 ::::{tab-set}
 
 :::{tab-item} Docker
+
 ```bash
 snakemake --use-container --use-conda --cores 4
 ```
+
 :::
 
 :::{tab-item} Apptainer
+
 ```bash
 snakemake --software-deployment-method conda apptainer
 ```
+
 :::
 
 ::::
@@ -71,4 +77,3 @@ All jobs within vOMIX-snakemake have specified conda environments. The container
 ## {octicon}`book;0.85em` Troubleshooting Guide
 
 We have specific guidelines for troubleshooting vOMIX-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md).
-

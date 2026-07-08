@@ -4,19 +4,19 @@ vOMIX-snakemake is the back-end pipline of the command-line tool vOMIX-MEGA: a r
 
 ::::{grid} 3
 
-:::{grid-item-card} 
+:::{grid-item-card}
 *High Speed*
 ^^^
 vOMIX-snakemake operates 10-1000 times faster than current pipelines that have unoptimized underlying software dependencies.
 :::
 
-:::{grid-item-card} 
+:::{grid-item-card}
 *Stable Memory Footprint*
 ^^^
 vOMIX-MEGA's standard viral end-to-end analysis takes a maximum memory of 24 Gb due to selection and fine-tuning of tools.
 :::
 
-:::{grid-item-card} 
+:::{grid-item-card}
 *Modular & Configurable Analysis*
 ^^^
 Each module can be separately used with a variety of different inputs, and each software can be configured and fine-tuned for your needs.
@@ -26,19 +26,19 @@ Each module can be separately used with a variety of different inputs, and each 
 
 ::::{grid} 3
 
-:::{grid-item-card} 
+:::{grid-item-card}
 *Extensively Benchmarked*
 ^^^
 We've benchmarked our viral identification on experimental as well as mock-data and use the best performing tools.
 :::
 
-:::{grid-item-card} 
+:::{grid-item-card}
 *Reproducible & Dockerized*
 ^^^
 All analysis is logged via a snakemake back-end, which is configured with Docker to allow full reproducibility.
 :::
 
-:::{grid-item-card} 
+:::{grid-item-card}
 *Easy SRA Input*
 ^^^
 Simply feed vOMIX-MEGA a list  your SRA accession codes and it will download, process, and analyse the viral community of your samples automatically.
@@ -62,23 +62,21 @@ Instructions on how to install vOMIX-snakemake on your computer or server.
 Learn how to run vOMIX-snakemake on a sample dataset.
 :::
 
-
 ### {octicon}`bookmark;0.85em` Citing vOMIX-MEGA
 
 If you use vOMIX-MEGA in your work, please consider citing its pre-print manuscript:
 
 :::{card}
-:link: https://vomix-mega.readthedocs.io/en/latest/
+:link: <https://vomix-mega.readthedocs.io/en/latest/>
 
 **vOMIX-MEGA: A critical speed enhancement for end-to-end viral metagenomics**
 ^^^
 Erfan Shekarriz, Elsa VIJENDRAN, Joshua WK Ho  — *bioRxiv* (2026), DOI: XXXXXXXXXXXXXXXXXXX.
 :::
 
-### {octicon}`bug;0.85em` Report a bug to us ! 
+### {octicon}`bug;0.85em` Report a bug to us
 
 Have any questions or you've found a bug during your analysis? Please don't hesitate to report it to us by making an issue on our [{octicon}`mark-github;0.95em` GitHub repository](https://github.com/holab-hku/vOMIX-MEGA/issues/new).
-
 
 ```{toctree}
 :hidden:
