@@ -3,18 +3,34 @@ import os
 import sys
 
 # 1. Project Information
-project = 'vOMIX-snakemake'
-copyright = '2026, Ho Lab, HKU'
-author = 'Erfan Shekarriz, HKU'
-release = '1.0.0'
+project = "vOMIX-snakemake"
+copyright = "2026, Ho Lab, HKU"
+author = "Erfan Shekarriz, HKU"
+version = "local-dev"
+release = "local-dev"
+
+# Check if building on Read the Docs
+if os.environ.get("READTHEDOCS") == "True":
+    rtd_version = os.environ.get("READTHEDOCS_VERSION")
+
+    # Clean up standard RTD default slugs if necessary
+    if rtd_version in ["latest", "stable"]:
+        # Optional: fall back to a hardcoded string or use git description
+        version = rtd_version
+        release = rtd_version
+    else:
+        # Use the exact Git tag name pushed to GitHub
+        version = rtd_version
+        release = rtd_version
+
 
 # 2. Extensions Setup
 # These modules allow Sphinx to read Markdown and format code blocks properly
 extensions = [
-    'myst_parser',          # Enables Markdown (.md) support
-    'sphinx.ext.autodoc',   # Core documentation generator
-    'sphinx.ext.viewcode',  # Adds links to source code
-    'sphinx_design',     # Allows code tabs and other pretty things
+    "myst_parser",  # Enables Markdown (.md) support
+    "sphinx.ext.autodoc",  # Core documentation generator
+    "sphinx.ext.viewcode",  # Adds links to source code
+    "sphinx_design",  # Allows code tabs and other pretty things
 ]
 
 # 3. Theme Customization
@@ -42,4 +58,4 @@ myst_enable_extensions = [
 ]
 
 # 5. Build Exclusions
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
