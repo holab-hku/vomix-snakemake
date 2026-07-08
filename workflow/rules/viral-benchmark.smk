@@ -1,3 +1,8 @@
+container: "docker://vomix/viral-benchmark:v0.1.0-beta.1"
+
+
+
+
 import os
 containerized: os.path.join(config["basedir"], "Dockerfile")
 

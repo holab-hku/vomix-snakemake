@@ -1,3 +1,8 @@
+container: "docker://vomix/symlink:v0.1.0-beta.1"
+
+
+
+
 os.makedirs(relpath(".vomix/log"), exist_ok=True)
 
 email=config["NCBI-email"]

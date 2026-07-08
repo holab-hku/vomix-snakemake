@@ -1,3 +1,8 @@
+container: "docker://vomix/setup-database:v0.1.0-beta.1"
+
+
+
+
 import os
 
 logdir=os.path.join(config['basedir'], "database/.logs")

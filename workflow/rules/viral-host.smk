@@ -1,3 +1,8 @@
+container: "docker://vomix/viral-host:v0.1.0-beta.1"
+
+
+
+
 logdir = relpath("host/logs")
 tmpd = relpath("host/tmp")
 benchmarks = relpath("host/benchmarks")

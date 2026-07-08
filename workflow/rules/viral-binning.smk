@@ -1,3 +1,8 @@
+container: "docker://vomix/viral-binning:v0.1.0-beta.1"
+
+
+
+
 import os 
 
 logdir = relpath("binning/viral/logs")

@@ -1,3 +1,6 @@
+container: "docker://vomix/viral-identify:v0.1.0-beta.1"
+
+
 import os 
 
 logdir=relpath("identify/viral/logs")

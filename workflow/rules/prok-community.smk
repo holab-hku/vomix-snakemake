@@ -1,3 +1,8 @@
+container: "docker://vomix/prok-community:v0.1.0-beta.1"
+
+
+
+
 logdir = relpath("community/metaphlan/logs")
 tmpd = relpath("community/metaphlan/tmp")
 benchmarks = relpath("community/metaphlan/benchmarks")

@@ -1,3 +1,6 @@
+container: "docker://vomix/viral-taxonomy:v0.1.0-beta.1"
+
+
 logdir = relpath("taxonomy/viral/logs")
 tmpd = relpath("taxonomy/viral/tmp")
 benchmarks = relpath("taxonomy/viral/benchmarks")
