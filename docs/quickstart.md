@@ -56,17 +56,11 @@ EMAIL="your.email@example.com"
 # Activate conda environment
 conda activate vomix
 
-# Dry-run and list out all jobs without running task
+# Dry run (check jobs)
 snakemake --sdm conda --config module="viral-identify" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
 
-# Dry-run and submit jobs to the cluster with PBS
+# Run on cluster with 64 CPUs
 snakemake --sdm conda --config module="viral-identify" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
-
-# Use more memory (22 GB) but run faster (~10 mins)
-snakemake --sdm conda --config module="viral-identify" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
-
-# Use less memory (8 GB) but run slower (~40 mins)
-snakemake --sdm conda --config module="viral-identify" outdir="test_res" splits=8 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
 
 # Quick look at results
 head -n 20 test_res/identify/viral/output/classification_summary_vOTUs.csv
@@ -102,13 +96,10 @@ Although not part of the standard vOMIX-snakemake analysis, the `viral-benchmark
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda --config module="viral-benchmark" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20 -n
+snakemake --sdm conda --config module="viral-benchmark" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n
 
-# Use more memory (22 GB) but run faster (~10 mins)
-snakemake --sdm conda --config module="viral-benchmark" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
-
-# Use less memory (8 GB) but run slower (~40 mins)
-snakemake --sdm conda --config module="viral-benchmark" outdir="test_res" splits=8 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
+# Run jobs
+snakemake --sdm conda --config module="viral-benchmark" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20
 
 # Quick look at results
 head -n 20 test_res/identify/viral/output/benchmark_results_merged.csv
@@ -124,11 +115,8 @@ conda activate vomix
 # Dry run (check jobs)
 snakemake --sdm apptainer --config module="viral-benchmark" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20 -n
 
-# Use more memory (22 GB) but run faster (~10 mins)
+# Run jobs
 snakemake --sdm apptainer --config module="viral-benchmark" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20
-
-# Use less memory (8 GB) but run slower (~40 mins)
-snakemake --sdm apptainer --config module="viral-benchmark" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=8 -j 4 --latency-wait 20
 
 # Quick look at results
 head -n 20 test_res/identify/viral/output/benchmark_results_merged.csv
@@ -145,16 +133,10 @@ EMAIL="your.email@example.com"
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda --config module="viral-benchmark" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20 -n --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+snakemake --sdm conda --config module="viral-benchmark" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
 
-# Dry-run and submit jobs to the cluster with PBS
-snakemake --sdm conda --config module="viral-benchmark" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
-
-# Use more memory (22 GB) but run faster (~10 mins)
-snakemake --sdm conda --config module="viral-benchmark" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
-
-# Use less memory (8 GB) but run slower (~40 mins)
-snakemake --sdm conda --config module="viral-benchmark" outdir="test_res" splits=8 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+# Run jobs on cluster with 64 CPUs
+snakemake --sdm conda --config module="viral-benchmark" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
 
 # Quick look at results
 head -n 20 test_res/identify/viral/output/benchmark_results_merged.csv
@@ -211,8 +193,8 @@ EMAIL="your.email@example.com"
 # Activate conda environment
 conda activate vomix
 
-# Dry-run and list out all jobs without running task
-snakemake --sdm conda --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --dry-run --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+# Dry run (check jobs)
+snakemake --sdm conda --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --dry-run --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a" -n
 
 # Submit the workflow to the cluster with PBS
 snakemake --sdm conda --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
