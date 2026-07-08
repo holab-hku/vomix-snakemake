@@ -27,45 +27,57 @@ When a job fails, the first error line is usually the most useful. Later lines o
 If you are using a cluster executor, scheduler logs may also be available from your cluster system (`qstat`, `squeue`, `qacct`, or the equivalent command).
 ```
 
-## {octicon}`warning;0.85em` Common issues and fixes
+## {octicon}`question;0.85em` Common issues and fixes
 
-### 1. Conda / environment creation fails
+```{dropdown} Conda / environment creation fails
+:open: false
 
 - Ensure you activated the correct environment: `conda activate vomix`.
 - If Snakemake cannot create environments, verify that `conda`, `mamba`, or your container engine is installed and available.
 - For Apptainer mode, use `snakemake --sdm apptainer` and verify your Apptainer/Singularity setup.
+```
 
-### 2. Missing input or invalid file paths
+```{dropdown} Missing input or invalid file paths
+:open: false
 
 - Check that the `fasta`, `datadir`, `samplelist`, `R1`, and `R2` values are correct and point to existing files.
 - Use absolute or relative paths that are valid from the working directory where you run Snakemake.
 - If a sample list CSV is used, validate the file formatting and required columns.
+```
 
-### 3. Database download or path errors
+```{dropdown} Database download or path errors
+:open: false
 
 - Many modules require external databases. Ensure there is enough disk space and network access.
 - If database downloads fail, rerun the appropriate setup command or module such as `module="setup-database"`.
 - Check the `config.yml` keys for database paths such as `genomad-db`, `checkv-db`, `virsorter2-db`, and `vibrant-db`.
+```
 
-### 4. Permission denied or filesystem issues
+```{dropdown} Permission denied or filesystem issues
+:open: false
 
 - Avoid working inside directories where you do not have write permission.
 - Make sure the output directory and any database directories are writable.
 - If using a shared filesystem, confirm that file locking and locking proxies are supported.
+```
 
-### 5. Resource limits, memory, or timeouts
+```{dropdown} Resource limits, memory, or timeouts
+:open: false
 
 - Adjust Snakemake resources using `--resources mem_mb=<value>` or by tuning module-specific config.
 - Use `splits=8` to reduce memory consumption at the cost of longer runtime.
 - For cluster jobs, increase walltime, memory, or CPU resources in your scheduler submission command.
+```
 
-### 6. Cluster / scheduler failures
+```{dropdown} Cluster / scheduler failures
+:open: false
 
 - Verify cluster options such as queue name, email, nodes, ppn, and memory settings in your `--cluster-generic-submit-cmd`.
 - Check scheduler-specific logs for job submission failures or runtime termination.
 - Confirm that the cluster login node can reach the compute nodes and that the required modules are loaded there.
+```
 
-## {octicon}`sparkles;0.85em` Useful Snakemake commands
+## {octicon}`code;0.85em` Useful Snakemake commands
 
 - `snakemake -n`: dry run, shows the planned workflow without executing.
 - `snakemake --reason`: print the reason why each job is executed.
