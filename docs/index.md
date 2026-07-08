@@ -1,4 +1,4 @@
-## vomix-snakemake
+# vomix-snakemake
 
 vomix-snakemake is the back-end pipline of the command-line tool vomix-MEGA: a reproducible, scalable, and fast viral metagenomic pipeline for analyzing large-scale bulk-metagenomic and viromic data. We have engineered multiple bottlenecks in current state-ofthe-art software to allow rapid and well-benchmarked viral metagenomic analysis. Here are some of vomix-snakemake's handy features:
 
@@ -46,7 +46,7 @@ Simply feed vomix-MEGA a list  your SRA accession codes and it will download, pr
 
 ::::
 
-### {octicon}`rocket;0.85em` Getting Started
+## {octicon}`rocket;0.85em` Getting Started
 
 To start using vomix-snakemake, read the installation and quickstart guides below. In case you want to dive deeper into each module and the outputs it produces, visit the pages listed in the sidebar.
 
@@ -62,7 +62,7 @@ Instructions on how to install vomix-snakemake on your computer or server.
 Learn how to run vomix-snakemake on a sample dataset.
 :::
 
-### {octicon}`bookmark;0.85em` Citing vomix-MEGA
+## {octicon}`bookmark;0.85em` Citing vomix-MEGA
 
 If you use vomix-MEGA in your work, please consider citing its pre-print manuscript:
 
@@ -74,7 +74,7 @@ If you use vomix-MEGA in your work, please consider citing its pre-print manuscr
 Erfan Shekarriz, Elsa VIJENDRAN, Joshua WK Ho  — *bioRxiv* (2026), DOI: XXXXXXXXXXXXXXXXXXX.
 :::
 
-### {octicon}`bug;0.85em` Report a bug to us
+## {octicon}`bug;0.85em` Report a bug to us
 
 Have any questions or you've found a bug during your analysis? Please don't hesitate to report it to us by making an issue on our [{octicon}`mark-github;0.95em` GitHub repository](https://github.com/holab-hku/vomix-MEGA/issues/new).
 

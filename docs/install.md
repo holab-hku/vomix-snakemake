@@ -7,11 +7,15 @@ You can install vomix-snakemake in you computer using general-purpose package ma
 ::::{tab-set}
 
 :::{tab-item} Mamba
-[Mamba](https://mamba.readthedocs.io/en/latest/) is a package manager that handles all your dependencies for you. To install vomix-snakemake mad using Mamba, you need to create a new environment and activate it before running the `snakemake` command.
+[Mamba](https://mamba.readthedocs.io/en/latest/) is a package manager that handles all your dependencies for you. To install vomix-snakemake using Mamba, you can create the environment directly from the repository environment file.
 
 ```bash
+# Download GitHub directory
+git clone https://github.com/holab-hku/vomix-snakemake.git
+cd vomix-snakemake
+
 # Install base environment
-mamba create -n vomix -c conda-forge snakemake=8.25.5 biopython=1.84 snakemake-executor-plugin-cluster-generic=1.0.9 -y
+mamba env create -f environment.yml
 
 # Activate environment
 mamba activate vomix
@@ -23,11 +27,15 @@ snakemake -v
 :::
 
 :::{tab-item} Conda
-[Conda](https://docs.conda.io/projects/conda/en/stable/) is a package manager that handles all your dependencies for you. To install vomix-snakemake using Conda, you need to create a new environment and activate it before running the `snakemake` command.
+[Conda](https://docs.conda.io/projects/conda/en/stable/) is a package manager that handles all your dependencies for you. To install vomix-snakemake using Conda, you can create the environment from the repository environment file.
 
 ```bash
+# Download GitHub directory
+git clone https://github.com/holab-hku/vomix-snakemake.git
+cd vomix-snakemake
+
 # Install base environment
-conda create -n vomix -c conda-forge snakemake=8.25.5 biopython=1.84 snakemake-executor-plugin-cluster-generic=1.0.9 -y
+conda env create -f environment.yml
 
 # Activate environment
 conda activate vomix
@@ -38,11 +46,43 @@ snakemake -v
 
 :::
 
+:::{tab-item} Conda Lock
+[Conda Lock](https://github.com/conda/conda-lock) provides a pinned dependency lock file that is often the most reliable fallback when other installation methods fail.
+
+```bash
+# Download GitHub directory
+git clone https://github.com/holab-hku/vomix-snakemake.git
+cd vomix-snakemake
+
+# Create a conda-lock environment 
+# if you don't want to install into base environment
+conda create -n conda-lock -c conda-forge conda-lock=4.0.2 -y
+conda activate conda-lock
+
+# Use conda-lock to install the environment from the repository lock file
+conda-lock install --name vomix conda-lock.yml
+
+# Verify Installation
+snakemake -v
+```
+
+:::
+
 ::::
+
+```{admonition} Conda update
+:class: note
+If you are using conda or mamba, make sure your conda installation is up to date before proceeding. You can update it with `conda update -n base -c defaults conda`
+```
 
 ```{admonition} Conda Channel Priorities
 :class: attention
-If you are using conda or mamba, make sure to set channel orders correctly and set channel priority to strict. Via the `conda config --add channels bioconda`, `conda config --add channels conda-forge`, and `conda config --set channel_priority strict` respectively. For mamba replace `conda` with `mamba` respectively.  
+If you are using conda or mamba, make sure to set channel orders correctly and set channel priority to strict. Via the `conda config --add channels defaults`, `conda config --add channels bioconda`, `conda config --add channels conda-forge`, and `conda config --set channel_priority strict` respectively. For mamba replace `conda` with `mamba` respectively.  
+```
+
+```{admonition} Conda Lock as a fallback
+:class: tip
+If the standard conda or mamba installation methods do not work, `conda-lock` is usually the best approach because it installs the pinned dependency set from the repository lock file. Snakemake and many bioinformatics tools rely heavily on POSIX-compliant workflows, so they are currently best supported on non-Windows operating systems.
 ```
 
 ## Docker, Apptainer, and Singularity
@@ -54,7 +94,7 @@ snakemake --software-deployment-method apptainer
 ```
 
 ```{admonition} Using Conda within Containers
-:class: attention
+:class: note
 All jobs within vomix-snakemake have specified conda environments. The containers built via snakemake is then just a light-weight image of a standard linux OS with conda environments being built on top, meaning it still relies on conda environment installation.
 ```
 

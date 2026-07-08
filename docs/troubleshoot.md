@@ -37,6 +37,39 @@ If you are using a cluster executor, scheduler logs may also be available from y
 - For Apptainer mode, use `snakemake --sdm apptainer` and verify your Apptainer/Singularity setup.
 ```
 
+```{dropdown} CreateCondaEnvironmentException: Conda version too old
+:open: false
+
+This is a known behavior in Snakemake 8+. To ensure strict reproducibility and security regarding package isolation, modern versions of Snakemake require a relatively up-to-date Conda framework (version 24.7.1 or later). Because your system is running an older conda version (4.10.3), Snakemake refuses to spin up the rule-specific environments. This requirement persists across newer v8+ releases, so updating Snakemake alone will not bypass this check—you need to provide a newer Conda executable.
+
+Here are the best ways to fix it depending on how much control you have over your environment:
+
+- Method 1: The "Hacker's Quick Fix" (No Admin/Global Updates Needed). If you are on a shared cluster or do not want to modify your base environment, install a newer version of conda directly inside your active Snakemake environment. Activate the environment where Snakemake is installed and run:
+
+  ```bash
+  conda install conda>=24.7.1
+  ```
+
+  Because Snakemake relies on Python's environment paths, it will intercept the updated internal conda package instead of reaching out to your old system-wide version.
+
+- Method 2: The Canonical Way (Update your global/base Conda). If you own the system or are using an isolated local install (like Miniconda or Miniforge), updating your base package manager is the cleanest route. From your base environment, run:
+
+  ```bash
+  conda update -n base -c defaults conda
+  ```
+
+  If you are using Miniforge/Mambaforge, swap `-c defaults` with `-c conda-forge`.
+
+- Method 3: Bypassing the check (The "I'm in a hurry" option). If you are completely blocked from updating software and you know your old conda works fine, you can bypass the version check entirely by manually commenting out the restriction in Snakemake's source code. Find your active Snakemake source files:
+
+  ```bash
+  cd $(python -c "import site; print(site.getsitepackages()[0])")/snakemake/deployment
+  ```
+
+  Open `conda.py` with a text editor and remove or comment out the block raising `CreateCondaEnvironmentException` in the `_check_version` method.
+
+```
+
 ```{dropdown} Missing input or invalid file paths
 :open: false
 
@@ -105,10 +138,3 @@ If you cannot resolve the problem after checking logs and documentation, open an
 :class: note
 Please include the log file and the full error message. Partial error excerpts often make it harder to identify the actual failure.
 ```
-
-## {octicon}`heart;0.85em` Best practices
-
-- Keep your workflow directory separate from analysis output.
-- Use `vomix_update.sh` only to update the workflow files, not your analysis outputs.
-- Re-run failed jobs with `--rerun-incomplete` before you manually delete outputs.
-- Keep your Conda environment updated and install the required dependencies from `docs/install.md`.
