@@ -66,6 +66,6 @@ The main output from this module is the assembly file `final.contigs.fa` which i
 
 We have specific guidelines for troubleshooting vOMIX-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md).
 
-### {octicon}`bug;0.85em` Report a bug to us
+## {octicon}`bug;0.85em` Report a bug to us
 
-Have any questions or you've found a bug during your analysis? Please don't hesitate to report it to us by making an issue on our [{octicon}`mark-github;0.95em` GitHub repository](https://github.com/holab-hku/vomix-snakemake/issues/new).
+Have any questions or you've found a bug during your analysis? Please don't hesitate to report it to us by making an issue on our [{octicon}`mark-github;0.95em` GitHub repository](https://github.com/holab-hku/vomix-MEGA/issues/new).
