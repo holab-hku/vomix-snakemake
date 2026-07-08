@@ -94,7 +94,6 @@ install
 quickstart
 modules/index
 run
-output
 ```
 
 ```{toctree}
