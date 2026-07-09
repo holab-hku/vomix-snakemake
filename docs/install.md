@@ -100,9 +100,14 @@ snakemake --software-deployment-method apptainer --use-conda
 
 ::::
 
+```{admonition} Snakemake Apptainer Bug
+:class: warning
+With the current version of snakemake used by vomix-snakemake (`v9.23.1`), when running snakemake with `--sdm apptainer --use-conda`, you will get a `singularity: command not found` error. To prevent this, run your command with `--sdm apptainer` WITHOUT `--use-conda` once to allow singularity image downloads, then switch back to using `--sdm apptainer --use-conda`. We will update this as soon as a new debugged version of snakemake is available !
+```
+
 ```{admonition} Using Conda within Containers
-:class: note
-All jobs within vomix-snakemake have specified conda environments. The containers built via snakemake is then just a light-weight image of a standard linux OS with conda environments being built on top, meaning it still relies on conda environment installation.
+:class: warning
+Each rule in vomix-snakemake's underlying snakemake files depending on conda environments. Even when running with `--sdm apptainer`, you MUST use the `--use-conda` flag to allow the conda directives to be activated, inside or outside containers.
 ```
 
 ## {octicon}`book;0.85em` Troubleshooting Guide

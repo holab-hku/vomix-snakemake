@@ -15,10 +15,10 @@ The `viral-benchmark` module is an integrated diagnostic component within vomix-
 
 ```bash
 # Conda Run
-snakemake --config module="viral-benchmark" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" --sdm conda --use-conda -j 4 --latency-wait 20
+snakemake --sdm conda --use-conda --config module="viral-benchmark" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --config module="viral-benchmark" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" --sdm apptainer --use-conda -j 4 --latency-wait 20
+snakemake --sdm apptainer --use-conda --config module="viral-benchmark" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" -j 4 --latency-wait 20
 ```
 
 :::
@@ -26,10 +26,10 @@ snakemake --config module="viral-benchmark" outdir="sample/results" samplelist="
 
 ```bash
 # Conda Run
-snakemake --config module="viral-benchmark" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" --sdm conda --use-conda -j 4 --latency-wait 20
+snakemake --sdm conda --use-conda --config module="viral-benchmark" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --config module="viral-benchmark" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" --sdm apptainer --use-conda -j 4 --latency-wait 20
+snakemake --sdm apptainer --use-conda --config module="viral-benchmark" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
 ```
 
 :::
@@ -37,10 +37,10 @@ snakemake --config module="viral-benchmark" outdir="sample/results" fasta="sampl
 
 ```bash
 # Conda Run
-snakemake --config module="viral-benchmark" fastadir="sample/contigs/" --sdm conda --use-conda -j 4 --latency-wait 20
+snakemake --sdm conda --use-conda --config module="viral-benchmark" fastadir="sample/contigs/" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --config module="viral-benchmark" fastadir="sample/contigs/" --sdm apptainer --use-conda -j 4 --latency-wait 20
+snakemake --sdm apptainer --use-conda --config module="viral-benchmark" fastadir="sample/contigs/"  -j 4 --latency-wait 20
 ```
 
 :::

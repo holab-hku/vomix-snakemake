@@ -24,10 +24,10 @@ The final output is a clean, non-redundant, and rigorously validated vOTU FASTA 
 
 ```bash
 # Conda Run
-snakemake --config module="viral-identify" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" --sdm conda --use-conda -j 4 --latency-wait 20
+snakemake --sdm conda --use-conda --config module="viral-identify" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --config module="viral-identify" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" --sdm apptainer --use-conda -j 4 --latency-wait 20
+snakemake --sdm apptainer --use-conda --config module="viral-identify" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" -j 4 --latency-wait 20
 ```
 
 :::
@@ -35,10 +35,10 @@ snakemake --config module="viral-identify" outdir="sample/results" samplelist="s
 
 ```bash
 # Conda Run
-snakemake --config module="viral-identify" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" --sdm conda --use-conda -j 4 --latency-wait 20
+snakemake --sdm conda --use-conda --config module="viral-identify" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --config module="viral-identify" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" --sdm apptainer --use-conda -j 4 --latency-wait 20
+snakemake --sdm apptainer --use-conda --config module="viral-identify" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
 ```
 
 :::
@@ -46,10 +46,10 @@ snakemake --config module="viral-identify" outdir="sample/results" fasta="sample
 
 ```bash
 # Conda Run
-snakemake --config module="viral-identify" fastadir="sample/contigs/" --sdm conda --use-conda -j 4 --latency-wait 20
+snakemake --sdm conda --use-conda --config module="viral-identify" fastadir="sample/contigs/"  -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --config module="viral-identify" fastadir="sample/contigs/" --sdm apptainer --use-conda -j 4 --latency-wait 20
+snakemake --sdm apptainer --use-conda --config module="viral-identify" fastadir="sample/contigs/" -j 4 --latency-wait 20
 ```
 
 :::

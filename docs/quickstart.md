@@ -204,7 +204,18 @@ head -n 20 test_res/identify/viral/output/classification_summary_vOTUs.csv
 ```
 
 :::
+
+```{admonition} HPC Apptainer vs. Conda Run
+:class: Tip 
+When scheduling jobs for HPC clusters, you can still choose between `--sdm conda` and `--sdm apptainer`. Make sure that apptainer and conda are available on all the nodes of your HPC before running. 
+```
+
 ::::
+
+```{admonition} Sample List
+:class: note
+Make sure that you've install apptainer and conda before running the commands above. You can read more on our [Installation guide](/install.md)
+```
 
 ```{admonition} Sample List
 :class: Tip 

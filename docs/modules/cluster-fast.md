@@ -15,10 +15,10 @@ The vOTU clustering module identifies viral operational taxonomic units (vOTUs) 
 
 ```bash
 # Conda Run
-snakemake --config module="cluster-fast" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" --sdm conda --use-conda -j 4 --latency-wait 20
+snakemake --sdm conda --use-conda --config module="cluster-fast" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --config module="cluster-fast" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" --sdm apptainer --use-conda -j 4 --latency-wait 20
+snakemake --sdm apptainer --use-conda --config module="cluster-fast" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" -j 4 --latency-wait 20
 ```
 
 :::

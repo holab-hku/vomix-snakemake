@@ -15,10 +15,10 @@ The `viral-host` module focuses on predicting the cellular hosts of your vOTUs o
 
 ```bash
 # Conda Run
-snakemake --config module="prok-annotate" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" --sdm conda --use-conda -j 4 --latency-wait 20
+snakemake --sdm conda --use-conda --config module="prok-annotate" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --config module="prok-annotate" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" --sdm apptainer --use-conda -j 4 --latency-wait 20
+snakemake --sdm apptainer --use-conda --config module="prok-annotate" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --latency-wait 20
 ```
 
 :::
