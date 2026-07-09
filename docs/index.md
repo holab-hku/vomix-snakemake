@@ -1,13 +1,13 @@
-# vomix-snakemake --use-conda
+# vomix-snakemake
 
-vomix-snakemake --use-conda is the back-end pipline of the command-line tool vomix-MEGA: a reproducible, scalable, and fast viral metagenomic pipeline for analyzing large-scale bulk-metagenomic and viromic data. We have engineered multiple bottlenecks in current state-ofthe-art software to allow rapid and well-benchmarked viral metagenomic analysis. Here are some of vomix-snakemake's handy features:
+vomix-snakemake is the back-end pipline of the command-line tool vomix-MEGA: a reproducible, scalable, and fast viral metagenomic pipeline for analyzing large-scale bulk-metagenomic and viromic data. We have engineered multiple bottlenecks in current state-ofthe-art software to allow rapid and well-benchmarked viral metagenomic analysis. Here are some of vomix-snakemake's handy features:
 
 ::::{grid} 3
 
 :::{grid-item-card}
 *High Speed*
 ^^^
-vomix-snakemake --use-conda operates 10-1000 times faster than current pipelines that have unoptimized underlying software dependencies.
+vomix-snakemake operates 10-1000 times faster than current pipelines that have unoptimized underlying software dependencies.
 :::
 
 :::{grid-item-card}
@@ -35,7 +35,7 @@ We've benchmarked our viral identification on experimental as well as mock-data 
 :::{grid-item-card}
 *Reproducible & Dockerized*
 ^^^
-All analysis is logged via a snakemake --use-conda back-end, which is configured with Docker to allow full reproducibility.
+All analysis is logged via a snakemake back-end, which is configured with Docker to allow full reproducibility.
 :::
 
 :::{grid-item-card}
@@ -48,18 +48,18 @@ Simply feed vomix-MEGA a list  your SRA accession codes and it will download, pr
 
 ## {octicon}`rocket;0.85em` Getting Started
 
-To start using vomix-snakemake --use-conda, read the installation and quickstart guides below. In case you want to dive deeper into each module and the outputs it produces, visit the pages listed in the sidebar.
+To start using vomix-snakemake, read the installation and quickstart guides below. In case you want to dive deeper into each module and the outputs it produces, visit the pages listed in the sidebar.
 
 :::{card} Installation
 :link: install
 :link-type: doc
-Instructions on how to install vomix-snakemake --use-conda on your computer or server.
+Instructions on how to install vomix-snakemake on your computer or server.
 :::
 
 :::{card} Quickstart
 :link: quickstart
 :link-type: doc
-Learn how to run vomix-snakemake --use-conda on a sample dataset.
+Learn how to run vomix-snakemake on a sample dataset.
 :::
 
 ## {octicon}`bookmark;0.85em` Citing vomix-MEGA
@@ -87,7 +87,7 @@ self
 
 ```{toctree}
 :maxdepth: 1
-:caption: vomix-snakemake --use-conda
+:caption: vomix-snakemake
 :hidden:
 
 install
