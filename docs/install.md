@@ -98,6 +98,8 @@ snakemake --software-deployment-method apptainer --use-conda
 
 :::
 
+::::
+
 ```{admonition} Using Conda within Containers
 :class: note
 All jobs within vomix-snakemake have specified conda environments. The containers built via snakemake is then just a light-weight image of a standard linux OS with conda environments being built on top, meaning it still relies on conda environment installation.

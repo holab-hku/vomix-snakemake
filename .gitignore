@@ -18,6 +18,7 @@
 !config/*
 !docs/
 !docs/**
+docs/_build  #ignore local build files
 !resources/
 !workflow/
 !workflow/software/

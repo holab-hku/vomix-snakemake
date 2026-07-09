@@ -12,14 +12,7 @@ release = "local-dev"
 # Check if building on Read the Docs
 if os.environ.get("READTHEDOCS") == "True":
     rtd_version = os.environ.get("READTHEDOCS_VERSION")
-
-    # Clean up standard RTD default slugs if necessary
-    if rtd_version in ["latest", "stable"]:
-        # Optional: fall back to a hardcoded string or use git description
-        version = rtd_version
-        release = rtd_version
-    else:
-        # Use the exact Git tag name pushed to GitHub
+    if rtd_version:
         version = rtd_version
         release = rtd_version
 
