@@ -156,7 +156,7 @@ rule genomad_filter:
     mv {params.tmpdir}/tmp.csv {output.scrs}
     cat {params.tmpdir}/tmplist | uniq > {output.hits}
     
-    seqkit grep {input.fna} -f {output.hits} | seqkit replace -p  "\s.*" -r "" | seqkit replace -p $ -r _{wildcards.sample_id}  > {params.tmpdir}/tmp.fa 2> {log}
+    seqkit grep {input.fna} -f {output.hits} | seqkit replace -p  "\\s.*" -r "" | seqkit replace -p $ -r _{wildcards.sample_id}  > {params.tmpdir}/tmp.fa 2> {log}
     mv {params.tmpdir}/tmp.fa {output.fna}
 
     rm -rf {params.tmpdir}/*
@@ -297,9 +297,9 @@ rule votu:
     rm -rf {params.tmpdir}/*
     mkdir -p {params.tmpdir} {params.outdir}
 
-    seqkit replace {input.provirusfasta} --f-use-regexp -p "(.+)_\d\s.+$" -r '$1' | \
+    seqkit replace {input.provirusfasta} --f-use-regexp -p "(.+)_\\d\\s.+$" -r '$1' | \
         seqkit grep -f {input.provirushits} > {params.tmpdir}/tmp1.fa 2> {log}
-    seqkit replace {input.virusfasta} --f-use-regexp -p "(.+)_\d\s.+$" -r '$1' | \
+    seqkit replace {input.virusfasta} --f-use-regexp -p "(.+)_\\d\\s.+$" -r '$1' | \
         seqkit grep -f {input.provirushits} >> {params.tmpdir}/tmp1.fa 2> {log}
 
     seqkit grep {input.virusfasta} -f {input.virushits} > {params.tmpdir}/tmp2.fa 2> {log}
