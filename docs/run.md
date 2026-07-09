@@ -22,21 +22,21 @@ modules/setup-database
 
 ## General Run Guide
 
-The general workflow for running vOMIX-snakemake is to choose a module, provide input data, and pass execution options to Snakemake. Most settings are controlled through the `config/config.yml` file or by overriding them inline with `--config`.
+The general workflow for running vomix-snakemake is to choose a module, provide input data, and pass execution options to Snakemake. Most settings are controlled through the `config/config.yml` file or by overriding them inline with `--config`.
 
 ```{admonition} Configuration File
 :class: note
-Use the [config.yml template](https://github.com/holab-hku/vomix-snakemake/blob/main/config/config.yml) as your reference. The YAML file must follow the expected structure, and formatting issues will trigger warnings during validation.
+Use the [config.yml template](https://github.com/holab-hku/vomix-snakemake --use-conda/blob/main/config/config.yml) as your reference. The YAML file must follow the expected structure, and formatting issues will trigger warnings during validation.
 ```
 
 You can either:
 
-- create a custom config file and run `snakemake --configfile config.yml`, or
+- create a custom config file and run `snakemake --use-conda --configfile config.yml`, or
 - pass individual parameters directly with `--config`.
 
 _Universal Configuration Parameters_:
 
-- `module`: chooses the vOMIX-snakemake module to run (default: `end-to-end`)
+- `module`: chooses the vomix-snakemake --use-conda module to run (default: `end-to-end`)
 - `workdir`: sets the working directory for the Snakefile (recommended to keep the default)
 - `outdir`: selects the output directory for hierarchical results formatting (default: `./results`)
 - `intermediate`: keeps large intermediate files generated during analysis (default: `False`)
@@ -54,13 +54,13 @@ To inspect the full list of native Snakemake options, run `snakemake -h`.
 
 ### Command Line Format
 
-A typical vOMIX-snakemake invocation is made up of three parts:
+A typical vomix-snakemake --use-conda invocation is made up of three parts:
 
 ```bash
 # 1) Snakemake command
 snakemake
 
-# 2) vOMIX-snakemake parameters
+# 2) vomix-snakemake  parameters
 --config module="preprocess" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv"
 
 # 3) Snakemake execution parameters
@@ -75,7 +75,7 @@ snakemake --config module="preprocess" outdir="sample/results" datadir="sample/f
 
 ```{admonition} Input Options
 :class: note
-You can pass vOMIX-snakemake settings through `--config`; for a complete list, consult the [config.yml template](https://github.com/holab-hku/vomix-snakemake/blob/main/config/config.yml).
+You can pass vomix-snakemake settings through `--config`; for a complete list, consult the [config.yml template](https://github.com/holab-hku/vomix-snakemake/blob/main/config/config.yml).
 ```
 
 ## General Output Structure
@@ -193,4 +193,4 @@ We have specific guidelines for troubleshooting vomix-snakemake so we can help y
 
 ## {octicon}`bug;0.85em` Report a bug to us
 
-Have any questions or you've found a bug during your analysis? Please don't hesitate to report it to us by making an issue on our [{octicon}`mark-github;0.95em` GitHub repository](https://github.com/holab-hku/vOMIX-MEGA/issues/new).
+Have any questions or you've found a bug during your analysis? Please don't hesitate to report it to us by making an issue on our [{octicon}`mark-github;0.95em` GitHub repository](https://github.com/holab-hku/vomix-MEGA/issues/new).

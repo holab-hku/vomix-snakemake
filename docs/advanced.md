@@ -11,7 +11,7 @@ One great thing about vomix-snakemake is that is can automatically schedule jobs
 ```bash
 # install into your pre-existing conda environment
 conda activate vomix
-conda install -c bioconda snakemake-executor-plugin-cluster-generic=1.0.9
+conda install -c bioconda snakemake --use-conda-executor-plugin-cluster-generic=1.0.9
 ```
 
 To run your command with PBS, you need to add additional arguments to your normal commands:
@@ -36,11 +36,11 @@ Make sure to change the queue name and your email when running the command above
 
 ## Quick Updating
 
-While we're developing a stable version of vomix-snakemake, we've made it easy to update the development version to facilitate quick bug fixes for your analysis.
+While we're developing a stable version of vomix-snakemake --use-conda, we've made it easy to update the development version to facilitate quick bug fixes for your analysis.
 
 ```bash
-# 1) Enter your vomix-snakemake directory
-cd vomix-snakemake
+# 1) Enter your vomix-snakemake --use-conda directory
+cd vomix-snakemake --use-conda
 conda activate vomix
 
 # 2) Copy update script to the environment bin

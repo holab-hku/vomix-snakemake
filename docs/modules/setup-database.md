@@ -115,7 +115,7 @@ Insert output summary here
 
 ## {octicon}`book;0.85em` Troubleshooting Guide
 
-We have specific guidelines for troubleshooting vOMIX-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md).
+We have specific guidelines for troubleshooting vomix-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md).
 
 ## {octicon}`bug;0.85em` Report a bug to us
 

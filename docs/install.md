@@ -21,7 +21,7 @@ mamba env create -f environment.yml
 mamba activate vomix
 
 # Verify Installation
-snakemake -v
+snakemake --use-conda -v
 ```
 
 :::
@@ -41,7 +41,7 @@ conda env create -f environment.yml
 conda activate vomix
 
 # Verify Installation
-snakemake -v
+snakemake --use-conda -v
 ```
 
 :::
@@ -63,7 +63,7 @@ conda activate conda-lock
 conda-lock install --name vomix conda-lock.yml
 
 # Verify Installation
-snakemake -v
+snakemake --use-conda -v
 ```
 
 :::
@@ -71,7 +71,7 @@ snakemake -v
 ::::
 
 ```{admonition} Conda update
-:class: note
+:class: attention
 If you are using conda or mamba, make sure your conda installation is up to date before proceeding. You can update it with `conda update -n base -c defaults conda`
 ```
 
@@ -81,17 +81,22 @@ If you are using conda or mamba, make sure to set channel orders correctly and s
 ```
 
 ```{admonition} Conda Lock as a fallback
-:class: tip
+:class: note
 If the standard conda or mamba installation methods do not work, `conda-lock` is usually the best approach because it installs the pinned dependency set from the repository lock file. Snakemake and many bioinformatics tools rely heavily on POSIX-compliant workflows, so they are currently best supported on non-Windows operating systems.
 ```
 
 ## Docker, Apptainer, and Singularity
 
-vomix-snakemake is built on a snakemake back-end, which facilitates native `Docker` deployment via a `Apptainer` (formerly `Apptainer`) `.sif` image. The container image generated contains explicitly each conda environment mounted on top of a base operating system. Containers are preferred for the most robus forms of reproducibility, whereas `conda` and `mamba` installations might not work on Windows or Mac-ARM systems.
+vomix-snakemake is built on a snakemake back-end, which facilitates native `Docker` deployment via a `Apptainer` (formerly `Singularity`) `.sif` image. The container image generated contains explicitly each conda environment mounted on top of a base operating system. Containers are preferred for the most robus forms of reproducibility, whereas `conda` and `mamba` installations might not work on Windows or Mac-ARM systems.
+
+::::{tab-set}
+:::{tab-item} Apptainer/Singularity
 
 ```bash
-snakemake --software-deployment-method apptainer
+snakemake --software-deployment-method apptainer --use-conda
 ```
+
+:::
 
 ```{admonition} Using Conda within Containers
 :class: note

@@ -5,7 +5,7 @@
 If your run fails or behaves unexpectedly, follow these steps in order. This helps you identify the root cause and collect the information needed to fix the problem or report it clearly.
 
 1. Run the command again and capture the full Snakemake output.
-2. Open the job-specific log file in the results directory and the `.snakemake/log` directory.
+2. Open the job-specific log file in the results directory and the `.snakemake --use-conda/log` directory.
 3. Confirm the input paths, sample list, and configuration values in `config.yml` or the command line.
 4. Reproduce the error using a dry run or smaller command when possible.
 5. Search the repository documentation and GitHub issues for similar failures.
@@ -34,7 +34,7 @@ If you are using a cluster executor, scheduler logs may also be available from y
 
 - Ensure you activated the correct environment: `conda activate vomix`.
 - If Snakemake cannot create environments, verify that `conda`, `mamba`, or your container engine is installed and available.
-- For Apptainer mode, use `snakemake --sdm apptainer` and verify your Apptainer/Singularity setup.
+- For Apptainer mode, use `snakemake --sdm apptainer --use-conda` and verify your Apptainer/Singularity setup.
 ```
 
 ```{dropdown} CreateCondaEnvironmentException: Conda version too old
@@ -112,10 +112,10 @@ Here are the best ways to fix it depending on how much control you have over you
 
 ## {octicon}`code;0.85em` Useful Snakemake commands
 
-- `snakemake -n`: dry run, shows the planned workflow without executing.
-- `snakemake --reason`: print the reason why each job is executed.
-- `snakemake --rerun-incomplete`: rerun rules with incomplete outputs.
-- `snakemake --printshellcmds`: show the commands executed by each rule.
+- `snakemake --use-conda -n`: dry run, shows the planned workflow without executing.
+- `snakemake --use-conda --reason`: print the reason why each job is executed.
+- `snakemake --use-conda --rerun-incomplete`: rerun rules with incomplete outputs.
+- `snakemake --use-conda --printshellcmds`: show the commands executed by each rule.
 - `snakemake --config module="..." ... --use-conda -j 4 --latency-wait 20`: typical command pattern for local runs.
 
 ```{admonition} If you are uncertain

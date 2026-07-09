@@ -6,7 +6,7 @@
 :align: center
 ```
 
-The `viral-benchmark` module is an integrated diagnostic component within vomix-snakemake, designed to facilitate the rapid, side-by-side performance comparison of six established viral contig identification tools: `geNomad`, `DeepVirFinder`, `PhaMer`, `VirSorter2`, `VirFinder`, and `VIBRANT`. The module supports flexible input configurations, allowing users to process either a single FASTA file or an entire directory of files treated as independent samples.
+The `viral-benchmark` module is an integrated diagnostic component within vomix-snakemake --use-conda, designed to facilitate the rapid, side-by-side performance comparison of six established viral contig identification tools: `geNomad`, `DeepVirFinder`, `PhaMer`, `VirSorter2`, `VirFinder`, and `VIBRANT`. The module supports flexible input configurations, allowing users to process either a single FASTA file or an entire directory of files treated as independent samples.
 
 ## Quick Run
 
@@ -119,7 +119,7 @@ The individual software outputs can be seen in the `identify/viral/intermediate`
 
 ## {octicon}`book;0.85em` Troubleshooting Guide
 
-We have specific guidelines for troubleshooting vOMIX-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md).
+We have specific guidelines for troubleshooting vomix-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md).
 
 ## {octicon}`bug;0.85em` Report a bug to us
 
