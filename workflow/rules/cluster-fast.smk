@@ -1,7 +1,4 @@
-container: "docker://vomix/clustering:v0.1.0-beta.1"
-
-
-
+container: "docker://ghcr.io/erfanshekarriz/vomix-cluster-fast:v0.1.0-beta.1"
 
 logdir = relpath("identify/viral/logs")
 tmpd = relpath("identify/viral/tmp")

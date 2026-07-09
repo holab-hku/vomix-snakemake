@@ -4,12 +4,13 @@
 # but not these files
 !.readthedocs.yaml
 !.gitignore
+!environment.yml
+!conda-lock.yml
 !pyproject.toml
 !mkdocs.yml
 !README.md
 !LICENSE.md
 !CHANGELOG.md
-!Dockerfile
 !sample/sample_list.csv
 
 # but not these subdirectories 
@@ -18,9 +19,9 @@
 !config/*
 !docs/
 !docs/**
-docs/_build  #ignore local build files
 !resources/
 !workflow/
+!workflow/rules/
 !workflow/software/
 !workflow/envs
 !workflow/envs/**
@@ -33,3 +34,5 @@ docs/_build  #ignore local build files
 # except these subdirectories
 workflow/database
 workflow/params
+workflow/scripts/__pycache__/sample_list_parse.cpython-312.pyc
+docs/_build

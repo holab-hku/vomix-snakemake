@@ -185,7 +185,7 @@ if config["module"] == "assembly" or config["module"] == "viral-end-to-end":
 if config["module"] == "viral-identify" or config["module"] == "viral-end-to-end":
   include: "rules/viral-identify.smk"
   include: "rules/checkv-pyhmmer.smk"
-  include: "rules/clustering.smk"
+  include: "rules/cluster-fast.smk"
   targets += [relpath("identify/viral/logs/done.log")]
 
 
@@ -198,9 +198,9 @@ if config["module"] == "viral-benchmark":
 if config["module"] == "viral-refilter":
   include: "rules/refilter-genomad.smk"
   include: "rules/checkv-pyhmmer.smk"
-  include: "rules/clustering.smk"
+  include: "rules/cluster-fast.smk"
   targets += [relpath("identify/viral/logs/done.log"), 
-      relpath("identify/viral/logs/clustering-done.log"), 
+      relpath("identify/viral/logs/cluster-fast-done.log"), 
       relpath("identify/viral/logs/checkv-done.log")]
 
 # checkv-pyhmmer
@@ -210,8 +210,8 @@ if config["module"] == "checkv-pyhmmer":
 
 # cluster fast
 if config["module"] == "cluster-fast":
-  include: "rules/clustering.smk"
-  targets += [relpath("identify/viral/logs/clustering-done.log")]
+  include: "rules/cluster-fast.smk"
+  targets += [relpath("identify/viral/logs/cluster-fast-done.log")]
 
 # viral taxonomy
 if config["module"] == "viral-taxonomy" or config["module"] == "viral-end-to-end":
