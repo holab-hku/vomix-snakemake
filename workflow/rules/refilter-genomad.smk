@@ -1,4 +1,5 @@
-container: "docker://vomix/refilter-genomad:v0.1.0-beta.1"
+container: "docker://ghcr.io/erfanshekarriz/vomix-refilter-genomad:v0.1.0-beta.1"
+
 
 
 

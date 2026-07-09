@@ -21,6 +21,7 @@
 docs/_build  #ignore local build files
 !resources/
 !workflow/
+!workflow/rules
 !workflow/software/
 !workflow/envs
 !workflow/envs/**

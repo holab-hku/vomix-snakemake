@@ -1,4 +1,4 @@
-container: "docker://ghcr.io/erfanshekarriz/preprocess:v0.1.0-beta.1"
+container: "docker://ghcr.io/erfanshekarriz/vomix-preprocess:v0.1.0-beta.1"
 
 
 logdir=relpath("preprocess/logs")

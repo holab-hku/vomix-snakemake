@@ -1,4 +1,5 @@
-container: "docker://vomix/viral-binning:v0.1.0-beta.1"
+container: "docker://ghcr.io/erfanshekarriz/vomix-viral-binning:v0.1.0-beta.1"
+
 
 
 

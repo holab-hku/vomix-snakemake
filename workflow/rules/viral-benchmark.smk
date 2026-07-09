@@ -1,4 +1,5 @@
-container: "docker://vomix/viral-benchmark:v0.1.0-beta.1"
+container: "docker://ghcr.io/erfanshekarriz/vomix-viral-benchmark:v0.1.0-beta.1"
+
 
 
 
