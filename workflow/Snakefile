@@ -165,7 +165,7 @@ if config["setup-database"] or config["module"] == "setup-database" or config["m
 
 
 # fix symlink
-if config["module"] == "symlink" or config["module"] == "run-all":
+if config["module"] == "symlink":
   include: "rules/symlink.smk"
   targets = [relpath(".vomix/log/symlink_done.log")]
 
@@ -195,12 +195,12 @@ if config["module"] in ["viral-benchmark", "run-all"]:
   targets += [relpath("identify/viral/logs/done_benchmarks.log")]
 
 # viral-refilter
-if config["module"] in ["viral-refilter", "run-all"]:
+if config["module"] in ["viral-refilter"]:
   include: "rules/refilter-genomad.smk"
   include: "rules/checkv-pyhmmer.smk"
   include: "rules/cluster-fast.smk"
   targets += [relpath("identify/viral/logs/done.log"), 
-      relpath("identify/viral/logs/cluster-fast-done.log"), 
+      relpath("identify/viral/logs/clustering-done.log"), 
       relpath("identify/viral/logs/checkv-done.log")]
 
 # checkv-pyhmmer
@@ -211,7 +211,7 @@ if config["module"] in ["checkv-pyhmmer", "run-all"]:
 # cluster-fast
 if config["module"] in ["cluster-fast", "run-all"]:
   include: "rules/cluster-fast.smk"
-  targets += [relpath("identify/viral/logs/cluster-fast-done.log")]
+  targets += [relpath("identify/viral/logs/clustering-done.log")]
 
 # viral-taxonomy
 if config["module"] in ["viral-taxonomy", "viral-end-to-end", "run-all"]:
