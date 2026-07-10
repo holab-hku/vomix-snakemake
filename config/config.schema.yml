@@ -635,7 +635,6 @@ required:
   - max-cores
   - NCBI-email
   - NCBI-API-key
-  - build-container
   - hostile-index-db
   - PhaBox2-db
   - genomad-db
