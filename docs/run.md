@@ -26,17 +26,17 @@ The general workflow for running vomix-snakemake is to choose a module, provide 
 
 ```{admonition} Configuration File
 :class: note
-Use the [config.yml template](https://github.com/holab-hku/vomix-snakemake --use-conda/blob/main/config/config.yml) as your reference. The YAML file must follow the expected structure, and formatting issues will trigger warnings during validation.
+Use the [config.yml template](https://github.com/holab-hku/vomix-snakemake/blob/main/config/config.yml) as your reference. The YAML file must follow the expected structure, and formatting issues will trigger warnings during validation.
 ```
 
 You can either:
 
-- create a custom config file and run `snakemake --use-conda --configfile config.yml`, or
+- create a custom config file and run `snakemake --configfile config.yml`, or
 - pass individual parameters directly with `--config`.
 
 _Universal Configuration Parameters_:
 
-- `module`: chooses the vomix-snakemake --use-conda module to run (default: `end-to-end`)
+- `module`: chooses the vomix-snakemake module to run (default: `end-to-end`)
 - `workdir`: sets the working directory for the Snakefile (recommended to keep the default)
 - `outdir`: selects the output directory for hierarchical results formatting (default: `./results`)
 - `intermediate`: keeps large intermediate files generated during analysis (default: `False`)
@@ -54,7 +54,7 @@ To inspect the full list of native Snakemake options, run `snakemake -h`.
 
 ### Command Line Format
 
-A typical vomix-snakemake --use-conda invocation is made up of three parts:
+A typical vomix-snakemake invocation is made up of three parts:
 
 ```bash
 # 1) Snakemake command
@@ -135,7 +135,7 @@ Snakemake also maintains its own cache and history in the `.snakemake` directory
 Use a sample list for the most comprehensive workflows. This format is recommended for end-to-end analyses and maps samples to their FASTQ files or SRA accessions.
 
 ```bash
-snakemake --config module="end-to-end" datadir="sample/fastq" samplelist="sample/sample_list.csv" outdir="sample/results" --use-conda -j 4 -c 4 --latency-wait 30
+snakemake --config module="end-to-end" datadir="sample/fastq" samplelist="sample/sample_list.csv" outdir="sample/results" -j 4 -c 4 --latency-wait 30
 ```
 
 _**Options**_:
@@ -165,7 +165,7 @@ The file can be used for remote downloads, co-assembly, or local FASTQ files. Fo
 Some modules accept a single FASTA file directly. This is useful when you want to analyze one assembly or contig set independently.
 
 ```bash
-snakemake --config module="viral-identify" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" --use-conda -j 4 --latency-wait 20
+snakemake --config module="viral-identify" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" outdir="sample/results" -j 4 --latency-wait 20
 ```
 
 :::
@@ -175,7 +175,7 @@ snakemake --config module="viral-identify" fasta="sample/contigs/contigs_simulat
 Other modules accept a directory of FASTA files. This is convenient for batch-style analysis of multiple assemblies.
 
 ```bash
-snakemake --config module="viral-identify" fastadir="sample/contigs/" outdir="sample/results" --use-conda -j 4 --latency-wait 20
+snakemake --config module="viral-identify" fastadir="sample/contigs/" outdir="sample/results" -j 4 --latency-wait 20
 ```
 
 :::

@@ -13,11 +13,19 @@ The `assembly` module takes a sample list CSV file paired with cleaned, decontam
 ::::{tab-set}
 :::{tab-item} Sample List
 
+:::{card} Conda
+
+Card content
+:::
+
 ```bash
 # Conda Run
 snakemake --sdm conda --use-conda --config module="assembly" assembler="megahit" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --latency-wait 20
+```
 
-# Apptainer (Docker Image)
+:::{card} Apptainer
+
+```bash
 snakemake --sdm conda apptainer --config module="assembly" assembler="megahit" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --latency-wait 20
 ```
 

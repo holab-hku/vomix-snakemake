@@ -6,26 +6,6 @@ You can install vomix-snakemake in you computer using general-purpose package ma
 
 ::::{tab-set}
 
-:::{tab-item} Mamba
-[Mamba](https://mamba.readthedocs.io/en/latest/) is a package manager that handles all your dependencies for you. To install vomix-snakemake using Mamba, you can create the environment directly from the repository environment file.
-
-```bash
-# Download GitHub directory
-git clone https://github.com/holab-hku/vomix-snakemake.git
-cd vomix-snakemake
-
-# Install base environment
-mamba env create -f environment.yml
-
-# Activate environment
-mamba activate vomix
-
-# Verify Installation
-snakemake --use-conda -v
-```
-
-:::
-
 :::{tab-item} Conda
 [Conda](https://docs.conda.io/projects/conda/en/stable/) is a package manager that handles all your dependencies for you. To install vomix-snakemake using Conda, you can create the environment from the repository environment file.
 
@@ -41,7 +21,27 @@ conda env create -f environment.yml
 conda activate vomix
 
 # Verify Installation
-snakemake --use-conda -v
+snakemake -v
+```
+
+:::
+
+:::{tab-item} Mamba
+[Mamba](https://mamba.readthedocs.io/en/latest/) is a package manager that handles all your dependencies for you. To install vomix-snakemake using Mamba, you can create the environment directly from the repository environment file.
+
+```bash
+# Download GitHub directory
+git clone https://github.com/holab-hku/vomix-snakemake.git
+cd vomix-snakemake
+
+# Install base environment
+mamba env create -f environment.yml
+
+# Activate environment
+mamba activate vomix
+
+# Verify Installation
+snakemake -v
 ```
 
 :::
@@ -65,7 +65,7 @@ conda deactivate # deactive conda-lock environment
 conda activate vomix # activate vomix environment
 
 # Verify Installation
-snakemake --use-conda -v
+snakemake -v
 ```
 
 :::
@@ -95,7 +95,7 @@ vomix-snakemake is built on a snakemake back-end, which facilitates native `Dock
 :::{tab-item} Apptainer/Singularity
 
 ```bash
-snakemake --software-deployment-method apptainer --use-conda
+snakemake --software-deployment-method apptainer
 ```
 
 :::
@@ -107,7 +107,7 @@ snakemake --software-deployment-method apptainer --use-conda
 Each rule in vomix-snakemake's underlying snakemake files depends on a speicifc conda environment. To run what Snakemake calls `Ad-hoc combination of Conda package management with containers`, which is essentially running apptainer containers with conda enviornments installed within them, you need to use the `--sdm conda apptainer` option. This allows true full reproducibility. 
 ```
 
-If you only use `--sdm apptainer` Snakemake will not launch any conda environments and hence jobs will fail. If you use `--sdm apptainer --use-conda` it will try and re-install conda enviornments in your local `.snakemake/conda` folder, which counteracts the purpose of containers.
+If you only use `--sdm apptainer` Snakemake will not launch any conda environments and hence jobs will fail. If you use `--sdm apptainer` it will try and re-install conda enviornments in your local `.snakemake/conda` folder, which counteracts the purpose of containers.
 
 ```
 
