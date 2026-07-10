@@ -18,7 +18,7 @@ The `preprocess` module prepares raw sequencing data for downstream workflows by
 snakemake --sdm conda --use-conda --config module="preprocess" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --sdm apptainer --use-conda --config module="preprocess" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --latency-wait 20
+snakemake --sdm conda apptainer --config module="preprocess" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --latency-wait 20
 ```
 
 :::

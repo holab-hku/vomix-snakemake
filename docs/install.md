@@ -61,6 +61,8 @@ conda activate conda-lock
 
 # Use conda-lock to install the environment from the repository lock file
 conda-lock install --name vomix conda-lock.yml
+conda deactivate # deactive conda-lock environment
+conda activate vomix # activate vomix environment
 
 # Verify Installation
 snakemake --use-conda -v
@@ -100,16 +102,19 @@ snakemake --software-deployment-method apptainer --use-conda
 
 ::::
 
-```{admonition} Snakemake Apptainer Bug
-:class: warning
-With the current version of snakemake used by vomix-snakemake (`v9.23.1`), when running snakemake with `--sdm apptainer --use-conda`, you will get a `singularity: command not found` error. To prevent this, run your command with `--sdm apptainer` WITHOUT `--use-conda` once to allow singularity image downloads, then switch back to using `--sdm apptainer --use-conda`. We will update this as soon as a new debugged version of snakemake is available !
+```{admonition} Using Conda within Containers
+:class: note
+Each rule in vomix-snakemake's underlying snakemake files depends on a speicifc conda environment. To run what Snakemake calls `Ad-hoc combination of Conda package management with containers`, which is essentially running apptainer containers with conda enviornments installed within them, you need to use the `--sdm conda apptainer` option. This allows true full reproducibility. 
 ```
 
-```{admonition} Using Conda within Containers
-:class: warning
-Each rule in vomix-snakemake's underlying snakemake files depending on conda environments. Even when running with `--sdm apptainer`, you MUST use the `--use-conda` flag to allow the conda directives to be activated, inside or outside containers.
+If you only use `--sdm apptainer` Snakemake will not launch any conda environments and hence jobs will fail. If you use `--sdm apptainer --use-conda` it will try and re-install conda enviornments in your local `.snakemake/conda` folder, which counteracts the purpose of containers.
+
 ```
 
 ## {octicon}`book;0.85em` Troubleshooting Guide
 
 We have specific guidelines for troubleshooting vomix-snakemake so we can help you out in your analysis journey as efficiently as possible! If you run into any unexpected errors, warnings, etc. please visit our [Troubleshooting Guide](/troubleshoot.md).
+
+## {octicon}`bug;0.85em` Report a bug to us
+
+Have any questions or you've found a bug during your analysis? Please don't hesitate to report it to us by making an issue on our [{octicon}`mark-github;0.95em` GitHub repository](https://github.com/holab-hku/vOMIX-MEGA/issues/new).

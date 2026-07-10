@@ -26,7 +26,7 @@ For users seeking a completely automated, "reads-to-insights" solution, the `vir
 snakemake --sdm conda --use-conda --config module="viral-end-to-end" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --sdm apptainer --use-conda --config module="viral-end-to-end" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --latency-wait 20
+snakemake --sdm conda apptainer --config module="viral-end-to-end" outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 4 --latency-wait 20
 ```
 
 :::

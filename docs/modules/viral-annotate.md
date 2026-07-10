@@ -18,7 +18,7 @@ The `viral-annotate` module provides a comprehensive functional characterization
 snakemake --sdm conda --use-conda --config module="viral-annotate" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --sdm apptainer --use-conda --config module="viral-annotate" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" -j 4 --latency-wait 20
+snakemake --sdm conda apptainer --config module="viral-annotate" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" -j 4 --latency-wait 20
 ```
 
 :::
@@ -29,7 +29,7 @@ snakemake --sdm apptainer --use-conda --config module="viral-annotate" outdir="s
 snakemake --sdm conda --use-conda --config module="viral-annotate" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --sdm apptainer --use-conda --config module="viral-annotate" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
+snakemake --sdm conda apptainer --config module="viral-annotate" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
 ```
 
 :::

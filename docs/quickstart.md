@@ -34,13 +34,13 @@ head -n 20 test_res/identify/viral/output/classification_summary_vOTUs.csv
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm apptainer --use-conda --config module="viral-identify" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n
+snakemake --sdm apptainer --config module="viral-identify" outdir="test_res" splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n
 
 # Use more memory (22 GB) but run faster (~10 mins)
-snakemake --sdm apptainer --use-conda --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 64 --latency-wait 20
+snakemake --sdm conda apptainer --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 64 --latency-wait 20
 
 # Use less memory (8 GB) but run slower (~40 mins)
-snakemake --sdm apptainer --use-conda --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=8 -j 64 --latency-wait 20
+snakemake --sdm conda apptainer --config module="viral-identify" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=8 -j 64 --latency-wait 20
 
 # Quick look at results
 head -n 20 test_res/identify/viral/output/classification_summary_vOTUs.csv 
@@ -113,10 +113,10 @@ head -n 20 test_res/identify/viral/output/benchmark_results_merged.csv
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --use-conda --sdm apptainer --config module="viral-benchmark" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20 -n
+snakemake --sdm apptainer --config module="viral-benchmark" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20 -n
 
 # Run jobs
-snakemake --use-conda --sdm apptainer --config module="viral-benchmark" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20
+snakemake --sdm conda apptainer --config module="viral-benchmark" outdir="test_res" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" splits=0 -j 4 --latency-wait 20
 
 # Quick look at results
 head -n 20 test_res/identify/viral/output/benchmark_results_merged.csv
@@ -174,10 +174,10 @@ head -n 20 test_res/identify/viral/output/classification_summary_vOTUs.csv
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm apptainer --use-conda --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --dry-run
+snakemake --sdm apptainer --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --dry-run
 
 # Run your pipeline
-snakemake --sdm apptainer --use-conda --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --latency-wait 20
+snakemake --sdm conda apptainer --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --latency-wait 20
 
 # Quick look at results
 head -n 20 test_res/identify/viral/output/classification_summary_vOTUs.csv 

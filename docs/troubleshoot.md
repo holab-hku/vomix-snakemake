@@ -29,15 +29,16 @@ If you are using a cluster executor, scheduler logs may also be available from y
 
 ## {octicon}`question;0.85em` Common issues and fixes
 
-```{dropdown} Conda / environment creation fails
+:::{dropdown} Conda / environment creation fails
 :open: false
 
 - Ensure you activated the correct environment: `conda activate vomix`.
 - If Snakemake cannot create environments, verify that `conda`, `mamba`, or your container engine is installed and available.
 - For Apptainer mode, use `snakemake --sdm apptainer --use-conda` and verify your Apptainer/Singularity setup.
-```
 
-```{dropdown} CreateCondaEnvironmentException: Conda version too old
+:::
+
+:::{dropdown} CreateCondaEnvironmentException: Conda version too old
 :open: false
 
 This is a known behavior in Snakemake 8+. To ensure strict reproducibility and security regarding package isolation, modern versions of Snakemake require a relatively up-to-date Conda framework (version 24.7.1 or later). Because your system is running an older conda version (4.10.3), Snakemake refuses to spin up the rule-specific environments. This requirement persists across newer v8+ releases, so updating Snakemake alone will not bypass this check—you need to provide a newer Conda executable.
@@ -46,69 +47,72 @@ Here are the best ways to fix it depending on how much control you have over you
 
 - Method 1: The "Hacker's Quick Fix" (No Admin/Global Updates Needed). If you are on a shared cluster or do not want to modify your base environment, install a newer version of conda directly inside your active Snakemake environment. Activate the environment where Snakemake is installed and run:
 
-  ```bash
-  conda install conda>=24.7.1
-  ```
+```bash
+conda install conda>=24.7.1
+```
 
-  Because Snakemake relies on Python's environment paths, it will intercept the updated internal conda package instead of reaching out to your old system-wide version.
+Because Snakemake relies on Python's environment paths, it will intercept the updated internal conda package instead of reaching out to your old system-wide version.
 
 - Method 2: The Canonical Way (Update your global/base Conda). If you own the system or are using an isolated local install (like Miniconda or Miniforge), updating your base package manager is the cleanest route. From your base environment, run:
 
-  ```bash
-  conda update -n base -c defaults conda
-  ```
+```bash
+conda update -n base -c defaults conda
+```
 
-  If you are using Miniforge/Mambaforge, swap `-c defaults` with `-c conda-forge`.
+If you are using Miniforge/Mambaforge, swap `-c defaults` with `-c conda-forge`.
 
 - Method 3: Bypassing the check (The "I'm in a hurry" option). If you are completely blocked from updating software and you know your old conda works fine, you can bypass the version check entirely by manually commenting out the restriction in Snakemake's source code. Find your active Snakemake source files:
 
-  ```bash
-  cd $(python -c "import site; print(site.getsitepackages()[0])")/snakemake/deployment
-  ```
-
-  Open `conda.py` with a text editor and remove or comment out the block raising `CreateCondaEnvironmentException` in the `_check_version` method.
-
+```bash
+cd $(python -c "import site; print(site.getsitepackages()[0])")/snakemake/deployment
 ```
 
-```{dropdown} Missing input or invalid file paths
+Open `conda.py` with a text editor and remove or comment out the block raising `CreateCondaEnvironmentException` in the `_check_version` method.
+
+:::
+
+:::{dropdown} Missing input or invalid file paths
 :open: false
 
 - Check that the `fasta`, `datadir`, `samplelist`, `R1`, and `R2` values are correct and point to existing files.
 - Use absolute or relative paths that are valid from the working directory where you run Snakemake.
 - If a sample list CSV is used, validate the file formatting and required columns.
-```
+:::
 
-```{dropdown} Database download or path errors
+:::{dropdown} Database download or path errors
 :open: false
 
 - Many modules require external databases. Ensure there is enough disk space and network access.
 - If database downloads fail, rerun the appropriate setup command or module such as `module="setup-database"`.
 - Check the `config.yml` keys for database paths such as `genomad-db`, `checkv-db`, `virsorter2-db`, and `vibrant-db`.
-```
+:::
 
-```{dropdown} Permission denied or filesystem issues
+:::{dropdown} Permission denied or filesystem issues
 :open: false
 
 - Avoid working inside directories where you do not have write permission.
 - Make sure the output directory and any database directories are writable.
 - If using a shared filesystem, confirm that file locking and locking proxies are supported.
-```
 
-```{dropdown} Resource limits, memory, or timeouts
+:::
+
+:::{dropdown} Resource limits, memory, or timeouts
 :open: false
 
 - Adjust Snakemake resources using `--resources mem_mb=<value>` or by tuning module-specific config.
 - Use `splits=8` to reduce memory consumption at the cost of longer runtime.
 - For cluster jobs, increase walltime, memory, or CPU resources in your scheduler submission command.
-```
 
-```{dropdown} Cluster / scheduler failures
+:::
+
+:::{dropdown} Cluster / scheduler failures
 :open: false
 
 - Verify cluster options such as queue name, email, nodes, ppn, and memory settings in your `--cluster-generic-submit-cmd`.
 - Check scheduler-specific logs for job submission failures or runtime termination.
 - Confirm that the cluster login node can reach the compute nodes and that the required modules are loaded there.
-```
+
+:::
 
 ## {octicon}`code;0.85em` Useful Snakemake commands
 

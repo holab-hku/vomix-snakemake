@@ -18,7 +18,7 @@ Insert module summary here
 snakemake --config module="setup-database" samplelist="sample/sample_list.csv" --sdm conda --use-conda -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --config module="setup-database" samplelist="sample/sample_list.csv" --sdm apptainer --use-conda -j 4 --latency-wait 20
+snakemake --config module="setup-database" samplelist="sample/sample_list.csv" --sdm conda apptainer -j 4 --latency-wait 20
 ```
 
 :::
@@ -29,7 +29,7 @@ snakemake --config module="setup-database" samplelist="sample/sample_list.csv" -
 snakemake --sdm conda --use-conda --config module="setup-database" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --sdm apptainer --use-conda --config module="setup-database" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
+snakemake --sdm conda apptainer --config module="setup-database" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
 ```
 
 :::
@@ -40,7 +40,7 @@ snakemake --sdm apptainer --use-conda --config module="setup-database" fasta="sa
 snakemake --config module="setup-database" fastadir="sample/contigs/" --sdm conda --use-conda -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --config module="setup-database" fastadir="sample/contigs/" --sdm apptainer --use-conda -j 4 --latency-wait 20
+snakemake --config module="setup-database" fastadir="sample/contigs/" --sdm conda apptainer -j 4 --latency-wait 20
 ```
 
 :::

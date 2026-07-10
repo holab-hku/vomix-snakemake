@@ -27,7 +27,12 @@ The final output is a clean, non-redundant, and rigorously validated vOTU FASTA 
 snakemake --sdm conda --use-conda --config module="viral-identify" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --sdm apptainer --use-conda --config module="viral-identify" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" -j 4 --latency-wait 20
+snakemake --sdm conda apptainer --config module="viral-identify" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" -j 4 --latency-wait 20
+```
+
+``` {admonition} Dry Run
+:class: note
+For this to work, you must have ran previous modules (`preprocess` and `assembly`) of vomix-snakemake to generate the `final.contigs.fa` files for each sample. If you would like to run the `viral-identify` module directly,  please check `Single Fast` and `Fasta Directory` inputs.
 ```
 
 :::
@@ -38,7 +43,7 @@ snakemake --sdm apptainer --use-conda --config module="viral-identify" outdir="s
 snakemake --sdm conda --use-conda --config module="viral-identify" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --sdm apptainer --use-conda --config module="viral-identify" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
+snakemake --sdm conda apptainer --config module="viral-identify" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
 ```
 
 :::
@@ -49,7 +54,7 @@ snakemake --sdm apptainer --use-conda --config module="viral-identify" outdir="s
 snakemake --sdm conda --use-conda --config module="viral-identify" fastadir="sample/contigs/"  -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --sdm apptainer --use-conda --config module="viral-identify" fastadir="sample/contigs/" -j 4 --latency-wait 20
+snakemake --sdm conda apptainer --config module="viral-identify" fastadir="sample/contigs/" -j 4 --latency-wait 20
 ```
 
 :::

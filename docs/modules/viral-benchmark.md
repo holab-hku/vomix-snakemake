@@ -18,7 +18,7 @@ The `viral-benchmark` module is an integrated diagnostic component within vomix-
 snakemake --sdm conda --use-conda --config module="viral-benchmark" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --sdm apptainer --use-conda --config module="viral-benchmark" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" -j 4 --latency-wait 20
+snakemake --sdm conda apptainer --config module="viral-benchmark" outdir="sample/results" samplelist="sample/sample_list.csv" datadir="sample/fastq" -j 4 --latency-wait 20
 ```
 
 :::
@@ -29,7 +29,7 @@ snakemake --sdm apptainer --use-conda --config module="viral-benchmark" outdir="
 snakemake --sdm conda --use-conda --config module="viral-benchmark" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --sdm apptainer --use-conda --config module="viral-benchmark" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
+snakemake --sdm conda apptainer --config module="viral-benchmark" outdir="sample/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 4 --latency-wait 20
 ```
 
 :::
@@ -40,7 +40,7 @@ snakemake --sdm apptainer --use-conda --config module="viral-benchmark" outdir="
 snakemake --sdm conda --use-conda --config module="viral-benchmark" fastadir="sample/contigs/" -j 4 --latency-wait 20
 
 # Apptainer (Docker Image)
-snakemake --sdm apptainer --use-conda --config module="viral-benchmark" fastadir="sample/contigs/"  -j 4 --latency-wait 20
+snakemake --sdm conda apptainer --config module="viral-benchmark" fastadir="sample/contigs/"  -j 4 --latency-wait 20
 ```
 
 :::
