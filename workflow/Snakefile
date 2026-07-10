@@ -204,12 +204,12 @@ if config["module"] in ["viral-refilter"]:
       relpath("identify/viral/logs/checkv-done.log")]
 
 # checkv-pyhmmer
-if config["module"] in ["checkv-pyhmmer", "run-all"]:
+if config["module"] in ["checkv-pyhmmer"]:
   include: "rules/checkv-pyhmmer.smk"
   targets += [relpath("identify/viral/logs/checkv-done.log")]
 
 # cluster-fast
-if config["module"] in ["cluster-fast", "run-all"]:
+if config["module"] in ["cluster-fast"]:
   include: "rules/cluster-fast.smk"
   targets += [relpath("identify/viral/logs/clustering-done.log")]
 
