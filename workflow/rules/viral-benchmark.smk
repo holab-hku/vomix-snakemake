@@ -1,11 +1,4 @@
-container: "docker://ghcr.io/erfanshekarriz/vomix-viral-benchmark:v0.1.0-beta.1"
-
-
-
-
-
 import os
-containerized: os.path.join(config["basedir"], "Dockerfile")
 
 logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")

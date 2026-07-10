@@ -1,5 +1,3 @@
-container: "docker://ghcr.io/erfanshekarriz/vomix-assembly:v0.1.0-beta.1"
-
 assembler = config['assembler']
 logdir = relpath(os.path.join("assembly", assembler, "logs"))
 tmpd = relpath(os.path.join("assembly", assembler, "tmp"))
@@ -74,7 +72,7 @@ rule megahit:
 
     mv {params.tmpdir}/{wildcards.assembly_id}/final.contigs.fa {output.fasta}
     mv {params.tmpdir}/{wildcards.assembly_id}/* {params.outdir}
-    """
+  """
 
 
 rule spades:

@@ -1,6 +1,3 @@
-container: "docker://ghcr.io/erfanshekarriz/vomix-preprocess:v0.1.0-beta.1"
-
-
 logdir=relpath("preprocess/logs")
 benchmarks=relpath("preprocess/benchmarks")
 tmpd = relpath("preprocess/tmp")

@@ -1,5 +1,3 @@
-container: "docker://ghcr.io/erfanshekarriz/vomix-prok-annotate:v0.1.0-beta.1"
-
 logdir=relpath("annotate/prok/logs")
 benchmarks=relpath("annotate/prok/benchmarks")
 tmpd = relpath("annotate/prok/tmp")

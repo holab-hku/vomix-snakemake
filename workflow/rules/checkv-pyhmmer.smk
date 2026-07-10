@@ -1,5 +1,3 @@
-container: "docker://ghcr.io/erfanshekarriz/vomix-checkv-pyhmmer:v0.1.0-beta.1"
-
 logdir=relpath("identify/viral/logs")
 benchmarks=relpath("identify/viral/benchmarks")
 tmpd=relpath("identify/viral/tmp")

@@ -1,9 +1,3 @@
-container: "docker://ghcr.io/erfanshekarriz/vomix-viral-annotate:v0.1.0-beta.1"
-
-
-
-
-
 logdir = relpath("annotate/viral/logs")
 tmpd = relpath("annotate/viral/tmp")
 benchmarks = relpath("annotate/viral/benchmarks")
