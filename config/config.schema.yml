@@ -5,7 +5,27 @@ properties:
     type: string
     description: "The name of the vOMIX-MEGA module to execute."
     default: "viral-end-to-end"
-    enum: ["preprocess", "assembly", "viral-identify", "viral-refilter", "viral-benchmark", "viral-taxonomy", "viral-host", "viral-community", "viral-annotate", "prok-binning", "prok-community", "prok-annotate", "viral-end-to-end", "checkv-pyhmmer", "cluster-fast", "setup-database", "symlink"]
+    enum:
+      [
+        "preprocess",
+        "assembly",
+        "viral-identify",
+        "viral-refilter",
+        "viral-benchmark",
+        "viral-taxonomy",
+        "viral-host",
+        "viral-community",
+        "viral-annotate",
+        "prok-binning",
+        "prok-community",
+        "prok-annotate",
+        "viral-end-to-end",
+        "checkv-pyhmmer",
+        "cluster-fast",
+        "setup-database",
+        "symlink",
+        "run-all",
+      ]
 
   workdir:
     type: string
@@ -615,6 +635,7 @@ required:
   - max-cores
   - NCBI-email
   - NCBI-API-key
+  - build-container
   - hostile-index-db
   - PhaBox2-db
   - genomad-db
