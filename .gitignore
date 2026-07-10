@@ -27,6 +27,8 @@
 !workflow/envs/**
 !workflow/docker
 !workflow/docker/**
+!workflow/apptainer
+!workflow/apptainer/**
 !workflow/scripts
 !workflow/scripts/**
 !workflow/software/DeepVirFinder
