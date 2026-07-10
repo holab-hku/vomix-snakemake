@@ -27,6 +27,8 @@
 !workflow/envs/**
 !workflow/docker
 !workflow/docker/**
+!workflow/scripts
+!workflow/scripts/**
 !workflow/software/DeepVirFinder
 !vomix/
 !sample/contigs
