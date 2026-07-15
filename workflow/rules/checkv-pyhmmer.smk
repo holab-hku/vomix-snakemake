@@ -107,7 +107,7 @@ else:
     input:
       faa=relpath("identify/viral/output/checkv/tmp/proteins.faa"), 
       db=os.path.join(config["checkv-db"], "hmm_db/checkv_hmms/{index}.hmm"), 
-      checkpoint=expand(os.path.join(config["checkv-db"], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
+      dbfull=expand(os.path.join(config["checkv-db"], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
     output:
       relpath("identify/viral/output/checkv/tmp/hmmsearch/{index}.hmmout")
     params:

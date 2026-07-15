@@ -16,6 +16,7 @@ os.makedirs(tmpd, exist_ok=True)
 
 n_cores = config['max-cores']
 assembler = config['assembler']
+split_part_ids = list(range(1, config["splits"] + 2))
 
 
 ### Read fasta or fastadir input
@@ -39,6 +40,7 @@ rule done_log:
   localrule: True
   input:
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/genomad/{sample_id}_filtered_summary/{sample_id}_filtered_virus_summary.tsv"), sample_id=assembly_ids), 
+    expand(relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered_part_{part}.fa"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"), sample_id=assembly_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/final-viral-score.tsv"), sample_id=assembly_ids),
@@ -83,6 +85,29 @@ rule filter_contigs:
     mv {params.tmpdir}/tmp.fa {output}
     """
 
+rule split_contigs:
+  name: "viral-benchmark.smk split filtered contigs (--splits)"
+  input:
+    relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa")
+  output:
+    expand(relpath("identify/viral/samples/{{sample_id}}/tmp/{{sample_id}}_filtered_part_{part}.fa"), part=split_part_ids)
+  params:
+    parts=config["splits"] + 1,
+    outdir=relpath("identify/viral/samples/{sample_id}/tmp")
+  log: os.path.join(logdir, "splitcontig_{sample_id}.log")
+  conda: "../envs/seqkit-biopython.yml"
+  threads: 8
+  shell:
+    """
+    mkdir -p {params.outdir}
+
+    seqkit split2 \
+      --by-part {params.parts} \
+      --out-prefix {wildcards.sample_id}_filtered_part_ \
+      -O {params.outdir} {input}
+    """
+    
+
 
 rule genomad_classify:
   name: "viral-benchmark.smk geNomad classify"
@@ -125,17 +150,17 @@ rule genomad_classify:
 rule dvf_classify:
   name : "viral-benchmark.smk DeepVirFinder classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa")
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered_part_{part}.fa")
   output:
-    relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt")
+    relpath("identify/viral/samples/{sample_id}}/intermediate/dvf/splits/splits-{part}/final_score.txt")
   params:
     script="workflow/software/DeepVirFinder/dvf.py",
     parameters=config['dvf-params'], 
     modeldir="workflow/software/DeepVirFinder/models/",
-    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/dvf/"),
-    tmpdir=os.path.join(tmpd, "dvf/{sample_id}")
-  log: os.path.join(logdir, "dvf_{sample_id}.log")
-  benchmark: os.path.join(benchmarks, "dvf_{sample_id}.log")
+    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/splits-{part}/"),
+    tmpdir=os.path.join(tmpd, "dvf/{sample_id}/splits-{part}")
+  log: os.path.join(logdir, "dvf_{sample_id}_{part}.log")
+  benchmark: os.path.join(benchmarks, "dvf_{sample_id}_{part}.log")
   conda: "../envs/dvf.yml"
   threads: 32
   resources:
@@ -157,6 +182,23 @@ rule dvf_classify:
     rm -rf {params.tmpdir} 
     """
 
+rule dvf_classify_merge:
+  name: "viral-benchmark.smk DeepVirFinder merge results"
+  localrule: True
+  input: expand(relpath("identify/viral/samples/{{sample_id}}/tmp/{{sample_id}}_filtered_part_{part}.fa"), part=split_part_ids),
+  output: relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt")
+  log: os.path.join(logdir, "dvf_merge_{sample_id}.log")
+  benchmark: os.path.join(benchmarks, "dvf_merge_{sample_id}.log")
+  threads: 1
+  run:
+    import pandas as pd
+    # read all files into list of dataframes
+    dfs = [pd.read_csv(f, sep="\t") for f in input]
+    # concatentate them safely
+    merged_df = pd.concat(dfs, ignore_index=True)
+    # write to output
+    merged_df.to_csv(output[0], sep="\t", index=False)
+    
 
 rule phamer_classify:
   name: "viral-benchmark.smk PhaMer classify"
