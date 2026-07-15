@@ -102,7 +102,7 @@ rule split_contigs:
     outdir=relpath("identify/viral/samples/{sample_id}/tmp")
   log: os.path.join(logdir, "splitcontig_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml"
-  threads: 8
+  threads: 1
   resources:
     mem_mb=lambda wildcards, attempt, input: 4 * 10**3 * attempt
   shell:
@@ -270,7 +270,7 @@ rule phamer_classify_merge:
 rule virsorter2:
   name: "viral-benchmark.smk VirSorter2 classify"
   input: 
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.part_{part}.fa"),
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/splits-{sample_id}_filtered.part_{part}.fa"),
     db=os.path.join(config['virsorter2-db'], "Done_all_setup")
   output: relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/splits/splits-{part}/final-viral-score.tsv")
   params: 

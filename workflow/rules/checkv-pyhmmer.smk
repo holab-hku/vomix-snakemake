@@ -7,6 +7,9 @@ os.makedirs(benchmarks, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 
 n_cores = config['max-cores']
+split_part = list(range(1, config["checkv-splits"] + 2))
+split_part_ids = [f"{i:03d}" for i in range(1, config["checkv-splits"] + 2)] # matches seqkit
+parts=config["checkv-splits"] + 1
 
 ### Read single fasta file if input
 if config['fasta'] != "" and config["module"] == "checkv-pyhmmer":
@@ -15,12 +18,16 @@ if config['fasta'] != "" and config["module"] == "checkv-pyhmmer":
   assembly_ids = [sample_id]
 else:
   fastap = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa")
+  sample_id = "combined.viralcontigs.derep"
+
+
 
 ### MASTER RULE
 rule done_log:
   name: "checkv-pyhmmer.py Done. removing tmp files"
   localrule: True
   input:
+    expand(relpath(f"identify/viral/tmp/splits/{sample_id}.split_{{part}}.fa"), part=split_part_ids),
     relpath("identify/viral/output/checkv/viruses.fna"),
     relpath("identify/viral/output/checkv/proviruses.fna"),
     relpath("identify/viral/output/checkv/quality_summary.tsv")
@@ -29,30 +36,56 @@ rule done_log:
   shell: "touch {output}"
 
 
+
 ### RULES
+rule split_contigs:
+  name: "checkv-pyhmmer.smk split dereplicated contigs"
+  input: fastap
+  output:
+    expand(relpath(f"identify/viral/tmp/splits/{sample_id}.split_{{part}}.fa"), part=split_part_ids)
+  params:
+    parts=parts,
+    tmpdir=os.path.join(tmpd, "checkv/split/"),
+    outdir=relpath("identify/viral/tmp/splits/"),
+  log: os.path.join(logdir, "checkv_splitcontig.log")
+  conda: "../envs/seqkit-biopython.yml"
+  threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: 4 * 10**3 * attempt
+  shell:
+    """
+    rm -f {output}
+    mkdir -p {params.outdir}
+
+    seqkit split2 \
+      --by-part {params.parts} \
+      --threads {threads} {input} \
+      --out-dir {params.tmpdir} 2> {log}
+
+    mv {params.tmpdir}/* {params.outdir}
+    """
 
 # A) Original CheckV
-
 if config["checkv-original"]:
   rule checkv:
-    name: "checkv.smk CheckV dereplicated contigs"
+    name: "checkv.smk CheckV split contigs"
     input:
-      fna=fastap, 
+      fna=relpath(f"identify/viral/tmp/splits/{sample_id}.split_{{part}}.fa"), 
       db=expand(os.path.join(config['checkv-db'], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
     output:
-      relpath("identify/viral/output/checkv/viruses.fna"),
-      relpath("identify/viral/output/checkv/proviruses.fna"),
-      relpath("identify/viral/output/checkv/quality_summary.tsv")
+      relpath("identify/viral/tmp/checkv/splits/split-{part}/viruses.fna"),
+      relpath("identify/viral/tmp/checkv/splits/split-{part}/proviruses.fna"),
+      relpath("identify/viral/tmp/checkv/splits/split-{part}/quality_summary.tsv")
     params:
       parameters= config['checkv-params'],
-      outdir=relpath("identify/viral/output/checkv"),
+      outdir=relpath("identify/viral/tmp/checkv/splits/split-{part}"),
       dbdir=config["checkv-db"], 
-      tmpdir=os.path.join(tmpd, "checkv"),
-    log: os.path.join(logdir, "checkv.log")
-    benchmark: os.path.join(benchmarks, "checkv.log")
-    threads: 64
+      tmpdir=os.path.join(tmpd, "checkv/splits/split-{part}"),
+    log: os.path.join(logdir, "checkv_split_{part}.log")
+    benchmark: os.path.join(benchmarks, "checkv_split_{part}.log")
+    threads: max(1, round(64 / parts))
     resources:
-      mem_mb=lambda wildcards, attempt, input: attempt * 72 * 10**3
+      mem_mb=lambda wildcards, attempt, input: attempt * max(1, round(72 / parts)) * 10**3
     conda: "../envs/checkv.yml"
     shell:
       """
@@ -69,24 +102,57 @@ if config["checkv-original"]:
       rm -rf {params.tmpdir}
       """
 
-# B) CheckV-PyHMMER
+  rule checkv_merge:
+    name: "checkv.smk CheckV merge results"
+    localrule: True
+    input:
+      virus=expand(relpath("identify/viral/tmp/checkv/splits/split-{part}/viruses.fna"), part=split_part_ids),
+      provirus=expand(relpath("identify/viral/tmp/checkv/splits/split-{part}/proviruses.fna"), part=split_part_ids),
+      summary=expand(relpath("identify/viral/tmp/checkv/splits/split-{part}/quality_summary.tsv"), part=split_part_ids)
+    output:
+      virus=relpath("identify/viral/output/checkv/viruses.fna"),
+      provirus=relpath("identify/viral/output/checkv/proviruses.fna"),
+      summary=relpath("identify/viral/output/checkv/quality_summary.tsv")
+    params:
+      script="workflow/scripts/tables_row_bind.py",
+      outdir=relpath("identify/viral/output/checkv/"), 
+      tmpdir=os.path.join(tmpd, "checkv/merge")
+    log: os.path.join(logdir, "checkv_merge.log")
+    benchmark: os.path.join(benchmarks, "checkv_merge.log")
+    conda: "../envs/seqkit-biopython.yml"
+    shell:
+      """
+      rm -rf {params.tmpdir} {params.outdir}
+      mkdir -p {params.tmpdir} {params.outdir}
 
+      cat {input.virus} > {params.tmpdir}/tmp.viruses.fna
+      cat {input.provirus} > {params.tmpdir}/tmp.proviruses.fna
+      python {params.script} --inputs {input.summary} --output {params.tmpdir}/tmp.quality_summary.tsv
+
+      mv {params.tmpdir}/tmp.viruses.fna {output.virus}
+      mv {params.tmpdir}/tmp.proviruses.fna {output.provirus}
+      mv {params.tmpdir}/tmp.quality_summary.tsv {output.summary}
+      rm -rf {params.tmpdir}
+      """
+
+# B) CheckV-PyHMMER
 else:
   rule checkv_prodigalgv:
     name: "checkv-pyhmmer.smk CheckV run prodigal-gv"
-    input: fastap
+    input: 
+      relpath(f"identify/viral/tmp/splits/{sample_id}.split_{{part}}.fa"), 
     output:
-      relpath("identify/viral/output/checkv/tmp/proteins.faa")
+      relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/proteins.faa")
     params:
       script="workflow/scripts/parallel_prodigal_gv.py",
-      outdir=relpath("identify/viral/output/checkv/tmp"),
-      tmpdir=os.path.join(tmpd, "checkv/prodigal-gv")
-    log: os.path.join(logdir, "checkv_prodigal-gv.log")
-    benchmark: os.path.join(benchmarks, "checkv_prodigal-gv.log")
+      outdir=relpath("identify/viral/output/checkv/tmp/splits/splits-{part}"),
+      tmpdir=os.path.join(tmpd, "checkv/splits/splits-{part}/prodigal-gv")
+    log: os.path.join(logdir, "checkv_split_{part}_prodigal-gv.log")
+    benchmark: os.path.join(benchmarks, "checkv_split_{part}_prodigal-gv.log")
     conda: "../envs/prodigal-gv.yml"
-    threads: 128
+    threads: max(1, round(128 / parts))
     resources:
-      mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
+      mem_mb=lambda wildcards, attempt: attempt * max(1, round(72 / parts)) * 10**3
     shell:
       """
       rm -rf {params.tmpdir} {params.outdir}
@@ -105,22 +171,22 @@ else:
     name: "checkv-pyhmmer.smk CheckV PyHMMER hmmsearch"
     localrule: False
     input:
-      faa=relpath("identify/viral/output/checkv/tmp/proteins.faa"), 
+      faa=relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/proteins.faa"), 
       db=os.path.join(config["checkv-db"], "hmm_db/checkv_hmms/{index}.hmm"), 
       dbfull=expand(os.path.join(config["checkv-db"], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
     output:
-      relpath("identify/viral/output/checkv/tmp/hmmsearch/{index}.hmmout")
+      relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/hmmsearch/{index}.hmmout")
     params:
       script="workflow/scripts/pyhmmer_wrapper.py",
-      outdir=relpath("identify/viral/output/checkv/tmp/hmmsearch"),
-      tmpdir=os.path.join(tmpd, "checkv/hmmsearch/{index}"), 
+      outdir=relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/hmmsearch"),
+      tmpdir=os.path.join(tmpd, "checkv/splits/splits-{part}/hmmsearch/{index}"), 
       ecutoff=10.0
-    log : os.path.join(logdir, "checkv_hmmsearch_{index}.log")
-    benchmark: os.path.join(benchmarks, "checkv_hmmsearch_{index}.log")
+    log : os.path.join(logdir, "checkv_hmmsearch_split_{part}_{index}.log")
+    benchmark: os.path.join(benchmarks, "checkv_hmmsearch_split_{part}_{index}.log")
     conda: "../envs/pyhmmer.yml"
     threads: 1
     resources:
-      mem_mb=lambda wildcards, attempt: attempt * 16 * 10**3
+      mem_mb=lambda wildcards, attempt: attempt * 4 * 10**3
     shell:
       """
       rm -rf {params.tmpdir}
@@ -141,22 +207,21 @@ else:
     name: "checkv-pyhmmer.smk CheckV hmmsearch merge"
     localrule: True
     input:
-      expand(relpath("identify/viral/output/checkv/tmp/hmmsearch/{index}.hmmout"), index = range(1, 81))
+      expand(relpath("identify/viral/output/checkv/tmp/splits/splits-{{part}}/hmmsearch/{index}.hmmout"), index = range(1, 81))
     output:
-      relpath("identify/viral/output/checkv/tmp/hmmsearch.txt")
+      relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/hmmsearch.txt")
     shell:
       """
       cat {input} > {output}
-
       """
 
   rule checkv_hmmer_checkpoint:
     name: "checkv-pyhmmer.smk CheckV hmmsearch checkpoint"
     localrule: True
     input:
-      relpath("identify/viral/output/checkv/tmp/hmmsearch.txt")
+      relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/hmmsearch.txt")
     output:
-      relpath("identify/viral/output/checkv/tmp/hmmsearch_checkpoint")
+      relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/hmmsearch_checkpoint")
     shell:
       """
       touch {output}
@@ -164,27 +229,26 @@ else:
 
   # This rule currently does not operate in tmpdir so that it matches the checkpoint
   # Fix this later please thanks!
-
   rule checkv:
     name: "checkv-pyhmmer.smk CheckV dereplicated contigs"
     input:
-      checkpoint=relpath("identify/viral/output/checkv/tmp/hmmsearch_checkpoint"),
-      fna=fastap, 
+      checkpoint=relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/hmmsearch_checkpoint"),
+      fna=relpath(f"identify/viral/tmp/splits/{sample_id}.split_{{part}}.fa"),
       db=expand(os.path.join(config['checkv-db'], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
     output:
-      relpath("identify/viral/output/checkv/viruses.fna"),
-      relpath("identify/viral/output/checkv/proviruses.fna"),
-      relpath("identify/viral/output/checkv/quality_summary.tsv")
+      relpath("identify/viral/tmp/checkv/splits/splits-{part}/viruses.fna"),
+      relpath("identify/viral/tmp/checkv/splits/splits-{part}/proviruses.fna"),
+      relpath("identify/viral/tmp/checkv/splits/splits-{part}/quality_summary.tsv")
     params:
-      checkvparams= config['checkv-params'],
-      outdir=relpath("identify/viral/output/checkv"),
+      params= config['checkv-params'],
       dbdir=config["checkv-db"],
-      tmpdir=os.path.join(tmpd, "checkv")
-    log: os.path.join(logdir, "checkv.log")
-    benchmark: os.path.join(benchmarks, "checkv.log")
+      outdir=relpath("identify/viral/tmp/checkv/splits/splits-{part}"),
+      tmpdir=os.path.join(tmpd, "checkv/splits/splits-{part}"),
+    log: os.path.join(logdir, "checkv_split-{part}.log")
+    benchmark: os.path.join(benchmarks, "checkv_split-{part}.log")
     threads: 1
     resources:
-      mem_mb=lambda wildcards, attempt, input: attempt * 72 * 10**3
+      mem_mb=lambda wildcards, attempt, input: attempt * 72/parts * 10**3
     conda: "../envs/checkv.yml"
     shell:
       """
@@ -196,7 +260,43 @@ else:
           {params.outdir} \
           -d {params.dbdir} \
           -t {threads} \
-          {params.checkvparams} 2> {log}
+          {params.params} 2> {log}
 
+      rm -rf {params.tmpdir}
+      """
+
+  rule checkv_merge:
+    name: "checkv-pyhmmer.smk CheckV merge results"
+    localrule: True
+    input:
+      virus=expand(relpath("identify/viral/tmp/checkv/splits/splits-{part}/viruses.fna"), part=split_part_ids),
+      provirus=expand(relpath("identify/viral/tmp/checkv/splits/splits-{part}/proviruses.fna"), part=split_part_ids),
+      summary=expand(relpath("identify/viral/tmp/checkv/splits/splits-{part}/quality_summary.tsv"), part=split_part_ids)
+    output:
+      virus=relpath("identify/viral/output/checkv/viruses.fna"),
+      provirus=relpath("identify/viral/output/checkv/proviruses.fna"),
+      summary=relpath("identify/viral/output/checkv/quality_summary.tsv")
+    params:
+      script="workflow/scripts/tables_row_bind.py",
+      outdir=relpath("identify/viral/output/checkv/"), 
+      tmpdir=os.path.join(tmpd, "checkv/merge")
+    log: os.path.join(logdir, "checkv_merge.log")
+    benchmark: os.path.join(benchmarks, "checkv_merge.log")
+    threads: 1
+    resources:
+      mem_mb=lambda wildcards, attempt, input: attempt * 4 * 10**3
+    conda: "../envs/checkv.yml"
+    shell:
+      """
+      rm -rf {params.tmpdir} {params.outdir}
+      mkdir -p {params.tmpdir} {params.outdir}
+
+      cat {input.virus} > {params.tmpdir}/tmp.viruses.fna
+      cat {input.provirus} > {params.tmpdir}/tmp.proviruses.fna
+      python {params.script} --inputs {input.summary} --output {params.tmpdir}/tmp.quality_summary.tsv
+
+      mv {params.tmpdir}/tmp.viruses.fna {output.virus}
+      mv {params.tmpdir}/tmp.proviruses.fna {output.provirus}
+      mv {params.tmpdir}/tmp.quality_summary.tsv {output.summary}
       rm -rf {params.tmpdir}
       """
