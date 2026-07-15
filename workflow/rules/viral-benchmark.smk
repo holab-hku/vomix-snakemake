@@ -16,8 +16,8 @@ os.makedirs(tmpd, exist_ok=True)
 
 n_cores = config['max-cores']
 assembler = config['assembler']
-split_part = list(range(1, config["splits"] + 2))
-split_part_ids = [f"{i:03d}" for i in range(1, config["splits"] + 2)] # matches seqkit
+split_part = list(range(1, config["splits"] + 1))
+split_part_ids = [f"{i:03d}" for i in range(1, config["splits"] + 1)] # matches seqkit
 
 ### Read fasta or fastadir input
 if config['fasta'] != "":
@@ -85,7 +85,6 @@ rule filter_contigs:
     mv {params.tmpdir}/tmp.fa {output}
     """
 
-print( expand(relpath("identify/viral/samples/{{sample_id}}/tmp/{{sample_id}}_filtered.part_{part}.fa"), part=split_part_ids))
 rule split_contigs:
   name: "viral-benchmark.smk split filtered contigs"
   input:
@@ -197,33 +196,33 @@ rule dvf_classify_merge:
   output: 
     relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt")
   params:
-    script="workflow/scripts/merge_dvf_scores.py",
+    script="workflow/scripts/tables_row_bind.py",
   log: os.path.join(logdir, "dvf_merge_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "dvf_merge_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml"
   threads: 1
   shell:
     """
-    python {params.script} {input} {output}
+    python {params.script} --inputs {input} --output {output}
     """
     
 
 rule phamer_classify:
   name: "viral-benchmark.smk PhaMer classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa"), 
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.part_{part}.fa"),
     db=os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl")
   output:
-    relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv")
+    relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/splits-{part}/final_prediction/phamer_prediction.tsv")
   params:
     parameters=config['phamer-params'],
     dbdir=config['PhaBox2-db'],
-    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/"),
-    tmpdir=os.path.join(tmpd, "phamer/{sample_id}")
-  log: os.path.join(logdir, "phamer_{sample_id}.log")
-  benchmark: os.path.join(benchmarks, "phamer_{sample_id}.log")
+    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/splits-{part}/"),
+    tmpdir=os.path.join(tmpd, "phamer/{sample_id}/splits-{part}")
+  log: os.path.join(logdir, "phamer_{sample_id}_{part}.log")
+  benchmark: os.path.join(benchmarks, "phamer_{sample_id}_{part}.log")
   conda: "../envs/phabox2.yml"
-  threads: 32
+  threads: 8
   resources:
     mem_mb=lambda wildcards, attempt, input, threads: max(1 * threads * 10**3 * attempt, 8000)
   shell:
@@ -244,22 +243,40 @@ rule phamer_classify:
     """
 
 
+rule phamer_classify_merge:
+  name: "viral-benchmark.smk PhaMer merge results"
+  localrule: True
+  input: 
+    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/phamer/splits/splits-{part}/final_prediction/phamer_prediction.tsv"), part=split_part_ids),
+  output: 
+    relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv")
+  params:
+    script="workflow/scripts/tables_row_bind.py",
+  log: os.path.join(logdir, "phamer_merge_{sample_id}.log")
+  benchmark: os.path.join(benchmarks, "phamer_merge_{sample_id}.log")
+  conda: "../envs/seqkit-biopython.yml"
+  threads: 1
+  shell:
+    """
+    python {params.script} --inputs {input} --output {output}
+    """
+
 
 rule virsorter2:
   name: "viral-benchmark.smk VirSorter2 classify"
   input: 
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa"), 
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.part_{part}.fa"),
     db=os.path.join(config['virsorter2-db'], "Done_all_setup")
-  output: relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/final-viral-score.tsv")
+  output: relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/splits/splits-{part}/final-viral-score.tsv")
   params: 
     parameters=config['virsorter2-params'],
     dbdir=config['virsorter2-db'],
-    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/"),
-    tmpdir=os.path.join(tmpd, "virsorter2/{sample_id}")
-  log: os.path.join(logdir, "virsorter2_{sample_id}.log")
-  benchmark: os.path.join(benchmarks, "virsorter2_{sample_id}.log")
+    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/splits/splits-{part}/"),
+    tmpdir=os.path.join(tmpd, "virsorter2/{sample_id}/splits-{part}")
+  log: os.path.join(logdir, "virsorter2_{sample_id}_{part}.log")
+  benchmark: os.path.join(benchmarks, "virsorter2_{sample_id}_{part}.log")
   conda: "../envs/virsorter2.yml"
-  threads: 32
+  threads: 8
   resources:
     mem_mb=lambda wildcards, attempt, input, threads: max(1 * threads * 10**3 * attempt, 8000)
   shell:
@@ -278,18 +295,36 @@ rule virsorter2:
     mv {params.tmpdir}/* {params.outdir}
     """
 
+rule virsorter2_merge:
+  name: "viral-benchmark.smk VirSorter2 merge results"
+  localrule: True
+  input: 
+    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/virsorter2/splits/splits-{part}/final-viral-score.tsv"), part=split_part_ids),
+  output: 
+    relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/final-viral-score.tsv")
+  params:
+    script="workflow/scripts/tables_row_bind.py",
+  log: os.path.join(logdir, "virsorter2_merge_{sample_id}.log")
+  benchmark: os.path.join(benchmarks, "virsorter2_merge_{sample_id}.log")
+  conda: "../envs/seqkit-biopython.yml"
+  threads: 1
+  shell:
+    """
+    python {params.script} --inputs {input} --output {output}
+    """
+
 rule virfinder_parallel:
   name: "viral-benchmark.smk VirFinder Parallel run"
-  input: relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa")
-  output: relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv")
+  input: relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.part_{part}.fa")
+  output: relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/splits/splits-{part}/output.tsv")
   params: 
     parameters=config['vf-params'],
-    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/"),
-    tmpdir=os.path.join(tmpd, "virfinder/{sample_id}")
-  log: os.path.join(logdir, "virfinder_{sample_id}.log")
-  benchmark: os.path.join(benchmarks, "virfinder_{sample_id}.log")
+    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/splits/splits-{part}/"),
+    tmpdir=os.path.join(tmpd, "virfinder/{sample_id}/splits-{part}")
+  log: os.path.join(logdir, "virfinder_{sample_id}_{part}.log")
+  benchmark: os.path.join(benchmarks, "virfinder_{sample_id}_{part}.log")
   conda: "../envs/parallel-virfinder.yml"
-  threads: 32
+  threads: 8
   resources:
     mem_mb=lambda wildcards, attempt, input, threads: max(1 * threads * 10**3 * attempt, 8000)
   shell:
@@ -307,22 +342,40 @@ rule virfinder_parallel:
     rm -rf {params.tmpdir}
     """
 
+rule virfinder_merge:
+  name: "viral-benchmark.smk VirFinder merge results"
+  localrule: True
+  input: 
+    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/virfinder/splits/splits-{part}/output.tsv"), part=split_part_ids),
+  output: 
+    relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv")
+  params:
+    script="workflow/scripts/tables_row_bind.py",
+  log: os.path.join(logdir, "virfinder_merge_{sample_id}.log")
+  benchmark: os.path.join(benchmarks, "virfinder_merge_{sample_id}.log")
+  conda: "../envs/seqkit-biopython.yml"
+  threads: 1
+  shell:
+    """
+    python {params.script} --inputs {input} --output {output}
+    """
+
 rule VIBRANT:
   name: "viral-benchmark.smk VIBRANT classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa"),
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.part_{part}.fa"),
     db=os.path.join(config['vibrant-db'], "files/VIBRANT_machine_model.sav")
   output: 
-    txt=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt")
+    txt=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/splits-{part}/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt")
   params:
     parameters=config['vibrant-params'],
     dbdir=config['vibrant-db'],
-    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant"),
-    tmpdir=os.path.join(tmpd, "vibrant/{sample_id}")
-  log: os.path.join(logdir, "vibrant_{sample_id}.log")
-  benchmark: os.path.join(benchmarks, "vibrant_{sample_id}.log")
+    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/splits-{part}/"),
+    tmpdir=os.path.join(tmpd, "vibrant/{sample_id}/splits-{part}")
+  log: os.path.join(logdir, "vibrant_{sample_id}_{part}.log")
+  benchmark: os.path.join(benchmarks, "vibrant_{sample_id}_{part}.log")
   conda: "../envs/vibrant.yml"
-  threads: 32
+  threads: 8
   resources:
     mem_mb=lambda wildcards, attempt, input, threads: max(1 * threads * 10**3 * attempt, 8000)
   shell:
@@ -340,6 +393,24 @@ rule VIBRANT:
         {params.parameters} 2> {log}
 
     mv {params.tmpdir}/* {params.outdir}
+    """
+
+rule merge_VIBRANT:
+  name: "viral-benchmark.smk VIBRANT merge results"
+  localrule: True
+  input: 
+    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/vibrant/splits/splits-{part}/VIBRANT_phages_{{sample_id}}_filtered/{{sample_id}}_filtered.phages_combined.txt"), part=split_part_ids),
+  output: 
+    relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt")
+  params:
+    script="workflow/scripts/tables_row_bind.py",
+  log: os.path.join(logdir, "vibrant_merge_{sample_id}.log")
+  benchmark: os.path.join(benchmarks, "vibrant_merge_{sample_id}.log")
+  conda: "../envs/seqkit-biopython.yml"
+  threads: 1
+  shell:
+    """
+    python {params.script} --inputs {input} --output {output}
     """
 
 #rule ppr-meta:
