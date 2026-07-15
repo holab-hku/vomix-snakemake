@@ -468,7 +468,7 @@ rule merge_viral_summaries:
     genomad=relpath("identify/viral/samples/{sample_id}/intermediate/genomad/{sample_id}_filtered_summary/{sample_id}_filtered_virus_summary.tsv"),
     dvf=relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"),
     phamer=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv"),
-    phavip=relpath("identify/viral/samples/{sample_id}/intermediate/phavip/final_prediction/phavip_prediction.tsv"),
+    phavip=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phavip_prediction.tsv"),
     virsorter2=relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/final-viral-score.tsv"),
     virfinder=relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv"),
     vibrant=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_results_{sample_id}_filtered/VIBRANT_summary_results_{sample_id}_filtered.tsv"),
