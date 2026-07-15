@@ -42,9 +42,13 @@ rule done_log:
     expand(relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.part_{part}.fa"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/splits-{part}/final_score.txt"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"), sample_id=assembly_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/splits-{part}/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/splits/splits-{part}/final-viral-score.tsv"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/final-viral-score.tsv"), sample_id=assembly_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/splits/splits-{part}/output.tsv"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv"), sample_id=assembly_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/splits-{part}/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt"), sample_id=assembly_ids),
   output:
     os.path.join(logdir, "done_benchmarks.log")
