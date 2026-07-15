@@ -49,7 +49,7 @@ rule done_log:
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/final-viral-score.tsv"), sample_id=assembly_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/splits/split-{part}/output.tsv"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv"), sample_id=assembly_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt"), sample_id=assembly_ids, part=split_part_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/VIBRANT_{sample_id}_filtered.part_{part}/VIBRANT_phages_{sample_id}_filtered.part_{part}/{sample_id}_filtered.part_{part}.phages_combined.txt"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt"), sample_id=assembly_ids),
   output:
     os.path.join(logdir, "done_benchmarks.log")
@@ -372,7 +372,8 @@ rule VIBRANT:
     fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.part_{part}.fa"),
     db=os.path.join(config['vibrant-db'], "files/VIBRANT_machine_model.sav")
   output: 
-    txt=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt")
+    txt=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/VIBRANT_{sample_id}_filtered.part_{part}/VIBRANT_phages_{sample_id}_filtered.part_{part}/{sample_id}_filtered.part_{part}.phages_combined.txt"),
+    tsv=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/VIBRANT_{sample_id}_filtered.part_{part}/VIBRANT_results_{sample_id}_filtered.part_{part}/VIBRANT_summary_results_{sample_id}_filtered.part_{part}.tsv")
   params:
     parameters=config['vibrant-params'],
     dbdir=config['vibrant-db'],
@@ -396,27 +397,53 @@ rule VIBRANT:
         -m {params.dbdir}/files/ \
         -f nucl \
         -t {threads} \
-        {params.parameters} 2> {log}
+        {params.parameters} 2> {log} || true
 
-    mv {params.tmpdir}/* {params.outdir}
+    # Move results if the directory isn't empty
+    if [ -d {params.tmpdir} ] && [ "$(ls -A {params.tmpdir})" ]; then
+        mv {params.tmpdir}/* {params.outdir}
+    fi
+
+    # Ensure output directories exist
+    mkdir -p "$(dirname {output.txt})"
+    mkdir -p "$(dirname {output.tsv})"
+
+    # Handle empty/missing TXT file
+    if [ ! -s "{output.txt}" ]; then
+        touch "{output.txt}"
+    fi
+
+    # Handle empty/missing TSV file (write headers)
+    if [ ! -s "{output.tsv}" ]; then
+        printf "scaffold\ttotal genes\tall KEGG\tKEGG v-score\tall Pfam\tPfam v-score\tall VOG\tVOG v-score\tKEGG int-rep\tKEGG zero\tPfam int-rep\tPfam zero\tVOG redoxin\tVOG rec-tran\tVOG int\tVOG RnR\tVOG DNA\tKEGG restriction check\tKEGG toxin check\tVOG special\tannotation check\tp_v check\tp_k check\tk_v check\tk check\tp check\tv check\th check\n" > "{output.tsv}"
+    fi
+
+    rm -rf {params.tmpdir}    
     """
 
 rule merge_VIBRANT:
   name: "viral-benchmark.smk VIBRANT merge results"
   localrule: True
   input: 
-    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/vibrant/splits/split-{part}/VIBRANT_phages_{{sample_id}}_filtered/{{sample_id}}_filtered.phages_combined.txt"), part=split_part_ids),
+    txt=expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/vibrant/splits/split-{part}/VIBRANT_{{sample_id}}_filtered.part_{part}/VIBRANT_phages_{{sample_id}}_filtered.part_{part}/{{sample_id}}_filtered.part_{part}.phages_combined.txt"), part=split_part_ids),
+    tsv=expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/vibrant/splits/split-{part}/VIBRANT_{{sample_id}}_filtered.part_{part}/VIBRANT_results_{{sample_id}}_filtered.part_{part}/VIBRANT_summary_results_{{sample_id}}_filtered.part_{part}.tsv"), part=split_part_ids),
   output: 
-    relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt")
+    txt=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt"),
+    tsv=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_results_{sample_id}_filtered/VIBRANT_summary_results_{sample_id}_filtered.tsv")
   params:
     script="workflow/scripts/tables_row_bind.py",
+    outdir_res=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_results_{sample_id}_filtered/"),
+    outdir_phages=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/"),
   log: os.path.join(logdir, "vibrant_merge_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "vibrant_merge_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml"
   threads: 1
   shell:
     """
-    python {params.script} --inputs {input} --output {output}
+    rm -rf {params.outdir_res} {params.outdir_phages}
+    mkdir -p {params.outdir_res} {params.outdir_phages}
+    cat {input.txt} > {output.txt}
+    python {params.script} --inputs {input.tsv} --output {output.tsv}
     """
 
 #rule ppr-meta:
