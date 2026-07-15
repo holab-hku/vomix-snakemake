@@ -88,12 +88,12 @@ if config["checkv-original"]:
       fna=relpath(f"identify/viral/tmp/splits/{sample_id}.part_{{part}}.fa"), 
       db=expand(os.path.join(config['checkv-db'], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
     output:
-      relpath("identify/viral/output/checkv/splits/split-{part}/viruses.fna"),
-      relpath("identify/viral/output/checkv/splits/split-{part}/proviruses.fna"),
-      relpath("identify/viral/output/checkv/splits/split-{part}/quality_summary.tsv")
+      relpath("identify/viral/output/splits/split-{part}/checkv/viruses.fna"),
+      relpath("identify/viral/output/splits/split-{part}/checkv/proviruses.fna"),
+      relpath("identify/viral/output/splits/split-{part}/checkv/quality_summary.tsv")
     params:
       parameters= config['checkv-params'],
-      outdir=relpath("identify/viral/output/checkv/splits/split-{part}"),
+      outdir=relpath("identify/viral/output/splits/split-{part}/checkv"),
       dbdir=config["checkv-db"], 
       tmpdir=os.path.join(tmpd, "checkv/splits/split-{part}"),
     log: os.path.join(logdir, "checkv_split_{part}.log")
@@ -121,16 +121,16 @@ if config["checkv-original"]:
     name: "checkv.smk CheckV merge split results"
     localrule: True
     input:
-      virus=expand(relpath("identify/viral/output/checkv/splits/split-{part}/viruses.fna"), part=split_part_ids),
-      provirus=expand(relpath("identify/viral/output/checkv/splits/split-{part}/proviruses.fna"), part=split_part_ids),
-      summary=expand(relpath("identify/viral/output/checkv/splits/split-{part}/quality_summary.tsv"), part=split_part_ids)
+      virus=expand(relpath("identify/viral/output/splits/split-{part}/checkv/viruses.fna"), part=split_part_ids),
+      provirus=expand(relpath("identify/viral/output/splits/split-{part}/checkv/proviruses.fna"), part=split_part_ids),
+      summary=expand(relpath("identify/viral/output/splits/split-{part}/checkv/quality_summary.tsv"), part=split_part_ids)
     output:
       virus=relpath("identify/viral/output/checkv/viruses.fna"),
       provirus=relpath("identify/viral/output/checkv/proviruses.fna"),
       summary=relpath("identify/viral/output/checkv/quality_summary.tsv")
     params:
       script="workflow/scripts/tables_row_bind.py",
-      outdir=relpath("identify/viral/output/checkv/"), 
+      outdir=relpath("identify/viral/output/checkv"), 
       tmpdir=os.path.join(tmpd, "checkv/merge")
     log: os.path.join(logdir, "checkv_merge.log")
     benchmark: os.path.join(benchmarks, "checkv_merge.log")
@@ -157,11 +157,11 @@ else:
     input: 
       relpath(f"identify/viral/tmp/splits/{sample_id}.part_{{part}}.fa"), 
     output:
-      relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/proteins.faa")
+      relpath("identify/viral/output/splits/split-{part}/checkv/tmp/proteins.faa")
     params:
       script="workflow/scripts/parallel_prodigal_gv.py",
-      outdir=relpath("identify/viral/output/checkv/tmp/splits/splits-{part}"),
-      tmpdir=os.path.join(tmpd, "checkv/splits/splits-{part}/prodigal-gv")
+      outdir=relpath("identify/viral/output/splits/split-{part}/checkv/tmp"),
+      tmpdir=os.path.join(tmpd, "checkv/splits/split-{part}/prodigal-gv")
     log: os.path.join(logdir, "checkv_split_{part}_prodigal-gv.log")
     benchmark: os.path.join(benchmarks, "checkv_split_{part}_prodigal-gv.log")
     conda: "../envs/prodigal-gv.yml"
@@ -186,15 +186,15 @@ else:
     name: "checkv-pyhmmer.smk CheckV PyHMMER hmmsearch"
     localrule: False
     input:
-      faa=relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/proteins.faa"), 
+      faa=relpath("identify/viral/output/splits/split-{part}/checkv/tmp/proteins.faa"), 
       db=os.path.join(config["checkv-db"], "hmm_db/checkv_hmms/{index}.hmm"), 
       dbfull=expand(os.path.join(config["checkv-db"], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
     output:
-      relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/hmmsearch/{index}.hmmout")
+      relpath("identify/viral/output/splits/split-{part}/checkv/tmp/hmmsearch/{index}.hmmout")
     params:
       script="workflow/scripts/pyhmmer_wrapper.py",
-      outdir=relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/hmmsearch"),
-      tmpdir=os.path.join(tmpd, "checkv/splits/splits-{part}/hmmsearch/{index}"), 
+      outdir=relpath("identify/viral/output/splits/split-{part}/checkv/tmp/hmmsearch"),
+      tmpdir=os.path.join(tmpd, "checkv/splits/split-{part}/hmmsearch/{index}"), 
       ecutoff=10.0
     log : os.path.join(logdir, "checkv_hmmsearch_split_{part}_{index}.log")
     benchmark: os.path.join(benchmarks, "checkv_hmmsearch_split_{part}_{index}.log")
@@ -222,9 +222,9 @@ else:
     name: "checkv-pyhmmer.smk CheckV hmmsearch merge"
     localrule: True
     input:
-      expand(relpath("identify/viral/output/checkv/tmp/splits/splits-{{part}}/hmmsearch/{index}.hmmout"), index = range(1, 81))
+      expand(relpath("identify/viral/output/splits/split-{{part}}/checkv/tmp/hmmsearch/{index}.hmmout"), index = range(1, 81))
     output:
-      relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/hmmsearch.txt")
+      relpath("identify/viral/output/splits/split-{part}/checkv/tmp/hmmsearch.txt")
     shell:
       """
       cat {input} > {output}
@@ -234,9 +234,9 @@ else:
     name: "checkv-pyhmmer.smk CheckV hmmsearch checkpoint"
     localrule: True
     input:
-      relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/hmmsearch.txt")
+      relpath("identify/viral/output/splits/split-{part}/checkv/tmp/hmmsearch.txt")
     output:
-      relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/hmmsearch_checkpoint")
+      relpath("identify/viral/output/splits/split-{part}/checkv/tmp/hmmsearch_checkpoint")
     shell:
       """
       touch {output}
@@ -247,18 +247,18 @@ else:
   rule checkv:
     name: "checkv-pyhmmer.smk CheckV dereplicated contigs"
     input:
-      checkpoint=relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/hmmsearch_checkpoint"),
+      checkpoint=relpath("identify/viral/output/splits/split-{part}/checkv/tmp/hmmsearch_checkpoint"),
       fna=relpath(f"identify/viral/tmp/splits/{sample_id}.part_{{part}}.fa"),
       db=expand(os.path.join(config['checkv-db'], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
     output:
-      relpath("identify/viral/output/checkv/splits/splits-{part}/viruses.fna"),
-      relpath("identify/viral/output/checkv/splits/splits-{part}/proviruses.fna"),
-      relpath("identify/viral/output/checkv/splits/splits-{part}/quality_summary.tsv")
+      relpath("identify/viral/output/splits/split-{part}/checkv/viruses.fna"),
+      relpath("identify/viral/output/splits/split-{part}/checkv/proviruses.fna"),
+      relpath("identify/viral/output/splits/split-{part}/checkv/quality_summary.tsv")
     params:
       params= config['checkv-params'],
       dbdir=config["checkv-db"],
-      outdir=relpath("identify/viral/output/checkv/splits/splits-{part}"),
-      tmpdir=os.path.join(tmpd, "checkv/splits/splits-{part}"),
+      outdir=relpath("identify/viral/output/splits/split-{part}/checkv"),
+      tmpdir=os.path.join(tmpd, "checkv/splits/split-{part}"),
     log: os.path.join(logdir, "checkv_split-{part}.log")
     benchmark: os.path.join(benchmarks, "checkv_split-{part}.log")
     threads: 1
@@ -284,9 +284,9 @@ else:
     name: "checkv-pyhmmer.smk CheckV merge split results"
     localrule: True
     input:
-      virus=expand(relpath("identify/viral/output/checkv/splits/splits-{part}/viruses.fna"), part=split_part_ids),
-      provirus=expand(relpath("identify/viral/output/checkv/splits/splits-{part}/proviruses.fna"), part=split_part_ids),
-      summary=expand(relpath("identify/viral/output/checkv/splits/splits-{part}/quality_summary.tsv"), part=split_part_ids)
+      virus=expand(relpath("identify/viral/output/splits/split-{part}/checkv/viruses.fna"), part=split_part_ids),
+      provirus=expand(relpath("identify/viral/output/splits/split-{part}/checkv/proviruses.fna"), part=split_part_ids),
+      summary=expand(relpath("identify/viral/output/splits/split-{part}/checkv/quality_summary.tsv"), part=split_part_ids)
     output:
       virus=relpath("identify/viral/output/checkv/viruses.fna"),
       provirus=relpath("identify/viral/output/checkv/proviruses.fna"),
