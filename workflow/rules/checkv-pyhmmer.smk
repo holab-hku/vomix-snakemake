@@ -42,6 +42,7 @@ rule split_contigs:
     expand(relpath(f"identify/viral/tmp/splits/{sample_id}.part_{{part}}.fa"), part=split_part_ids)
   params:
     parts=parts,
+    sample_id=sample_id, # Pass sample_id explicitly to params so the shell can read it
     tmpdir=os.path.join(tmpd, "checkv/split/"),
     outdir=relpath("identify/viral/tmp/splits/"),
   log: os.path.join(logdir, "checkv_splitcontig.log")
@@ -51,18 +52,34 @@ rule split_contigs:
     mem_mb=lambda wildcards, attempt, input: 4 * 10**3 * attempt
   shell:
     """
-    rm -f {output}
-    mkdir -p {params.outdir}
+    rm -rf {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
 
     seqkit split2 \
       --by-part {params.parts} \
       --threads {threads} {input} \
-      --extension ".fa" \
       --out-dir {params.tmpdir} 2> {log}
 
-    mv {params.tmpdir}/* {params.outdir}
-    """
+    # Clean and rename files to force a strict '.fa' extension
+    for file in "{params.tmpdir}"/*; do
+        if [ -f "$file" ]; then
+            # Extract directory and raw filename
+            dir_name=$(dirname "$file")
+            base_name=$(basename "$file")
 
+            # Extract everything before '.part_'
+            # Double braces escape this for Snakemake so Bash handles it
+            part_suffix=$(echo "$base_name" | grep -o "part_[0-9]\\+")
+
+            # Move and force standard '.fa' extension
+            # Notice the double braces around ${{part_suffix}}
+            mv "$file" "{params.outdir}/{params.sample_id}.${{part_suffix}}.fa"
+        fi
+    done
+
+    # Clean up tmpdir
+    rm -rf {params.tmpdir}
+    """    
 # A) Original CheckV
 if config["checkv-original"]:
   rule checkv:
