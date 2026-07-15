@@ -27,7 +27,7 @@ rule done_log:
   name: "checkv-pyhmmer.py Done. removing tmp files"
   localrule: True
   input:
-    expand(relpath(f"identify/viral/tmp/splits/{sample_id}.split_{{part}}.fa"), part=split_part_ids),
+    expand(relpath(f"identify/viral/tmp/splits/{sample_id}.part_{{part}}.fa"), part=split_part_ids),
     relpath("identify/viral/output/checkv/viruses.fna"),
     relpath("identify/viral/output/checkv/proviruses.fna"),
     relpath("identify/viral/output/checkv/quality_summary.tsv")
@@ -42,7 +42,7 @@ rule split_contigs:
   name: "checkv-pyhmmer.smk split dereplicated contigs"
   input: fastap
   output:
-    expand(relpath(f"identify/viral/tmp/splits/{sample_id}.split_{{part}}.fa"), part=split_part_ids)
+    expand(relpath(f"identify/viral/tmp/splits/{sample_id}.part_{{part}}.fa"), part=split_part_ids)
   params:
     parts=parts,
     tmpdir=os.path.join(tmpd, "checkv/split/"),
@@ -70,7 +70,7 @@ if config["checkv-original"]:
   rule checkv:
     name: "checkv.smk CheckV split contigs"
     input:
-      fna=relpath(f"identify/viral/tmp/splits/{sample_id}.split_{{part}}.fa"), 
+      fna=relpath(f"identify/viral/tmp/splits/{sample_id}.part_{{part}}.fa"), 
       db=expand(os.path.join(config['checkv-db'], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
     output:
       relpath("identify/viral/tmp/checkv/splits/split-{part}/viruses.fna"),
@@ -140,7 +140,7 @@ else:
   rule checkv_prodigalgv:
     name: "checkv-pyhmmer.smk CheckV run prodigal-gv"
     input: 
-      relpath(f"identify/viral/tmp/splits/{sample_id}.split_{{part}}.fa"), 
+      relpath(f"identify/viral/tmp/splits/{sample_id}.part_{{part}}.fa"), 
     output:
       relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/proteins.faa")
     params:
@@ -233,7 +233,7 @@ else:
     name: "checkv-pyhmmer.smk CheckV dereplicated contigs"
     input:
       checkpoint=relpath("identify/viral/output/checkv/tmp/splits/splits-{part}/hmmsearch_checkpoint"),
-      fna=relpath(f"identify/viral/tmp/splits/{sample_id}.split_{{part}}.fa"),
+      fna=relpath(f"identify/viral/tmp/splits/{sample_id}.part_{{part}}.fa"),
       db=expand(os.path.join(config['checkv-db'], "hmm_db/checkv_hmms/{index}.hmm"), index=range(1, 81))
     output:
       relpath("identify/viral/tmp/checkv/splits/splits-{part}/viruses.fna"),

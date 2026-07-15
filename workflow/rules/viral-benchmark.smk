@@ -40,7 +40,7 @@ rule done_log:
   localrule: True
   input:
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/genomad/{sample_id}_filtered_summary/{sample_id}_filtered_virus_summary.tsv"), sample_id=assembly_ids), 
-    expand(relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.split_{part}.fa"), sample_id=assembly_ids, part=split_part_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.part_{part}.fa"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/split-{part}/final_score.txt"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"), sample_id=assembly_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/split-{part}/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids, part=split_part_ids),
@@ -95,7 +95,7 @@ rule split_contigs:
   input:
     relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa")
   output:
-    expand(relpath("identify/viral/samples/{{sample_id}}/tmp/splits/{{sample_id}}_filtered.split_{part}.fa"), part=split_part_ids)
+    expand(relpath("identify/viral/samples/{{sample_id}}/tmp/splits/{{sample_id}}_filtered.part_{part}.fa"), part=split_part_ids)
   params:
     parts=config["splits"] + 1,
     tmpdir=os.path.join(tmpd, "contigs/{sample_id}/splits"),
@@ -161,7 +161,7 @@ rule genomad_classify:
 rule dvf_classify:
   name : "viral-benchmark.smk DeepVirFinder classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.split_{part}.fa")
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.part_{part}.fa")
   output:
     relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/split-{part}/final_score.txt")
   params:
@@ -215,7 +215,7 @@ rule dvf_classify_merge:
 rule phamer_classify:
   name: "viral-benchmark.smk PhaMer classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.split_{part}.fa"),
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.part_{part}.fa"),
     db=os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl")
   output:
     relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/split-{part}/final_prediction/phamer_prediction.tsv")
@@ -270,7 +270,7 @@ rule phamer_classify_merge:
 rule virsorter2:
   name: "viral-benchmark.smk VirSorter2 classify"
   input: 
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.split_{part}.fa"),
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.part_{part}.fa"),
     db=os.path.join(config['virsorter2-db'], "Done_all_setup")
   output: 
     relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/splits/split-{part}/final-viral-score.tsv")
@@ -321,7 +321,7 @@ rule virsorter2_merge:
 
 rule virfinder_parallel:
   name: "viral-benchmark.smk VirFinder Parallel run"
-  input: relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.split_{part}.fa")
+  input: relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.part_{part}.fa")
   output: relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/splits/split-{part}/output.tsv")
   params: 
     parameters=config['vf-params'],
@@ -369,7 +369,7 @@ rule virfinder_merge:
 rule VIBRANT:
   name: "viral-benchmark.smk VIBRANT classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.split_{part}.fa"),
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.part_{part}.fa"),
     db=os.path.join(config['vibrant-db'], "files/VIBRANT_machine_model.sav")
   output: 
     txt=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt")
