@@ -31,19 +31,33 @@ def main():
         "-i", "--inputs", nargs="+", required=True, help="List of input files"
     )
     parser.add_argument("-o", "--output", required=True, help="Output file path")
+    parser.add_argument(
+        "-s",
+        "--sample-ids",
+        nargs="*",
+        help="Optional list of sample IDs corresponding to the input files",
+    )
 
     args = parser.parse_args()
 
-    # Map the parsed arguments to our variables
     output_file = args.output
     input_files = args.inputs
+    sample_ids = args.sample_ids
+
+    # Validate that if sample IDs are provided, they match the number of inputs
+    if sample_ids and len(sample_ids) != len(input_files):
+        print(
+            f"Error: Number of sample IDs ({len(sample_ids)}) does not match number of input files ({len(input_files)}).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     dfs = []
     reference_columns = None
     reference_file = None
 
-    for input_file in input_files:
-        # 2. Recognize the delimitation of the file (using your existing function)
+    for idx, input_file in enumerate(input_files):
+        # Recognize the delimitation of the file
         sep = detect_sep(input_file)
 
         try:
@@ -52,7 +66,7 @@ def main():
             print(f"Error reading {input_file}: {e}", file=sys.stderr)
             sys.exit(1)
 
-        # 1. Check for column consistency against the first file loaded
+        # Check for column consistency against the first file loaded
         if reference_columns is None:
             reference_columns = set(df.columns)
             reference_file = Path(input_file).name
@@ -76,16 +90,28 @@ def main():
                 print(error_msg, file=sys.stderr)
                 sys.exit(1)
 
-        # 3. Add a column to note which file it came from (base name + extension)
+        # Add a column to note which file it came from (base name + extension)
         df["source_file"] = Path(input_file).name
 
+        # If sample IDs were provided, add the sample_id column
+        if sample_ids:
+            # We use insert at index 0 so it appears as the very first column
+            df.insert(0, "sample_id", sample_ids[idx])
+
         dfs.append(df)
+
+    if not dfs:
+        print("No data to merge.", file=sys.stderr)
+        sys.exit(1)
 
     # Concatenate them safely
     merged_df = pd.concat(dfs, ignore_index=True)
 
+    # Automatically choose output separator based on file extension
+    out_sep = "," if Path(output_file).suffix.lower() == ".csv" else "\t"
+
     # Write to output
-    merged_df.to_csv(output_file, sep="\t", index=False)
+    merged_df.to_csv(output_file, sep=out_sep, index=False)
     print(f"Successfully merged {len(input_files)} files into {output_file}")
 
 

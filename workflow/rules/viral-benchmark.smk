@@ -52,7 +52,8 @@ rule done_log:
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv"), sample_id=assembly_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/VIBRANT_{sample_id}_filtered.part_{part}/VIBRANT_phages_{sample_id}_filtered.part_{part}/{sample_id}_filtered.part_{part}.phages_combined.txt"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt"), sample_id=assembly_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/output/viral_benchmark_summary.tsv"), sample_id=assembly_ids)
+    expand(relpath("identify/viral/samples/{sample_id}/output/viral_benchmark_summary.tsv"), sample_id=assembly_ids), 
+    relpath("identify/viral/output/viral_benchmark_merged.csv")
   output:
     os.path.join(logdir, "done_benchmarks.log")
   params:
@@ -489,4 +490,28 @@ rule merge_viral_summaries:
     
     mv {params.tmpdir}/tmp.tsv {output}
     rm -rf {params.tmpdir}
+    """
+
+rule merge_all_viral_benchmarks:
+  name: "viral-benchmark.smk merge all samples to final csv"
+  localrule: True
+  input:
+    expand(relpath("identify/viral/samples/{sample_id}/output/viral_benchmark_summary.tsv"), sample_id=assembly_ids)
+  output:
+    relpath("identify/viral/output/viral_benchmark_merged.csv")
+  params:
+    script="workflow/scripts/tables_row_bind.py", 
+    sample_ids=list(assembly_ids),
+    outdir=relpath("identify/viral/output/")
+  log: os.path.join(logdir, "merge_all_viral_benchmarks.log")
+  conda: "../envs/seqkit-biopython.yml" 
+  threads: 1
+  shell:
+    """
+    mkdir -p {params.outdir}
+
+    python {params.script} \
+      --inputs {input} \
+      --sample-ids {params.sample_ids} \
+      --output {output} 2> {log}
     """
