@@ -16,7 +16,8 @@ os.makedirs(tmpd, exist_ok=True)
 
 n_cores = config['max-cores']
 assembler = config['assembler']
-split_part_ids = list(range(1, config["splits"] + 2))
+split_part = list(range(1, config["splits"] + 2))
+split_part_ids = [f"{i:03d}" for i in range(1, config["splits"] + 2)] # matches seqkit
 
 ### Read fasta or fastadir input
 if config['fasta'] != "":
@@ -38,7 +39,7 @@ rule done_log:
   localrule: True
   input:
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/genomad/{sample_id}_filtered_summary/{sample_id}_filtered_virus_summary.tsv"), sample_id=assembly_ids), 
-    expand(relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered_part_{part}.fa"), sample_id=assembly_ids, part=split_part_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.part_{part}.fa"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/splits-{part}/final_score.txt"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"), sample_id=assembly_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids),
@@ -89,7 +90,7 @@ rule split_contigs:
   input:
     relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa")
   output:
-    expand(relpath("identify/viral/samples/{{sample_id}}/tmp/{{sample_id}}_filtered_part_{part}.fa"), part=split_part_ids)
+    expand(relpath("identify/viral/samples/{{sample_id}}/tmp/{{sample_id}}_filtered.part_{part}.fa"), part=split_part_ids)
   params:
     parts=config["splits"] + 1,
     tmpdir=os.path.join(tmpd, "contigs/{sample_id}"),
@@ -103,7 +104,6 @@ rule split_contigs:
 
     seqkit split2 \
       --by-part {params.parts} \
-      --alphabet-guess-seq-length 0 \
       --threads {threads} {input} \
       --out-dir {params.tmpdir} 2> {log}
 
@@ -153,7 +153,7 @@ rule genomad_classify:
 rule dvf_classify:
   name : "viral-benchmark.smk DeepVirFinder classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered_part_{part}.fa")
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.part_{part}.fa")
   output:
     relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/splits-{part}/final_score.txt")
   params:
@@ -188,7 +188,7 @@ rule dvf_classify:
 rule dvf_classify_merge:
   name: "viral-benchmark.smk DeepVirFinder merge results"
   localrule: True
-  input: expand(relpath("identify/viral/samples/{{sample_id}}/tmp/{{sample_id}}_filtered_part_{part}.fa"), part=split_part_ids),
+  input: expand(relpath("identify/viral/samples/{{sample_id}}/tmp/{{sample_id}}_filtered.part_{part}.fa"), part=split_part_ids),
   output: relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt")
   log: os.path.join(logdir, "dvf_merge_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "dvf_merge_{sample_id}.log")
