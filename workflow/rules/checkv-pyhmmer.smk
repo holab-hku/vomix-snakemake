@@ -300,7 +300,7 @@ else:
     threads: 1
     resources:
       mem_mb=lambda wildcards, attempt, input: attempt * 4 * 10**3
-    conda: "../envs/checkv.yml"
+    conda: "../envs/seqkit-biopython.yml"
     shell:
       """
       rm -rf {params.tmpdir} {params.outdir}
