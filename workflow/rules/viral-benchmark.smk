@@ -113,6 +113,7 @@ rule split_contigs:
     seqkit split2 \
       --by-part {params.parts} \
       --threads {threads} {input} \
+      --extension ".fa" \
       --out-dir {params.tmpdir} 2> {log}
 
     mv {params.tmpdir}/* {params.outdir}
