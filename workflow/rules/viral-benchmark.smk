@@ -98,8 +98,8 @@ rule split_contigs:
     expand(relpath("identify/viral/samples/{{sample_id}}/tmp/splits/{{sample_id}}_filtered.split_{part}.fa"), part=split_part_ids)
   params:
     parts=config["splits"] + 1,
-    tmpdir=os.path.join(tmpd, "contigs/{sample_id}"),
-    outdir=relpath("identify/viral/samples/{sample_id}/tmp")
+    tmpdir=os.path.join(tmpd, "contigs/{sample_id}/splits"),
+    outdir=relpath("identify/viral/samples/{sample_id}/tmp/splits")
   log: os.path.join(logdir, "splitcontig_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml"
   threads: 1
