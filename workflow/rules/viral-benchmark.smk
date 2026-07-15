@@ -87,7 +87,7 @@ rule filter_contigs:
 
 print( expand(relpath("identify/viral/samples/{{sample_id}}/tmp/{{sample_id}}_filtered.part_{part}.fa"), part=split_part_ids))
 rule split_contigs:
-  name: "viral-benchmark.smk split filtered contigs (--splits)"
+  name: "viral-benchmark.smk split filtered contigs"
   input:
     relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa")
   output:
