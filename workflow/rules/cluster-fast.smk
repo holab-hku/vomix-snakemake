@@ -1,3 +1,5 @@
+import math
+
 logdir = relpath("identify/viral/logs")
 tmpd = relpath("identify/viral/tmp")
 benchmarks=relpath("identify/viral/benchmarks")
@@ -6,7 +8,28 @@ os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 
+clustering_iter = config["cluster-iter"]
+starting_p =  2 ** (clustering_iter - 1)
 
+
+def get_cdhit_inputs(wildcards):
+
+    """Calculates which files to merge based on the current layer and chunk."""
+    layer = int(wildcards.layer)
+    chunk = int(wildcards.chunk)
+    
+    if layer == 1:
+        # Layer 1 just grabs the raw split pieces
+        return f"{tmpd}/splits/chunk_{chunk}.fa"
+    else:
+        # Layer > 1 grabs the two specific clustered chunks from the previous layer
+        prev_layer = layer - 1
+        child1 = chunk * 2
+        child2 = chunk * 2 + 1
+        return [
+            f"{tmpd}/layer_{prev_layer}/chunk_{child1}.fa",
+            f"{tmpd}/layer_{prev_layer}/chunk_{child2}.fa"
+        ]
 if isinstance(config['max-cores'], int):
  n_cores = config['max-cores']
 else:
@@ -15,31 +38,29 @@ else:
 
 
 ### Read single fasta file if input
-if config['fasta'] != "" and config["module"] == "clustering-fast":
-  fastap = readfasta(config['fasta'])
+if config['fasta'] != "" and config["module"] == "cluster-fast":
+  fastap = relpath(config["fasta"])
   sample_id = config["sample-name"]
   assembly_ids = [sample_id]
 else:
   fastap = relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa")
+  sample_id = "combined.viralcontigs"
+  assembly_ids = [sample_id]
 
 ### MASTER RULE
-
 rule done_log:
   name: "clustering.smk Done. removing tmp files"
   localrule: True
   input:
-    relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa")
+    relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr"), 
   output:
     os.path.join(logdir, "clustering-done.log")
   shell: "touch {output}"
 
 
 ### RULES 
-
 # 1) RAPID CLUSTERING (clustering-fast=True)
-
 if config["clustering-fast"]:
-  
   rule makeblastdb_derep:
     name: "clustering.smk make blast db [--clustering-fast]"
     input: 
@@ -199,36 +220,78 @@ if config["clustering-fast"]:
 
 
 # 2) CD-HIT CLUSTERING (clustering-fast=False)
-
 else:
-
-  rule cdhit_derep:
-    name: "clustering.smk CD-HIT Clustering [clustering-fast=False]"
+  rule cdhit_split_input:
     input:
-      fastap
+        fastap
     output:
-      fa=relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa"),
-      clstr=relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr"), 
-      done=os.path.join(logdir, "clustering-sensitive-done.log")
+        expand(f"{tmpd}/splits/chunk_{{chunk}}.fa", chunk=range(starting_p))
     params:
-      cdhitparams=config['cdhit-params'],
-      outdir=relpath("identify/viral/output/derep"),
-      tmpdir=os.path.join(tmpd, "cdhit")
-    log: os.path.join(logdir, "clustering/cdhitderep.log")
-    conda: "../envs/cd-hit.yml"
-    benchmark: os.path.join(benchmarks, "identify/viral_cdhit.log")
+        pieces = starting_p,
+        outdir = f"{tmpd}/splits"
+    shell:
+        """
+        mkdir -p {params.outdir}
+        
+        # Split the fasta into parts
+        seqkit split2 {input} -p {params.pieces} -O {params.outdir}/
+        
+        # Converts seqkit's default padded names (e.g., .part_001.fa) 
+        # to our strict 0-indexed names (chunk_0.fa, chunk_1.fa) so math works.
+        counter=0
+        for file in {params.outdir}/*.fa; do
+            mv "$file" "{params.outdir}/chunk_${{counter}}.fa"
+            counter=$((counter+1))
+        done
+        """
+        
+  rule cdhit_recursive_cluster:
+    input:
+        get_cdhit_inputs
+    output:
+        fa = f"{tmpd}/layer_{{layer}}/chunk_{{chunk}}.fa",
+        clstr = f"{tmpd}/layer_{{layer}}/chunk_{{chunk}}.fa.clstr"
+    params:
+        cdhitparams = config['cdhit-params']
     threads: 32
     resources:
-      mem_mb = lambda wildcards, attempt: attempt * 72 * 10**3
+        mem_mb = lambda wildcards, attempt: attempt * 72 * 10**3
+    conda: "../envs/cd-hit.yml"
+    log: os.path.join(logdir, "clustering/cdhit_layer_{layer}_chunk_{chunk}.log")
     shell:
-      """
-      mkdir -p {params.tmpdir} {params.outdir}
-    
-      cd-hit -i {input} -o {params.tmpdir}/tmp.fa -T {threads} {params.cdhitparams} &> {log}
+        """
+        mkdir -p $(dirname {output.fa})
+        
+        if [ "{wildcards.layer}" -eq "1" ]; then
+            # LAYER 1: {input} contains exactly one file
+            cd-hit -i {input} -o {output.fa} -T {threads} {params.cdhitparams} &> {log}
+            
+        else
+            # LAYER > 1: {input} automatically expands to "fileA fileB" 
+            # 'cat' will naturally pool them both into the temp file
+            cat {input} > {output.fa}.tmp_input
+            cd-hit -i {output.fa}.tmp_input -o {output.fa} -T {threads} {params.cdhitparams} &> {log}
+            # Clean up the pooled temporary file to save disk space
+            rm {output.fa}.tmp_input
+        fi
+        """
 
-      mv {params.tmpdir}/tmp.fa {output.fa}
-      mv {params.tmpdir}/tmp.fa.clstr {output.clstr}
-
-      touch {output.done}
-      """
-
+rule cdhit_derep_finalize:
+    input:
+        # We explicitly request Chunk 0 of the Final Layer (the top of the tree)
+        fa = f"{tmpd}/layer_{clustering_iter}/chunk_0.fa",
+        clstr = f"{tmpd}/layer_{clustering_iter}/chunk_0.fa.clstr"
+    output:
+        fa = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa"),
+        clstr = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr"), 
+        done = os.path.join(logdir, "clustering-sensitive-done.log")
+    benchmark: 
+        os.path.join(benchmarks, "identify/viral_cdhit.log")
+    shell:
+        """
+        # Move the final results to your requested output directories
+        cp {input.fa} {output.fa}
+        cp {input.clstr} {output.clstr}
+        
+        touch {output.done}
+        """
