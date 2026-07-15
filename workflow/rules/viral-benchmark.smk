@@ -40,16 +40,16 @@ rule done_log:
   localrule: True
   input:
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/genomad/{sample_id}_filtered_summary/{sample_id}_filtered_virus_summary.tsv"), sample_id=assembly_ids), 
-    expand(relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.part_{part}.fa"), sample_id=assembly_ids, part=split_part_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/splits-{part}/final_score.txt"), sample_id=assembly_ids, part=split_part_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.split_{part}.fa"), sample_id=assembly_ids, part=split_part_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/split-{part}/final_score.txt"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"), sample_id=assembly_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/splits-{part}/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids, part=split_part_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/split-{part}/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/splits/splits-{part}/final-viral-score.tsv"), sample_id=assembly_ids, part=split_part_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/splits/split-{part}/final-viral-score.tsv"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/final-viral-score.tsv"), sample_id=assembly_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/splits/splits-{part}/output.tsv"), sample_id=assembly_ids, part=split_part_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/splits/split-{part}/output.tsv"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv"), sample_id=assembly_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/splits-{part}/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt"), sample_id=assembly_ids, part=split_part_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt"), sample_id=assembly_ids),
   output:
     os.path.join(logdir, "done_benchmarks.log")
@@ -95,7 +95,7 @@ rule split_contigs:
   input:
     relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.fa")
   output:
-    expand(relpath("identify/viral/samples/{{sample_id}}/tmp/{{sample_id}}_filtered.part_{part}.fa"), part=split_part_ids)
+    expand(relpath("identify/viral/samples/{{sample_id}}/tmp/splits/{{sample_id}}_filtered.split_{part}.fa"), part=split_part_ids)
   params:
     parts=config["splits"] + 1,
     tmpdir=os.path.join(tmpd, "contigs/{sample_id}"),
@@ -161,15 +161,15 @@ rule genomad_classify:
 rule dvf_classify:
   name : "viral-benchmark.smk DeepVirFinder classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.part_{part}.fa")
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.split_{part}.fa")
   output:
-    relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/splits-{part}/final_score.txt")
+    relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/split-{part}/final_score.txt")
   params:
     script="workflow/software/DeepVirFinder/dvf.py",
     parameters=config['dvf-params'], 
     modeldir="workflow/software/DeepVirFinder/models/",
-    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/splits-{part}/"),
-    tmpdir=os.path.join(tmpd, "dvf/{sample_id}/splits-{part}")
+    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/split-{part}/"),
+    tmpdir=os.path.join(tmpd, "dvf/{sample_id}/split-{part}")
   log: os.path.join(logdir, "dvf_{sample_id}_{part}.log")
   benchmark: os.path.join(benchmarks, "dvf_{sample_id}_{part}.log")
   conda: "../envs/dvf.yml"
@@ -197,7 +197,7 @@ rule dvf_classify_merge:
   name: "viral-benchmark.smk DeepVirFinder merge results"
   localrule: True
   input: 
-    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/dvf/splits/splits-{part}/final_score.txt"), part=split_part_ids),
+    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/dvf/splits/split-{part}/final_score.txt"), part=split_part_ids),
   output: 
     relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt")
   params:
@@ -215,15 +215,15 @@ rule dvf_classify_merge:
 rule phamer_classify:
   name: "viral-benchmark.smk PhaMer classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.part_{part}.fa"),
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.split_{part}.fa"),
     db=os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl")
   output:
-    relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/splits-{part}/final_prediction/phamer_prediction.tsv")
+    relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/split-{part}/final_prediction/phamer_prediction.tsv")
   params:
     parameters=config['phamer-params'],
     dbdir=config['PhaBox2-db'],
-    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/splits-{part}/"),
-    tmpdir=os.path.join(tmpd, "phamer/{sample_id}/splits-{part}")
+    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/split-{part}/"),
+    tmpdir=os.path.join(tmpd, "phamer/{sample_id}/split-{part}")
   log: os.path.join(logdir, "phamer_{sample_id}_{part}.log")
   benchmark: os.path.join(benchmarks, "phamer_{sample_id}_{part}.log")
   conda: "../envs/phabox2.yml"
@@ -252,7 +252,7 @@ rule phamer_classify_merge:
   name: "viral-benchmark.smk PhaMer merge results"
   localrule: True
   input: 
-    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/phamer/splits/splits-{part}/final_prediction/phamer_prediction.tsv"), part=split_part_ids),
+    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/phamer/splits/split-{part}/final_prediction/phamer_prediction.tsv"), part=split_part_ids),
   output: 
     relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv")
   params:
@@ -270,14 +270,15 @@ rule phamer_classify_merge:
 rule virsorter2:
   name: "viral-benchmark.smk VirSorter2 classify"
   input: 
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/splits-{sample_id}_filtered.part_{part}.fa"),
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.split_{part}.fa"),
     db=os.path.join(config['virsorter2-db'], "Done_all_setup")
-  output: relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/splits/splits-{part}/final-viral-score.tsv")
+  output: 
+    relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/splits/split-{part}/final-viral-score.tsv")
   params: 
     parameters=config['virsorter2-params'],
     dbdir=config['virsorter2-db'],
-    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/splits/splits-{part}/"),
-    tmpdir=os.path.join(tmpd, "virsorter2/{sample_id}/splits-{part}")
+    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/splits/split-{part}/"),
+    tmpdir=os.path.join(tmpd, "virsorter2/{sample_id}/split-{part}")
   log: os.path.join(logdir, "virsorter2_{sample_id}_{part}.log")
   benchmark: os.path.join(benchmarks, "virsorter2_{sample_id}_{part}.log")
   conda: "../envs/virsorter2.yml"
@@ -304,7 +305,7 @@ rule virsorter2_merge:
   name: "viral-benchmark.smk VirSorter2 merge results"
   localrule: True
   input: 
-    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/virsorter2/splits/splits-{part}/final-viral-score.tsv"), part=split_part_ids),
+    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/virsorter2/splits/split-{part}/final-viral-score.tsv"), part=split_part_ids),
   output: 
     relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/final-viral-score.tsv")
   params:
@@ -320,12 +321,12 @@ rule virsorter2_merge:
 
 rule virfinder_parallel:
   name: "viral-benchmark.smk VirFinder Parallel run"
-  input: relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.part_{part}.fa")
-  output: relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/splits/splits-{part}/output.tsv")
+  input: relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.split_{part}.fa")
+  output: relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/splits/split-{part}/output.tsv")
   params: 
     parameters=config['vf-params'],
-    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/splits/splits-{part}/"),
-    tmpdir=os.path.join(tmpd, "virfinder/{sample_id}/splits-{part}")
+    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/splits/split-{part}/"),
+    tmpdir=os.path.join(tmpd, "virfinder/{sample_id}/split-{part}")
   log: os.path.join(logdir, "virfinder_{sample_id}_{part}.log")
   benchmark: os.path.join(benchmarks, "virfinder_{sample_id}_{part}.log")
   conda: "../envs/parallel-virfinder.yml"
@@ -351,7 +352,7 @@ rule virfinder_merge:
   name: "viral-benchmark.smk VirFinder merge results"
   localrule: True
   input: 
-    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/virfinder/splits/splits-{part}/output.tsv"), part=split_part_ids),
+    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/virfinder/splits/split-{part}/output.tsv"), part=split_part_ids),
   output: 
     relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv")
   params:
@@ -368,15 +369,15 @@ rule virfinder_merge:
 rule VIBRANT:
   name: "viral-benchmark.smk VIBRANT classify"
   input:
-    fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered.part_{part}.fa"),
+    fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.split_{part}.fa"),
     db=os.path.join(config['vibrant-db'], "files/VIBRANT_machine_model.sav")
   output: 
-    txt=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/splits-{part}/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt")
+    txt=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt")
   params:
     parameters=config['vibrant-params'],
     dbdir=config['vibrant-db'],
-    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/splits-{part}/"),
-    tmpdir=os.path.join(tmpd, "vibrant/{sample_id}/splits-{part}")
+    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/"),
+    tmpdir=os.path.join(tmpd, "vibrant/{sample_id}/split-{part}")
   log: os.path.join(logdir, "vibrant_{sample_id}_{part}.log")
   benchmark: os.path.join(benchmarks, "vibrant_{sample_id}_{part}.log")
   conda: "../envs/vibrant.yml"
@@ -404,7 +405,7 @@ rule merge_VIBRANT:
   name: "viral-benchmark.smk VIBRANT merge results"
   localrule: True
   input: 
-    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/vibrant/splits/splits-{part}/VIBRANT_phages_{{sample_id}}_filtered/{{sample_id}}_filtered.phages_combined.txt"), part=split_part_ids),
+    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/vibrant/splits/split-{part}/VIBRANT_phages_{{sample_id}}_filtered/{{sample_id}}_filtered.phages_combined.txt"), part=split_part_ids),
   output: 
     relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt")
   params:
