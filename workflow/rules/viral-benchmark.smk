@@ -31,6 +31,7 @@ elif config['fastadir'] != "":
 else:
   samples, assemblies = parse_sample_list(config["samplelist"], datadir, outdir, email, api_key, nowstr)
   fastap = relpath(os.path.join("assembly", assembler, "samples/{sample_id}/output/final.contigs.fa"))
+  sample_id = "final.contigs"
   assembly_ids = assemblies.keys()
 
 
@@ -51,7 +52,7 @@ rule done_log:
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv"), sample_id=assembly_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/VIBRANT_{sample_id}_filtered.part_{part}/VIBRANT_phages_{sample_id}_filtered.part_{part}/{sample_id}_filtered.part_{part}.phages_combined.txt"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt"), sample_id=assembly_ids),
-    expand(relpath("identify/viral/samples/{sample_id}/results/{sample_id}_viral_summary_merged.tsv"), sample_id=assembly_ids)
+    expand(relpath("identify/viral/samples/{sample_id}/output/viral_benchmark_summary.tsv"), sample_id=assembly_ids)
   output:
     os.path.join(logdir, "done_benchmarks.log")
   params:
