@@ -386,7 +386,7 @@ rule VIBRANT:
   shell:
     """
     rm -rf {params.outdir} {params.tmpdir}
-    mkdir -p {params.outdir}
+    mkdir -p {params.outdir} {params.tmpdir}
 
     VIBRANT_run.py \
         -i {input.fna} \
