@@ -192,7 +192,7 @@ rule dvf_classify_merge:
   name: "viral-benchmark.smk DeepVirFinder merge results"
   localrule: True
   input: 
-    expand(relpath("identify/viral/samples/{{sample_id}}/tmp/{{sample_id}}_filtered.part_{part}.fa"), part=split_part_ids),
+    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/dvf/splits/splits-{part}/final_score.txt"), part=split_part_ids),
   output: 
     relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt")
   params:
