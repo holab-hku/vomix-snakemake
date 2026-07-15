@@ -257,20 +257,29 @@ rule phamer_classify_merge:
   localrule: True
   input: 
     phamer=expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/phamer/splits/split-{part}/final_prediction/phamer_prediction.tsv"), part=split_part_ids),
-    phavip=expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/phavip/splits/split-{part}/final_prediction/phavip_prediction.tsv"), part=split_part_ids),
+    phavip=expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/phamer/splits/split-{part}/final_prediction/phavip_prediction.tsv"), part=split_part_ids),
   output: 
     phamer=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv"),
-    phavip=relpath("identify/viral/samples/{sample_id}/intermediate/phavip/final_prediction/phavip_prediction.tsv")
+    phavip=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phavip_prediction.tsv")
   params:
     script="workflow/scripts/tables_row_bind.py",
+    outdir=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/"), 
+    tmpdir=os.path.join(tmpd, "phamer_merge/{sample_id}")
   log: os.path.join(logdir, "phamer_merge_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "phamer_merge_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml"
   threads: 1
   shell:
     """
-    python {params.script} --inputs {input.phamer} --output {output.phamer}
-    python {params.script} --inputs {input.phavip} --output {output.phavip}
+    rm -rf {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
+    python {params.script} --inputs {input.phamer} --output {params.tmpdir}/phamer.tsv
+    python {params.script} --inputs {input.phavip} --output {params.tmpdir}/phavip.tsv
+
+    mv {params.tmpdir}/phamer.tsv {output.phamer}
+    mv {params.tmpdir}/phavip.tsv {output.phavip}
+    rm -rf {params.tmpdir}
     """
 
 
