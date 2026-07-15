@@ -222,7 +222,7 @@ rule phamer_classify:
     db=os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl")
   output:
     phamer=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/split-{part}/final_prediction/phamer_prediction.tsv"), 
-    phavip=relpath("identify/viral/samples/{sample_id}/intermediate/phavip/splits/split-{part}/final_prediction/phavip_prediction.tsv")
+    phavip=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/split-{part}/final_prediction/phavip_prediction.tsv")
   params:
     parameters=config['phamer-params'],
     dbdir=config['PhaBox2-db'],
