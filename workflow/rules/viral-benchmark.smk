@@ -51,6 +51,7 @@ rule done_log:
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv"), sample_id=assembly_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/splits/split-{part}/VIBRANT_{sample_id}_filtered.part_{part}/VIBRANT_phages_{sample_id}_filtered.part_{part}/{sample_id}_filtered.part_{part}.phages_combined.txt"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_phages_{sample_id}_filtered/{sample_id}_filtered.phages_combined.txt"), sample_id=assembly_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/results/{sample_id}_viral_summary_merged.tsv"), sample_id=assembly_ids)
   output:
     os.path.join(logdir, "done_benchmarks.log")
   params:
@@ -218,7 +219,8 @@ rule phamer_classify:
     fna=relpath("identify/viral/samples/{sample_id}/tmp/splits/{sample_id}_filtered.part_{part}.fa"),
     db=os.path.join(config['PhaBox2-db'], "genus2hostlineage.pkl")
   output:
-    relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/split-{part}/final_prediction/phamer_prediction.tsv")
+    phamer=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/splits/split-{part}/final_prediction/phamer_prediction.tsv"), 
+    phavip=relpath("identify/viral/samples/{sample_id}/intermediate/phavip/splits/split-{part}/final_prediction/phavip_prediction.tsv")
   params:
     parameters=config['phamer-params'],
     dbdir=config['PhaBox2-db'],
@@ -252,9 +254,11 @@ rule phamer_classify_merge:
   name: "viral-benchmark.smk PhaMer merge results"
   localrule: True
   input: 
-    expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/phamer/splits/split-{part}/final_prediction/phamer_prediction.tsv"), part=split_part_ids),
+    phamer=expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/phamer/splits/split-{part}/final_prediction/phamer_prediction.tsv"), part=split_part_ids),
+    phavip=expand(relpath("identify/viral/samples/{{sample_id}}/intermediate/phavip/splits/split-{part}/final_prediction/phavip_prediction.tsv"), part=split_part_ids),
   output: 
-    relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv")
+    phamer=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv"),
+    phavip=relpath("identify/viral/samples/{sample_id}/intermediate/phavip/final_prediction/phavip_prediction.tsv")
   params:
     script="workflow/scripts/tables_row_bind.py",
   log: os.path.join(logdir, "phamer_merge_{sample_id}.log")
@@ -263,7 +267,8 @@ rule phamer_classify_merge:
   threads: 1
   shell:
     """
-    python {params.script} --inputs {input} --output {output}
+    python {params.script} --inputs {input.phamer} --output {output.phamer}
+    python {params.script} --inputs {input.phavip} --output {output.phavip}
     """
 
 
@@ -446,6 +451,33 @@ rule merge_VIBRANT:
     python {params.script} --inputs {input.tsv} --output {output.tsv}
     """
 
-#rule ppr-meta:
-#rule HVSeekr
-#rule PharaCon
+rule merge_viral_summaries:
+  name: "viral-benchmark.smk merge all tools"
+  input:
+    genomad=relpath("identify/viral/samples/{sample_id}/intermediate/genomad/{sample_id}_filtered_summary/{sample_id}_filtered_virus_summary.tsv"),
+    dvf=relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"),
+    phamer=relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv"),
+    phavip=relpath("identify/viral/samples/{sample_id}/intermediate/phavip/final_prediction/phavip_prediction.tsv"),
+    virsorter2=relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/final-viral-score.tsv"),
+    virfinder=relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv"),
+    vibrant=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_results_{sample_id}_filtered/VIBRANT_summary_results_{sample_id}_filtered.tsv"),
+  output:
+    relpath("identify/viral/samples/{sample_id}/results/{sample_id}_viral_summary_merged.tsv")
+  params:
+    script="workflow/scripts/viral_benchmark_merge.py"
+  log: os.path.join(logdir, "merge_viral_tools_{sample_id}.log")
+  benchmark: os.path.join(benchmarks, "merge_viral_tools_{sample_id}.log")
+  conda: "../envs/seqkit-biopython.yml" 
+  threads: 1
+  shell:
+    """
+    python {params.script} \
+      --genomad {input.genomad} \
+      --dvf {input.dvf} \
+      --phamer {input.phamer} \
+      --phavip {input.phavip} \
+      --virsorter2 {input.virsorter2} \
+      --virfinder {input.virfinder} \
+      --vibrant {input.vibrant} \
+      --output {output} 2> {log}
+    """
