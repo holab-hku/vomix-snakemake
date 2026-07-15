@@ -108,7 +108,7 @@ rule split_contigs:
   shell:
     """
     rm -f {output}
-    mkdir -p {params.outdir}
+    mkdir -p {params.outdir} {params.tmpdir}
 
     seqkit split2 \
       --by-part {params.parts} \
