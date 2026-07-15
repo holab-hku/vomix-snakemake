@@ -482,6 +482,8 @@ rule merge_viral_summaries:
   benchmark: os.path.join(benchmarks, "merge_viral_tools_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml" 
   threads: 1
+  resources:
+    mem_mb=lambda wildcards, attempt, input: 4 * 10**3 * attempt
   shell:
     """
     rm -rf {params.tmpdir} {params.outdir}

@@ -112,7 +112,6 @@ def main():
 
     # Write to output
     merged_df.to_csv(output_file, sep=out_sep, index=False)
-    print(f"Successfully merged {len(input_files)} files into {output_file}")
 
 
 if __name__ == "__main__":
