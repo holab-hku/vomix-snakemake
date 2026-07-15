@@ -18,7 +18,6 @@ n_cores = config['max-cores']
 assembler = config['assembler']
 split_part_ids = list(range(1, config["splits"] + 2))
 
-
 ### Read fasta or fastadir input
 if config['fasta'] != "":
   fastap = readfasta(config['fasta'])
@@ -34,13 +33,13 @@ else:
 
 
 ### MASTER RULE 
-
 rule done_log:
   name: "viral-benchmark.smk Done. removing tmp files"
   localrule: True
   input:
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/genomad/{sample_id}_filtered_summary/{sample_id}_filtered_virus_summary.tsv"), sample_id=assembly_ids), 
     expand(relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered_part_{part}.fa"), sample_id=assembly_ids, part=split_part_ids),
+    expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/splits-{part}/final_score.txt"), sample_id=assembly_ids, part=split_part_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt"), sample_id=assembly_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/phamer/final_prediction/phamer_prediction.tsv"), sample_id=assembly_ids),
     expand(relpath("identify/viral/samples/{sample_id}/intermediate/virsorter2/final-viral-score.tsv"), sample_id=assembly_ids),
@@ -152,7 +151,7 @@ rule dvf_classify:
   input:
     fna=relpath("identify/viral/samples/{sample_id}/tmp/{sample_id}_filtered_part_{part}.fa")
   output:
-    relpath("identify/viral/samples/{sample_id}}/intermediate/dvf/splits/splits-{part}/final_score.txt")
+    relpath("identify/viral/samples/{sample_id}/intermediate/dvf/splits/splits-{part}/final_score.txt")
   params:
     script="workflow/software/DeepVirFinder/dvf.py",
     parameters=config['dvf-params'], 
