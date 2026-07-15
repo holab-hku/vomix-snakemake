@@ -165,7 +165,7 @@ rule dvf_classify:
   log: os.path.join(logdir, "dvf_{sample_id}_{part}.log")
   benchmark: os.path.join(benchmarks, "dvf_{sample_id}_{part}.log")
   conda: "../envs/dvf.yml"
-  threads: 32
+  threads: 8
   resources:
     mem_mb=lambda wildcards, attempt, input, threads: max(1 * threads * 10**3 * attempt, 8000)
   shell:
