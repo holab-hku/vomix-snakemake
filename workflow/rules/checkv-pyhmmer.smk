@@ -20,8 +20,6 @@ else:
   fastap = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa")
   sample_id = "combined.viralcontigs.derep"
 
-
-
 ### MASTER RULE
 rule done_log:
   name: "checkv-pyhmmer.py Done. removing tmp files"
@@ -34,7 +32,6 @@ rule done_log:
   output:
     os.path.join(logdir, "checkv-done.log")
   shell: "touch {output}"
-
 
 
 ### RULES
@@ -60,6 +57,7 @@ rule split_contigs:
     seqkit split2 \
       --by-part {params.parts} \
       --threads {threads} {input} \
+      --extension ".fa" \
       --out-dir {params.tmpdir} 2> {log}
 
     mv {params.tmpdir}/* {params.outdir}
