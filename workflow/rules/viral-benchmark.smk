@@ -462,15 +462,20 @@ rule merge_viral_summaries:
     virfinder=relpath("identify/viral/samples/{sample_id}/intermediate/virfinder/output.tsv"),
     vibrant=relpath("identify/viral/samples/{sample_id}/intermediate/vibrant/VIBRANT_{sample_id}_filtered/VIBRANT_results_{sample_id}_filtered/VIBRANT_summary_results_{sample_id}_filtered.tsv"),
   output:
-    relpath("identify/viral/samples/{sample_id}/results/{sample_id}_viral_summary_merged.tsv")
+    relpath("identify/viral/samples/{sample_id}/output/viral_benchmark_summary.tsv")
   params:
-    script="workflow/scripts/viral_benchmark_merge.py"
+    script="workflow/scripts/viral_benchmark_merge.py",
+    outdir=relpath("identify/viral/samples/{sample_id}/output/"),
+    tmpdir=os.path.join(tmpd, "merge_viral_tools/{sample_id}")
   log: os.path.join(logdir, "merge_viral_tools_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "merge_viral_tools_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml" 
   threads: 1
   shell:
     """
+    rm -rf {params.tmpdir} {params.outdir}
+    mkdir -p {params.tmpdir} {params.outdir}
+
     python {params.script} \
       --genomad {input.genomad} \
       --dvf {input.dvf} \
@@ -479,5 +484,8 @@ rule merge_viral_summaries:
       --virsorter2 {input.virsorter2} \
       --virfinder {input.virfinder} \
       --vibrant {input.vibrant} \
-      --output {output} 2> {log}
+      --output {params.tmpdir}/tmp.tsv 2> {log}
+    
+    mv {params.tmpdir}/tmp.tsv {output}
+    rm -rf {params.tmpdir}
     """
