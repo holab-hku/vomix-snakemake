@@ -191,15 +191,19 @@ rule dvf_classify:
 rule dvf_classify_merge:
   name: "viral-benchmark.smk DeepVirFinder merge results"
   localrule: True
-  input: expand(relpath("identify/viral/samples/{{sample_id}}/tmp/{{sample_id}}_filtered.part_{part}.fa"), part=split_part_ids),
-  output: relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt")
+  input: 
+    expand(relpath("identify/viral/samples/{{sample_id}}/tmp/{{sample_id}}_filtered.part_{part}.fa"), part=split_part_ids),
+  output: 
+    relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt")
+  params:
+    script="workflow/scripts/merge_dvf_scores.py",
   log: os.path.join(logdir, "dvf_merge_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "dvf_merge_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml"
   threads: 1
   shell:
     """
-    python workflow/scripts/merge_scores.py {input} {output}
+    python {params.script} {input} {output}
     """
     
 
