@@ -16,8 +16,9 @@ os.makedirs(tmpd, exist_ok=True)
 
 n_cores = config['max-cores']
 assembler = config['assembler']
-split_part = list(range(1, config["splits"] + 1))
-split_part_ids = [f"{i:03d}" for i in range(1, config["splits"] + 1)] # matches seqkit
+split_part = list(range(1, config["splits"] + 2))
+split_part_ids = [f"{i:03d}" for i in range(1, config["splits"] + 2)] # matches seqkit
+
 
 ### Read fasta or fastadir input
 if config['fasta'] != "":
