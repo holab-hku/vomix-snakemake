@@ -98,8 +98,11 @@ rule split_contigs:
   log: os.path.join(logdir, "splitcontig_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml"
   threads: 8
+  resources:
+    mem_mb=lambda wildcards, attempt, input: 4 * 10**3 * attempt
   shell:
     """
+    rm -f {output}
     mkdir -p {params.outdir}
 
     seqkit split2 \
@@ -111,7 +114,7 @@ rule split_contigs:
     """
     
 
-
+# already has split functionality built in
 rule genomad_classify:
   name: "viral-benchmark.smk geNomad classify"
   input:
@@ -192,15 +195,12 @@ rule dvf_classify_merge:
   output: relpath("identify/viral/samples/{sample_id}/intermediate/dvf/final_score.txt")
   log: os.path.join(logdir, "dvf_merge_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "dvf_merge_{sample_id}.log")
+  conda: "../envs/seqkit-biopython.yml"
   threads: 1
-  run:
-    import pandas as pd
-    # read all files into list of dataframes
-    dfs = [pd.read_csv(f, sep="\t") for f in input]
-    # concatentate them safely
-    merged_df = pd.concat(dfs, ignore_index=True)
-    # write to output
-    merged_df.to_csv(output[0], sep="\t", index=False)
+  shell:
+    """
+    python workflow/scripts/merge_scores.py {input} {output}
+    """
     
 
 rule phamer_classify:
