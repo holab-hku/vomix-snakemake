@@ -92,6 +92,7 @@ rule split_contigs:
     expand(relpath("identify/viral/samples/{{sample_id}}/tmp/{{sample_id}}_filtered_part_{part}.fa"), part=split_part_ids)
   params:
     parts=config["splits"] + 1,
+    tmpdir=os.path.join(tmpd, "contigs/{sample_id}"),
     outdir=relpath("identify/viral/samples/{sample_id}/tmp")
   log: os.path.join(logdir, "splitcontig_{sample_id}.log")
   conda: "../envs/seqkit-biopython.yml"
@@ -102,8 +103,11 @@ rule split_contigs:
 
     seqkit split2 \
       --by-part {params.parts} \
-      --out-prefix {wildcards.sample_id}_filtered_part_ \
-      -O {params.outdir} {input}
+      --alphabet-guess-seq-length 0 \
+      --threads {threads} {input} \
+      --out-dir {params.tmpdir} 2> {log}
+
+    mv {params.tmpdir}/* {params.outdir}
     """
     
 
