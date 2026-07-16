@@ -10,8 +10,8 @@ sample-name: ""
 assembly-ids: ""
 latest-run: ""
 splits: 0
-keep-intermediates: False
-setup-database: True
+keep-intermediates: false
+setup-database: true
 max-cores: 4
 NCBI-email: "vomixtest@gmail.com"
 NCBI-API-key: ""
@@ -30,13 +30,20 @@ humann-db: "database/humann"
 checkm2-db: "database/checkm2"
 GTDBTk-db: "database/GTDB-Tk"
 GTDBTk-db-version: "232"
+dram-db: "database/DRAM"
+dram-setup-params: ""
+metacerberus-db: "database/metacerberus"
+metacerberus-setup-params: ""
+pharokka-db: "database/pharokka"
+phabox2-db-name: "phabox_db_v2"
+phabox2-db-baselink: "https://github.com/KennthShang/PhaBOX/releases/download/v2"
 dwnld-params: ""
-dwnld-only: False
+dwnld-only: false
 pigz-params: ""
 fastp-params: ""
 hostile-params: ""
 hostile-index-name: "human-t2t-hla"
-decontam-host: True
+decontam-host: false
 hostile-aligner: "bowtie2"
 hostile-aligner-params: ""
 assembler: "megahit"
@@ -49,10 +56,9 @@ genomad-min-len: 1000
 genomad-params: "--enable-score-calibration --relaxed"
 genomad-cutoff: 0.7
 genomad-cutoff-s: 0
-checkv-original: False
+checkv-original: false
 checkv-params: ""
-checkv-splits: 0
-clustering-fast: True
+clustering-fast: true
 cdhit-params: "-c 0.95 -aS 0.85 -d 400 -M 0 -n 5"
 vOTU-ani: 95
 vOTU-targetcov: 85
@@ -80,16 +86,21 @@ phagcn-params: ""
 genomad-params-tax: "--enable-score-calibration --relaxed"
 coverm-params: "--mapper minimap2-sr --min-read-percent-identity 95 --min-read-aligned-percent 75 --trim-min 10 --trim-max 90"
 coverm-methods: "tpm rpkm"
-iphop-host: False
+iphop-host: false
 iphop-cutoff: 90
 iphop-params: ""
 CHERRY-params: ""
 PhaTYP-params: ""
 eggNOG-params: ""
 PhaVIP-params: ""
+metacerberus-params: "--hmm ALL"
+pharokka-params: "-g prodigal-gv --meta"
+virsorter2-annotate-params: "--min-length 1500"
+dram-v-annotate-params: ""
+dram-v-distill-params: ""
 mpa-params: "--ignore_eukaryotes"
 mpa-indexv: "mpa_vOct22_CHOCOPhlAnSGB_202212"
-binning-consensus: True
+binning-consensus: true
 strobealign-params: ""
 MetaBAT2-params: "-m 1500"
 MaxBin2-params: "-min_contig_length 1500 -max_iteration 50 -prob_threshold 0.9"
@@ -103,15 +114,3 @@ GTDBTk-align-params: ""
 GTDBTk-classify-params: ""
 VAMB-params: "-m 100"
 humann-params: "--remove-temp-output"
-virsorter2-annotate-params: "--min-length 1500"
-dram-v-annotate-params: ""
-dram-v-distill-params: ""
-dram-db: "database/DRAM"
-dram-setup-params: ""
-metacerberus-db: "database/metacerberus"
-metacerberus-setup-params: ""
-metacerberus-params: "--hmm ALL"
-pharokka-db: "database/pharokka"
-pharokka-params: "-g prodigal-gv --meta"
-phabox2-db-name: "phabox_db_v2"
-phabox2-db-baselink: "https://github.com/KennthShang/PhaBOX/releases/download/v2"
