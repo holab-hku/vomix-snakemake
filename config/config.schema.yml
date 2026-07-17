@@ -73,7 +73,7 @@ properties:
 
   assembly-ids:
     type: string
-    description: "JSON-formatted array mapping sample names to input files (e.g., '[\"sampleA\", \"SampleB\"]') when using --fasta-dir. This feature is currently under evaluation."
+    description: 'JSON-formatted array mapping sample names to input files (e.g., ''["sampleA", "SampleB"]'') when using --fasta-dir. This feature is currently under evaluation.'
     default: ""
 
   # Execution Parameters
@@ -82,9 +82,9 @@ properties:
     description: "Internal timestamp tracking the current execution run for history logging within the .vomix subdirectory."
     default: ""
 
-  splits:
+  contig-splits:
     type: integer
-    description: "Number of parallel data partitions for reducing memory overhead (e.g., for geNomad processing). Set to 0 to disable partitioning."
+    description: "Number of parallel data partitions in viral identification tools for reducing memory overhead (e.g. geNomad, VIBRANT, VirFinder, DeepVirFinder, PhaMer, VirSorter2). Set to 0 to disable partitioning."
     default: 0
 
   keep-intermediates:
@@ -333,10 +333,23 @@ properties:
     description: "Additional parameters for CheckV viral genome quality assessment. See CheckV documentation for available options."
     default: ""
 
+  checkv-splits:
+    type: integer
+    description: "Number of input data splits for CheckV or CheckV-PyHMMER analysis. Higher values reduce memory usage but increase runtime. Set to 0 for no splitting."
+    default: 0
+    minimum: 0
+
   clustering-fast:
     type: boolean
     description: "Use MEGABLAST-based fast clustering for viral operational taxonomic units (vOTUs). Disable to use CD-HIT (slower but sometimes more precise)."
     default: True
+
+  cluster-iter:
+    type: integer
+    description: "Number of clustering and pooling iterations (L) for vOTU clustering. Initially splits data into 2^(L-1) partitions for memory efficiency. Set to 1 to disable partitioning."
+    default: 1
+    minimum: 1
+    maximum: 8
 
   cdhit-params:
     type: string

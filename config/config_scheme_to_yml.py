@@ -46,7 +46,14 @@ def quoted_string_representer(dumper, data):
     return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="'")
 
 
+def bool_representer(dumper, data):
+    value = "True" if data else "False"
+    return dumper.represent_scalar("tag:yaml.org,2002:bool", value)
+
+
 yaml.SafeDumper.add_representer(QuotedString, quoted_string_representer)
+
+yaml.SafeDumper.add_representer(bool, bool_representer)
 
 
 def schema_to_config(schema):
