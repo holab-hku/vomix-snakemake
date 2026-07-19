@@ -39,7 +39,7 @@ else:
 
 ### Read single fasta file if input
 if config['fasta'] != "" and config["module"] == "cluster-fast":
-  fastap = relpath(config["fasta"])
+  fastap = readfasta(config["fasta"])
   sample_id = config["sample-name"]
   assembly_ids = [sample_id]
 else:
