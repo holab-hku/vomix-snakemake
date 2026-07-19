@@ -242,12 +242,14 @@ else:
         counter=0
 
         # Safely collect the files without triggering Snakemake or Bash syntax errors
+        shopt -s nullglob
         set -- {params.outdir}/*.fa {params.outdir}/*.fna {params.outdir}/*.fasta
         for file in "$@"; do
           ext="${{file##*.}}"
-          mv "$file" "{params.outdir}/chunk_${{counter}}.${{ext}}"
+          mv "$file" "{params.outdir}/chunk_${{counter}}.fa"
           counter=$((counter+1))
-        done        
+        done       
+        shopt -u nullglob 
         """
         
   rule cdhit_recursive_cluster:
