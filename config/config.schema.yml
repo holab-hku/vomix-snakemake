@@ -662,7 +662,7 @@ required:
   - latest-run
   - contig-splits
   - checkv-splits
-  - clustering-iter
+  - cluster-iter
   - keep-intermediates
   - setup-database
   - max-cores
