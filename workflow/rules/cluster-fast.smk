@@ -232,6 +232,7 @@ else:
     threads: 1
     shell:
         """
+        rm -rf {params.outdir}/*
         mkdir -p {params.outdir}
         
         seqkit split2 {input} -p {params.pieces} -O {params.outdir}/
@@ -240,12 +241,13 @@ else:
         # to our strict 0-indexed names (chunk_0.fa, chunk_1.fa) so math works.
         counter=0
 
-        files=( ({params.outdir}/*.fa {params.outdir}/*.fna {params.outdir}/*.fasta) )
+        files=(({params.outdir}/*.fa {params.outdir}/*.fna {params.outdir}/*.fasta))
         for file in "${{files[@]}}"; do
           ext="${{file##*.}}"
           mv "$file" "{params.outdir}/chunk_${{counter}}.${{ext}}"
           counter=$((counter+1))
         done
+      
         """
         
   rule cdhit_recursive_cluster:
