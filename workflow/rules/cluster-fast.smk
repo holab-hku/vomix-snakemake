@@ -19,10 +19,10 @@ def get_iter_inputs(wildcards):
     chunk = int(wildcards.chunk)
     
     if layer == 1:
-        # Layer 1 just grabs the raw split pieces
+        # layer 1 - just grabs the raw split pieces
         return os.path.join(relpath("identify/viral/output/derep/cluster-splits"), f"chunk_{chunk}.fa")
     else:
-        # Layer > 1 grabs the two specific clustered chunks from the previous layer
+        # Layer > 1 - grab the two specific clustered chunks from the previous layer
         prev_layer = layer - 1
         child1 = chunk * 2
         child2 = chunk * 2 + 1
@@ -76,10 +76,7 @@ rule split_input:
             
         seqkit split2 {input} -p {params.pieces} -O {params.tmpdir}/
             
-        # Converts seqkit's default padded names (e.g., .part_001.fa) 
-        # to our strict 0-indexed names (chunk_0.fa, chunk_1.fa) so math works.
         counter=0
-
         shopt -s nullglob
         set -- {params.tmpdir}/*.fa {params.tmpdir}/*.fna {params.tmpdir}/*.fasta
         for file in "$@"; do
@@ -92,9 +89,8 @@ rule split_input:
 
 # MEGABLAST (clustering-fast=True)
 if config["clustering-fast"]:
-    
-    rule mega_prep_input:
-        name: "clustering.smk mega prep input [clustering-fast=True]"
+    rule megablast_prep_input:
+        name: "clustering.smk prepare megablast input"
         input:
             get_iter_inputs
         output:
@@ -115,7 +111,7 @@ if config["clustering-fast"]:
             """
 
     rule mega_makeblastdb:
-        name: "clustering.smk make blast db [clustering-fast=True]"
+        name: "clustering.smk make blast db"
         input:
             os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "input.fa")
         output:
@@ -135,7 +131,7 @@ if config["clustering-fast"]:
             """
 
     rule mega_megablast:
-        name: "clustering.smk megablast [clustering-fast=True]"
+        name: "clustering.smk megablast run"
         input:
             fasta = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "input.fa"),
             dbcheckpoints = expand(os.path.join(tmpd, "cluster-layers", "layer_{{layer}}", "chunk_{{chunk}}", "db.{suffix}"), suffix=["ntf", "ndb"])
@@ -162,7 +158,7 @@ if config["clustering-fast"]:
             """
   
     rule mega_anicalc:
-        name: "clustering.smk calculate ani [clustering-fast=True]"
+        name: "clustering.smk calculate ani"
         input:
             os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "blast_out.csv")
         output:
@@ -183,7 +179,7 @@ if config["clustering-fast"]:
             """
 
     rule mega_aniclust:
-        name: "clustering.smk cluster [clustering-fast=True]"
+        name: "clustering.smk cluster by ani"
         input:
             fa = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "input.fa"),
             ani = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "ani.tsv")
@@ -236,7 +232,6 @@ if config["clustering-fast"]:
             mkdir -p {params.outdir}
             seqkit grep {input.fna} -f {input.reps} > {output.fa} 2> {log}
             
-            # Clean up the intermediate chunk directory to save disk space
             rm -rf {params.tmpdir}
             """
 
@@ -244,7 +239,7 @@ if config["clustering-fast"]:
 # CD-HIT (clustering-fast=False)
 else:        
     rule cdhit_recursive_cluster:
-        name: "clustering.smk CD-HIT recursive clustering [clustering-fast=False]"
+        name: "clustering.smk CD-HIT recursive clustering"
         input:
             get_iter_inputs
         output:
@@ -265,7 +260,6 @@ else:
             rm -rf {params.tmpdir}
             mkdir -p {params.tmpdir} {params.outdir}
             
-            # determine the chunk identifier safely (handles standard path structures)
             chunk_name=$(basename "{output.fa}" | sed 's/\.[^.]*$//')
             
             if [ "{wildcards.layer}" -eq "1" ]; then
