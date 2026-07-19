@@ -8,10 +8,10 @@ os.makedirs(logdir, exist_ok=True)
 os.makedirs(tmpd, exist_ok=True)
 os.makedirs(benchmarks, exist_ok=True)
 
-clustering_iter = config["cluster-iter"]
-starting_p =  2 ** (clustering_iter - 1)
+clustering_iter = config["cluster-iter"] # nLayers
+n_chunks_layer_1 =  2 ** (clustering_iter - 1) # nCluster Chunks for Layer 1
 
-
+#### Helper function to choose inputs for recursive clustering
 def get_cdhit_inputs(wildcards):
 
     """Calculates which files to merge based on the current layer and chunk."""
@@ -26,15 +26,11 @@ def get_cdhit_inputs(wildcards):
         prev_layer = layer - 1
         child1 = chunk * 2
         child2 = chunk * 2 + 1
-        return [
-            f"{tmpd}/layer_{prev_layer}/chunk_{child1}.fa",
-            f"{tmpd}/layer_{prev_layer}/chunk_{child2}.fa"
-        ]
-if isinstance(config['max-cores'], int):
- n_cores = config['max-cores']
-else:
-  console.print(Panel.fit(f"config['max-cores'] is not an integer: {config['max-cores']}, you can change the parameter in config/config.yml file", title="Error", subtitle="config['max-cores'] not integer"))
-  sys.exit(1)
+        return [f"{tmpd}/layer_{prev_layer}/chunk_{child1}.fa", f"{tmpd}/layer_{prev_layer}/chunk_{child2}.fa"]
+        
+    
+
+
 
 
 ### Read single fasta file if input
@@ -222,35 +218,43 @@ if config["clustering-fast"]:
 # 2) CD-HIT CLUSTERING (clustering-fast=False)
 else:
   rule cdhit_split_input:
+    name: "clustering.smk split input fasta [clustering-fast=False]"
     input:
         fastap
     output:
-        expand(f"{tmpd}/splits/chunk_{{chunk}}.fa", chunk=range(starting_p))
+        expand(os.path.join(tmpd, "splits", f"chunk_{{chunk}}.fa"), chunk=range(n_chunks_layer_1))
     params:
-        pieces = starting_p,
-        outdir = f"{tmpd}/splits"
+        pieces = n_chunks_layer_1,
+        outdir = os.path.join(tmpd, "splits")
+    log: os.path.join(logdir, "clustering/split_input.log")
+    benchmark: os.path.join(benchmarks, "split_input.log")
+    conda: "../envs/seqkit-biopython.yml"
+    threads: 1
     shell:
         """
         mkdir -p {params.outdir}
         
-        # Split the fasta into parts
         seqkit split2 {input} -p {params.pieces} -O {params.outdir}/
         
         # Converts seqkit's default padded names (e.g., .part_001.fa) 
         # to our strict 0-indexed names (chunk_0.fa, chunk_1.fa) so math works.
         counter=0
-        for file in {params.outdir}/*.fa; do
+
+        files=({params.outdir}/*.fa {params.outdir}/*.fna {params.outdir}/*.fasta)
+        for file in "${files[@]}"; do
             mv "$file" "{params.outdir}/chunk_${{counter}}.fa"
             counter=$((counter+1))
         done
+        fi
         """
         
   rule cdhit_recursive_cluster:
+    name: "clustering.smk CD-Hit recursive clustering [clustering-fast=False]"
     input:
         get_cdhit_inputs
     output:
-        fa = f"{tmpd}/layer_{{layer}}/chunk_{{chunk}}.fa",
-        clstr = f"{tmpd}/layer_{{layer}}/chunk_{{chunk}}.fa.clstr"
+        fa = os.path.join(tmpd, f"layer_{{layer}}", f"chunk_{{chunk}}.fa"),
+        clstr = os.path.join(tmpd, f"layer_{{layer}}", f"chunk_{{chunk}}.fa.clstr")
     params:
         cdhitparams = config['cdhit-params']
     threads: 32
@@ -258,6 +262,7 @@ else:
         mem_mb = lambda wildcards, attempt: attempt * 72 * 10**3
     conda: "../envs/cd-hit.yml"
     log: os.path.join(logdir, "clustering/cdhit_layer_{layer}_chunk_{chunk}.log")
+    benchmark: os.path.join(benchmarks, "cdhit_layer_{layer}_chunk_{chunk}.log")
     shell:
         """
         mkdir -p $(dirname {output.fa})
@@ -276,20 +281,21 @@ else:
         fi
         """
 
-rule cdhit_derep_finalize:
+  rule cdhit_derep_finalize:
+    name: "clustering.smk create final dereplicated dataset [clustering-fast=False]"
     input:
-        # We explicitly request Chunk 0 of the Final Layer (the top of the tree)
-        fa = f"{tmpd}/layer_{clustering_iter}/chunk_0.fa",
-        clstr = f"{tmpd}/layer_{clustering_iter}/chunk_0.fa.clstr"
+        # We explicitly request Chunk 0 of the Final Layer (the bottom of the tree)
+        fa = os.path.join(tmpd, f"layer_{clustering_iter}", "chunk_0.fa"),
+        clstr = os.path.join(tmpd, f"layer_{clustering_iter}", "chunk_0.fa.clstr")
     output:
         fa = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa"),
         clstr = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr"), 
         done = os.path.join(logdir, "clustering-sensitive-done.log")
+    log: os.path.join(logdir, "clustering/viral_cdhit.log")
     benchmark: 
         os.path.join(benchmarks, "identify/viral_cdhit.log")
     shell:
         """
-        # Move the final results to your requested output directories
         cp {input.fa} {output.fa}
         cp {input.clstr} {output.clstr}
         
