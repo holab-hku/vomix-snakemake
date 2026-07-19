@@ -20,13 +20,14 @@ def get_cdhit_inputs(wildcards):
     
     if layer == 1:
         # Layer 1 just grabs the raw split pieces
-        return f"{tmpd}/splits/chunk_{chunk}.fa"
+        return os.path.join(tmpd, f"cluster-splits/chunk_{chunk}.fa")
     else:
         # Layer > 1 grabs the two specific clustered chunks from the previous layer
         prev_layer = layer - 1
         child1 = chunk * 2
         child2 = chunk * 2 + 1
-        return [f"{tmpd}/layer_{prev_layer}/chunk_{child1}.fa", f"{tmpd}/layer_{prev_layer}/chunk_{child2}.fa"]
+        return [os.path.join(tmpd, f"layer_{prev_layer}/chunk_{child1}.fa"), 
+         os.path.join(tmpd, f"layer_{prev_layer}/chunk_{child2}.fa")]
         
     
 
@@ -222,10 +223,10 @@ else:
     input:
         fastap
     output:
-        expand(os.path.join(tmpd, "splits", f"chunk_{{chunk}}.fa"), chunk=range(n_chunks_layer_1))
+        expand(os.path.join(tmpd, "cluster-splits", f"chunk_{{chunk}}.fa"), chunk=range(n_chunks_layer_1))
     params:
         pieces = n_chunks_layer_1,
-        outdir = os.path.join(tmpd, "splits")
+        outdir = os.path.join(tmpd, "cluster-splits")
     log: os.path.join(logdir, "clustering/split_input.log")
     benchmark: os.path.join(benchmarks, "split_input.log")
     conda: "../envs/seqkit-biopython.yml"
