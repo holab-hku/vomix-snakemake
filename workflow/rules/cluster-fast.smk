@@ -231,7 +231,7 @@ else:
     conda: "../envs/seqkit-biopython.yml"
     threads: 1
     shell:
-        """
+      """
         rm -rf {params.outdir}/*
         mkdir -p {params.outdir}
         
@@ -241,13 +241,13 @@ else:
         # to our strict 0-indexed names (chunk_0.fa, chunk_1.fa) so math works.
         counter=0
 
-        files=(({params.outdir}/*.fa {params.outdir}/*.fna {params.outdir}/*.fasta))
-        for file in "${{files[@]}}"; do
+        # Safely collect the files without triggering Snakemake or Bash syntax errors
+        set -- {params.outdir}/*.fa {params.outdir}/*.fna {params.outdir}/*.fasta
+        for file in "$@"; do
           ext="${{file##*.}}"
           mv "$file" "{params.outdir}/chunk_${{counter}}.${{ext}}"
           counter=$((counter+1))
-        done
-      
+        done        
         """
         
   rule cdhit_recursive_cluster:
