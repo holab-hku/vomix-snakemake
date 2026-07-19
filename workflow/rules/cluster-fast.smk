@@ -240,12 +240,12 @@ else:
         # to our strict 0-indexed names (chunk_0.fa, chunk_1.fa) so math works.
         counter=0
 
-        files=({params.outdir}/*.fa {params.outdir}/*.fna {params.outdir}/*.fasta)
-        for file in "${files[@]}"; do
-            mv "$file" "{params.outdir}/chunk_${{counter}}.fa"
-            counter=$((counter+1))
+        files=( ({params.outdir}/*.fa {params.outdir}/*.fna {params.outdir}/*.fasta) )
+        for file in "${{files[@]}}"; do
+          ext="${{file##*.}}"
+          mv "$file" "{params.outdir}/chunk_${{counter}}.${{ext}}"
+          counter=$((counter+1))
         done
-        fi
         """
         
   rule cdhit_recursive_cluster:
