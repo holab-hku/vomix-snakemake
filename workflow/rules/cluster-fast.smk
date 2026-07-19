@@ -90,7 +90,7 @@ rule split_input:
 # MEGABLAST (clustering-fast=True)
 if config["clustering-fast"]:
     rule megablast_prep_input:
-        name: "clustering.smk prepare megablast input"
+        name: "clustering.smk prepare split input"
         input:
             get_iter_inputs
         output:
@@ -104,9 +104,11 @@ if config["clustering-fast"]:
             mkdir -p {params.tmpdir}
             
             if [ "{wildcards.layer}" -eq "1" ]; then
-                cp {input} {output} 2> {log}
+              # layer = 1: input contains exactly one file so output is identical to input
+              cp {input} {output} 2> {log}
             else
-                cat {input} > {output} 2> {log}
+              # layer > 1: input automatically expands to multiple "chunk_0.fa chunk_1.fa ..." files and is pooled
+              cat {input} > {output} 2> {log}
             fi
             """
 
@@ -146,7 +148,7 @@ if config["clustering-fast"]:
         conda: "../envs/checkv.yml"
         threads: 64
         resources:
-            mem_mb = lambda wildcards, attempt: attempt * 72 * 10**3
+          mem_mb = lambda wildcards, threads, attempt: int(attempt * (threads / 64) * 72 * 10**3)
         shell:
             """
             blastn -query {input.fasta} \
