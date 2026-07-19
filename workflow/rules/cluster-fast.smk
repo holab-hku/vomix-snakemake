@@ -272,19 +272,24 @@ else:
         """
         mkdir -p $(dirname {output.fa})
         
+        # Determine the chunk identifier safely (handles standard path structures)
+        chunk_name=$(basename "{output.fa}" | sed 's/\.[^.]*$//')
+
         if [ "{wildcards.layer}" -eq "1" ]; then
             # LAYER 1: {input} contains exactly one file
-            cd-hit -i {input} -o {output.fa} -T {threads} {params.cdhitparams} &> {log}
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] PROCESSING: Chunk '${{chunk_name}}' | LAYER: {wildcards.layer} | CONDITION: Initial CD-HIT Clustering" >> {log}
+            cd-hit -i {input} -o {output.fa} -T {threads} {params.cdhitparams} >> {log} 2>&1
             
         else
             # LAYER > 1: {input} automatically expands to "fileA fileB" 
             # 'cat' will naturally pool them both into the temp file
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] PROCESSING: Chunk '${{chunk_name}}' | LAYER: {wildcards.layer} | CONDITION: Pooling multiple inputs & Clustered Processing" >> {log}
             cat {input} > {output.fa}.tmp_input
-            cd-hit -i {output.fa}.tmp_input -o {output.fa} -T {threads} {params.cdhitparams} &> {log}
+            cd-hit -i {output.fa}.tmp_input -o {output.fa} -T {threads} {params.cdhitparams} >> {log} 2>&1
+            
             # Clean up the pooled temporary file to save disk space
             rm {output.fa}.tmp_input
-        fi
-        """
+        fi        """
 
   rule cdhit_derep_finalize:
     name: "clustering.smk Create final dereplicated dataset"
