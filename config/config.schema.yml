@@ -660,7 +660,9 @@ required:
   - sample-name
   - assembly-ids
   - latest-run
-  - splits
+  - contig-splits
+  - checkv-splits
+  - clustering-iter
   - keep-intermediates
   - setup-database
   - max-cores
