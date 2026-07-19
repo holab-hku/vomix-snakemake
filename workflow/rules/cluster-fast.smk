@@ -1,4 +1,5 @@
 import math
+import os
 
 logdir = relpath("identify/viral/logs")
 tmpd = relpath("identify/viral/tmp")
@@ -12,302 +13,302 @@ clustering_iter = config["cluster-iter"] # nLayers
 n_chunks_layer_1 =  2 ** (clustering_iter - 1) # nCluster Chunks for Layer 1
 
 #### Helper function to choose inputs for recursive clustering
-def get_cdhit_inputs(wildcards):
-
+def get_iter_inputs(wildcards):
     """Calculates which files to merge based on the current layer and chunk."""
     layer = int(wildcards.layer)
     chunk = int(wildcards.chunk)
     
     if layer == 1:
         # Layer 1 just grabs the raw split pieces
-        return os.path.join(tmpd, f"cluster-splits/chunk_{chunk}.fa")
+        return os.path.join(relpath("identify/viral/output/derep/cluster-splits"), f"chunk_{chunk}.fa")
     else:
         # Layer > 1 grabs the two specific clustered chunks from the previous layer
         prev_layer = layer - 1
         child1 = chunk * 2
         child2 = chunk * 2 + 1
-        return [os.path.join(tmpd, f"layer_{prev_layer}/chunk_{child1}.fa"), 
-         os.path.join(tmpd, f"layer_{prev_layer}/chunk_{child2}.fa")]
+        return [
+            os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{prev_layer}/chunk_{child1}.fa"), 
+            os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{prev_layer}/chunk_{child2}.fa")
+        ]
         
     
-
-
-
-
 ### Read single fasta file if input
 if config['fasta'] != "" and config["module"] == "cluster-fast":
-  fastap = readfasta(config["fasta"])
-  sample_id = config["sample-name"]
-  assembly_ids = [sample_id]
+    fastap = readfasta(config["fasta"])
+    sample_id = config["sample-name"]
+    assembly_ids = [sample_id]
 else:
-  fastap = relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa")
-  sample_id = "combined.viralcontigs"
-  assembly_ids = [sample_id]
+    fastap = relpath("identify/viral/intermediate/scores/combined.viralcontigs.fa")
+    sample_id = "combined.viralcontigs"
+    assembly_ids = [sample_id]
+
 
 ### MASTER RULE
 rule done_log:
-  name: "clustering.smk Done. removing tmp files"
-  localrule: True
-  input:
-    relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr"), 
-  output:
-    os.path.join(logdir, "clustering-done.log")
-  shell: "touch {output}"
+    name: "clustering.smk Done. removing tmp files"
+    localrule: True
+    input:
+        relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr")
+    output:
+        os.path.join(logdir, "clustering-done.log")
+    shell: "touch {output}"
 
 
 ### RULES 
-# 1) RAPID CLUSTERING (clustering-fast=True)
-if config["clustering-fast"]:
-  rule makeblastdb_derep:
-    name: "clustering.smk make blast db [--clustering-fast]"
-    input: 
-      fastap
-    output: 
-      expand(relpath("identify/viral/intermediate/derep/db.{suffix}"), suffix=["ntf", "ndb"])
-    params:
-      outdir=relpath("identify/viral/intermediate/derep/"), 
-      dbtype='nucl', 
-      tmpdir=tmpd
-    log: os.path.join(logdir, "clustering/makeblastdb.log")
-    benchmark: os.path.join(benchmarks, "makeblastdb.log")
-    conda: "../envs/checkv.yml"
-    threads: 1
-    resources:
-      mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
-    shell:
-      """
-      rm -rf {params.tmpdir}/* {params.outdir}
-      mkdir -p {params.tmpdir} {params.outdir}
-
-      makeblastdb -in {input} -dbtype {params.dbtype} -out {params.tmpdir}/db &> {log}
-
-      mv {params.tmpdir}/* {params.outdir}
-      rm -rf {params.tmpdir}/*
-
-      """
-
-  rule megablast_derep:
-    name: "clustering.smk megablast [--clustering-fast]"
-    input:
-      fasta=fastap, 
-      dbcheckpoints=expand(relpath("identify/viral/intermediate/derep/db.{suffix}"), suffix=["ntf", "ndb"])
-    output:
-      relpath("identify/viral/intermediate/derep/blast_out.csv")
-    params:
-      db=relpath("identify/viral/intermediate/derep/db"),
-      outfmt="'6 std qlen slen'",
-      maxtargetseqs=10000, 
-      tmpdir=tmpd
-    log: os.path.join(logdir, "megablastpairwise.log")
-    benchmark: os.path.join(benchmarks, "megablastpairwise.log")
-    conda: "../envs/checkv.yml"
-    threads: 64
-    resources:
-      mem_mb=lambda wildcards, attempt: attempt * 72 * 10**3
-    shell: 
-      """
-      rm -rf {params.tmpdir}/*
-      mkdir -p {params.tmpdir}
-      
-      blastn -query {input.fasta} \
-          -db {params.db} \
-          -outfmt {params.outfmt} \
-          -max_target_seqs {params.maxtargetseqs} \
-          -out {params.tmpdir}/tmp.csv \
-          -num_threads {threads} &> {log}
-    
-      mv {params.tmpdir}/tmp.csv {output}
-      rm -rf {params.tmpdir}/*
-
-      """
-  
-  rule anicalc_derep:
-    name : "clustering.smk calculate ani [--clustering-fast]"
-    input:
-      relpath("identify/viral/intermediate/derep/blast_out.csv")
-    output: 
-      relpath("identify/viral/intermediate/derep/ani.tsv")
-    params:
-      script="workflow/scripts/clust_anicalc.py", 
-      tmpdir=tmpd
-    log: os.path.join(logdir, "anicalc.log")
-    benchmark: os.path.join(benchmarks, "anicalc.log")
-    conda: "../envs/checkv.yml"
-    threads: 1
-    resources:
-      mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
-    shell:
-      """
-      rm -rf {params.tmpdir}/* 
-      mkdir -p {params.tmpdir}
-
-      python {params.script} \
-          -i {input} \
-          -o {params.tmpdir}/tmp.tsv &> {log}
-
-      mv {params.tmpdir}/tmp.tsv {output}
-      rm -rf {params.tmpdir}/*
-      """
-
-
-  rule aniclust_derep:
-    name : "clustering.smk cluster [--clustering-fast]"
-    input:
-      fa=fastap, 
-      ani=relpath("identify/viral/intermediate/derep/ani.tsv")
-    output:
-      tsv= relpath("identify/viral/output/derep/clusters.tsv"),
-      reps=relpath("identify/viral/output/derep/cluster_representatives.txt")
-    params:
-      script="workflow/scripts/clust_ani.py",
-      minani=config["vOTU-ani"],
-      targetcov=config["vOTU-targetcov"],
-      querycov =config["vOTU-querycov"], 
-      tmpdir=tmpd
-    log: os.path.join(logdir, "aniclust.log")
-    benchmark: os.path.join(benchmarks, "aniclust.log")
-    conda: "../envs/checkv.yml"
-    threads: 1
-    resources:
-      mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
-    shell:
-      """
-      rm -rf {params.tmpdir}/*
-      mkdir -p {params.tmpdir}
-
-      python {params.script} \
-          --fna {input.fa} \
-          --ani {input.ani} \
-          --out {params.tmpdir}/tmp.tsv \
-          --min_ani {params.minani} \
-          --min_tcov {params.targetcov} \
-          --min_qcov {params.querycov} &> {log}
-      mv {params.tmpdir}/tmp.tsv {output.tsv}
-      cut -f1 {output.tsv} > {output.reps}
-
-      rm -rf {params.tmpdir}/*
-      """
-
-
-  rule filtercontigs_derep:
-    name: "clustering.smk filter dereplicated viral contigs"
-    input: 
-      fna=fastap, 
-      reps=relpath("identify/viral/output/derep/cluster_representatives.txt")
-    output:
-      relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa")
-    params:
-      outdir=relpath("identify/viral/checkv/output"),
-      tmpdir=tmpd
-    log: os.path.join(logdir, "filterderep.log")
-    conda: "../envs/seqkit-biopython.yml" 
-    threads: 1
-    resources:
-      mem_mb=lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
-    shell:
-      """
-      rm -rf {params.tmpdir}/*
-      mkdir -p {params.tmpdir}
-
-      seqkit grep {input.fna} -f {input.reps} > {params.tmpdir}/tmp.fa 2> {log}
-      mv {params.tmpdir}/tmp.fa {output}
-
-      rm -rf {params.tmpdir}/*
-      """
-
-
-# 2) CD-HIT CLUSTERING (clustering-fast=False)
-else:
-  rule cdhit_split_input:
-    name: "clustering.smk Split input fasta"
+rule split_input:
+    name: "clustering.smk split input fasta"
     input:
         fastap
     output:
-        expand(os.path.join(tmpd, "cluster-splits", f"chunk_{{chunk}}.fa"), chunk=range(n_chunks_layer_1))
+        expand(os.path.join(relpath("identify/viral/output/derep/cluster-splits"), f"chunk_{{chunk}}.fa"), chunk=range(n_chunks_layer_1))
     params:
         pieces = n_chunks_layer_1,
-        outdir = os.path.join(tmpd, "cluster-splits")
-    log: os.path.join(logdir, "clustering/split_input.log")
+        outdir = relpath("identify/viral/output/derep/cluster-splits"),
+        tmpdir = os.path.join(tmpd, "cluster-splits")
+    log: os.path.join(logdir, "split_input.log")
     benchmark: os.path.join(benchmarks, "split_input.log")
     conda: "../envs/seqkit-biopython.yml"
     threads: 1
     shell:
-      """
-        rm -rf {params.outdir}/*
-        mkdir -p {params.outdir}
-        
-        seqkit split2 {input} -p {params.pieces} -O {params.outdir}/
-        
+        """
+        rm -rf {params.outdir} {params.tmpdir}
+        mkdir -p {params.outdir} {params.tmpdir}
+            
+        seqkit split2 {input} -p {params.pieces} -O {params.tmpdir}/
+            
         # Converts seqkit's default padded names (e.g., .part_001.fa) 
         # to our strict 0-indexed names (chunk_0.fa, chunk_1.fa) so math works.
         counter=0
 
-        # Safely collect the files without triggering Snakemake or Bash syntax errors
         shopt -s nullglob
-        set -- {params.outdir}/*.fa {params.outdir}/*.fna {params.outdir}/*.fasta
+        set -- {params.tmpdir}/*.fa {params.tmpdir}/*.fna {params.tmpdir}/*.fasta
         for file in "$@"; do
-          ext="${{file##*.}}"
-          mv "$file" "{params.outdir}/chunk_${{counter}}.fa"
-          counter=$((counter+1))
+            mv "$file" "{params.outdir}/chunk_${{counter}}.fa"
+            counter=$((counter+1))
         done       
         shopt -u nullglob 
         """
-        
-  rule cdhit_recursive_cluster:
-    name: "clustering.smk CD-Hit recursive clustering [clustering-fast=False]"
-    input:
-        get_cdhit_inputs
-    output:
-        fa = os.path.join(tmpd, f"layer_{{layer}}", f"chunk_{{chunk}}.fa"),
-        clstr = os.path.join(tmpd, f"layer_{{layer}}", f"chunk_{{chunk}}.fa.clstr")
-    params:
-        cdhitparams = config['cdhit-params']
-    threads: 32
-    resources:
-        mem_mb = lambda wildcards, attempt: attempt * 72 * 10**3
-    conda: "../envs/cd-hit.yml"
-    log: os.path.join(logdir, "clustering/cdhit_layer_{layer}_chunk_{chunk}.log")
-    benchmark: os.path.join(benchmarks, "cdhit_layer_{layer}_chunk_{chunk}.log")
-    shell:
-        """
-        mkdir -p $(dirname {output.fa})
-        
-        # Determine the chunk identifier safely (handles standard path structures)
-        chunk_name=$(basename "{output.fa}" | sed 's/\.[^.]*$//')
 
-        if [ "{wildcards.layer}" -eq "1" ]; then
-            # LAYER 1: {input} contains exactly one file
-            echo "[$(date '+%Y-%m-%d %H:%M:%S')] PROCESSING: Chunk '${{chunk_name}}' | LAYER: {wildcards.layer} | CONDITION: Initial CD-HIT Clustering" >> {log}
-            cd-hit -i {input} -o {output.fa} -T {threads} {params.cdhitparams} >> {log} 2>&1
-            
-        else
-            # LAYER > 1: {input} automatically expands to "fileA fileB" 
-            # 'cat' will naturally pool them both into the temp file
-            echo "[$(date '+%Y-%m-%d %H:%M:%S')] PROCESSING: Chunk '${{chunk_name}}' | LAYER: {wildcards.layer} | CONDITION: Pooling multiple inputs & Clustered Processing" >> {log}
-            cat {input} > {output.fa}.tmp_input
-            cd-hit -i {output.fa}.tmp_input -o {output.fa} -T {threads} {params.cdhitparams} >> {log} 2>&1
-            
-            # Clean up the pooled temporary file to save disk space
-            rm {output.fa}.tmp_input
-        fi        """
 
-  rule cdhit_derep_finalize:
-    name: "clustering.smk Create final dereplicated dataset"
+# MEGABLAST (clustering-fast=True)
+if config["clustering-fast"]:
+    
+    rule mega_prep_input:
+        name: "clustering.smk mega prep input [clustering-fast=True]"
+        input:
+            get_iter_inputs
+        output:
+            os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "input.fa")
+        params:
+            tmpdir = lambda wildcards, output: os.path.dirname(output[0])
+        log: os.path.join(logdir, "mega_prep_layer_{layer}_chunk_{chunk}.log")
+        threads: 1
+        shell:
+            """
+            mkdir -p {params.tmpdir}
+            
+            if [ "{wildcards.layer}" -eq "1" ]; then
+                cp {input} {output} 2> {log}
+            else
+                cat {input} > {output} 2> {log}
+            fi
+            """
+
+    rule mega_makeblastdb:
+        name: "clustering.smk make blast db [clustering-fast=True]"
+        input:
+            os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "input.fa")
+        output:
+            expand(os.path.join(tmpd, "cluster-layers", "layer_{{layer}}", "chunk_{{chunk}}", "db.{suffix}"), suffix=["ntf", "ndb"])
+        params:
+            tmpdir = lambda wildcards, input: os.path.dirname(input[0]),
+            dbtype = 'nucl'
+        log: os.path.join(logdir, "mega_makeblastdb_layer_{layer}_chunk_{chunk}.log")
+        benchmark: os.path.join(benchmarks, "mega_makeblastdb_layer_{layer}_chunk_{chunk}.log")
+        conda: "../envs/checkv.yml"
+        threads: 1
+        resources:
+            mem_mb = lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
+        shell:
+            """
+            makeblastdb -in {input} -dbtype {params.dbtype} -out {params.tmpdir}/db &> {log}
+            """
+
+    rule mega_megablast:
+        name: "clustering.smk megablast [clustering-fast=True]"
+        input:
+            fasta = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "input.fa"),
+            dbcheckpoints = expand(os.path.join(tmpd, "cluster-layers", "layer_{{layer}}", "chunk_{{chunk}}", "db.{suffix}"), suffix=["ntf", "ndb"])
+        output:
+            os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "blast_out.csv")
+        params:
+            db = lambda wildcards, input: os.path.join(os.path.dirname(input.fasta), "db"),
+            outfmt = "'6 std qlen slen'",
+            maxtargetseqs = 10000
+        log: os.path.join(logdir, "mega_megablast_layer_{layer}_chunk_{chunk}.log")
+        benchmark: os.path.join(benchmarks, "mega_megablast_layer_{layer}_chunk_{chunk}.log")
+        conda: "../envs/checkv.yml"
+        threads: 64
+        resources:
+            mem_mb = lambda wildcards, attempt: attempt * 72 * 10**3
+        shell:
+            """
+            blastn -query {input.fasta} \
+                -db {params.db} \
+                -outfmt {params.outfmt} \
+                -max_target_seqs {params.maxtargetseqs} \
+                -out {output} \
+                -num_threads {threads} &> {log}
+            """
+  
+    rule mega_anicalc:
+        name: "clustering.smk calculate ani [clustering-fast=True]"
+        input:
+            os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "blast_out.csv")
+        output:
+            os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "ani.tsv")
+        params:
+            script = "workflow/scripts/clust_anicalc.py"
+        log: os.path.join(logdir, "mega_anicalc_layer_{layer}_chunk_{chunk}.log")
+        benchmark: os.path.join(benchmarks, "mega_anicalc_layer_{layer}_chunk_{chunk}.log")
+        conda: "../envs/checkv.yml"
+        threads: 1
+        resources:
+            mem_mb = lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
+        shell:
+            """
+            python {params.script} \
+                -i {input} \
+                -o {output} &> {log}
+            """
+
+    rule mega_aniclust:
+        name: "clustering.smk cluster [clustering-fast=True]"
+        input:
+            fa = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "input.fa"),
+            ani = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "ani.tsv")
+        output:
+            clstr = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}.fa.clstr"),
+            reps = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "cluster_representatives.txt")
+        params:
+            script = "workflow/scripts/clust_ani.py",
+            minani = config["vOTU-ani"],
+            targetcov = config["vOTU-targetcov"],
+            querycov = config["vOTU-querycov"],
+            outdir = lambda wildcards, output: os.path.dirname(output.clstr)
+        log: os.path.join(logdir, "mega_aniclust_layer_{layer}_chunk_{chunk}.log")
+        benchmark: os.path.join(benchmarks, "mega_aniclust_layer_{layer}_chunk_{chunk}.log")
+        conda: "../envs/checkv.yml"
+        threads: 1
+        resources:
+            mem_mb = lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
+        shell:
+            """
+            mkdir -p {params.outdir}
+            python {params.script} \
+                --fna {input.fa} \
+                --ani {input.ani} \
+                --out {output.clstr} \
+                --min_ani {params.minani} \
+                --min_tcov {params.targetcov} \
+                --min_qcov {params.querycov} &> {log}
+                
+            cut -f1 {output.clstr} > {output.reps}
+            """
+
+    rule mega_filtercontigs:
+        name: "clustering.smk filter dereplicated viral contigs"
+        input:
+            fna = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "input.fa"),
+            reps = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "cluster_representatives.txt")
+        output:
+            fa = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}.fa")
+        params:
+            tmpdir = lambda wildcards, input: os.path.dirname(input.fna),
+            outdir = lambda wildcards, output: os.path.dirname(output.fa)
+        log: os.path.join(logdir, "mega_filtercontigs_layer_{layer}_chunk_{chunk}.log")
+        conda: "../envs/seqkit-biopython.yml" 
+        threads: 1
+        resources:
+            mem_mb = lambda wildcards, attempt, input: max(2*input.size_mb, 1000)
+        shell:
+            """
+            mkdir -p {params.outdir}
+            seqkit grep {input.fna} -f {input.reps} > {output.fa} 2> {log}
+            
+            # Clean up the intermediate chunk directory to save disk space
+            rm -rf {params.tmpdir}
+            """
+
+
+# CD-HIT (clustering-fast=False)
+else:        
+    rule cdhit_recursive_cluster:
+        name: "clustering.smk CD-HIT recursive clustering [clustering-fast=False]"
+        input:
+            get_iter_inputs
+        output:
+            fa = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{{layer}}", f"chunk_{{chunk}}.fa"),
+            clstr = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{{layer}}", f"chunk_{{chunk}}.fa.clstr")
+        params:
+            cdhitparams = config['cdhit-params'],
+            outdir = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{{layer}}"), 
+            tmpdir = os.path.join(tmpd, "cluster-layers", f"layer_{{layer}}", f"chunk_{{chunk}}")
+        threads: 64
+        resources:
+            mem_mb = lambda wildcards, threads, attempt: int(attempt * (threads / 64) * 72 * 10**3)
+        conda: "../envs/cd-hit.yml"
+        log: os.path.join(logdir, "cdhit_layer_{layer}_chunk_{chunk}.log")
+        benchmark: os.path.join(benchmarks, "cdhit_layer_{layer}_chunk_{chunk}.log")
+        shell:
+            """
+            rm -rf {params.tmpdir}
+            mkdir -p {params.tmpdir} {params.outdir}
+            
+            # determine the chunk identifier safely (handles standard path structures)
+            chunk_name=$(basename "{output.fa}" | sed 's/\.[^.]*$//')
+            
+            if [ "{wildcards.layer}" -eq "1" ]; then
+    
+                # layer = 1: input contains exactly one file
+    
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] PROCESSING: Chunk '${{chunk_name}}' | LAYER: {wildcards.layer} | CONDITION: Initial CD-HIT Clustering" >> {log}
+                cd-hit -i {input} -o {params.tmpdir}/tmp_output -T {threads} {params.cdhitparams} >> {log} 2>&1
+    
+                mv {params.tmpdir}/tmp_output {output.fa}
+                mv {params.tmpdir}/tmp_output.clstr {output.clstr}
+                rm -rf {params.tmpdir}
+    
+            else
+    
+                # layer > 1: inputs automatically expands to "chunk_0.fa chunk_1.fa ..." 
+    
+                cat {input} > {params.tmpdir}/tmp_input
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] PROCESSING: Chunk '${{chunk_name}}' | LAYER: {wildcards.layer} | CONDITION: Pooling multiple inputs & Clustered Processing" >> {log}
+                cd-hit -i {params.tmpdir}/tmp_input -o {params.tmpdir}/tmp_output -T {threads} {params.cdhitparams} >> {log} 2>&1
+                
+                mv {params.tmpdir}/tmp_output {output.fa}
+                mv {params.tmpdir}/tmp_output.clstr {output.clstr}
+                rm -rf {params.tmpdir}
+            fi        
+            """
+
+rule derep_finalize:
+    name: "clustering.smk finalize dereplicated dataset"
     input:
-        # We explicitly request Chunk 0 of the Final Layer (the bottom of the tree)
-        fa = os.path.join(tmpd, f"layer_{clustering_iter}", "chunk_0.fa"),
-        clstr = os.path.join(tmpd, f"layer_{clustering_iter}", "chunk_0.fa.clstr")
+        fa = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{clustering_iter}", "chunk_0.fa"),
+        clstr = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{clustering_iter}", "chunk_0.fa.clstr")
     output:
         fa = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa"),
         clstr = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr"), 
         done = os.path.join(logdir, "clustering-sensitive-done.log")
-    log: os.path.join(logdir, "clustering/viral_cdhit.log")
+    log: os.path.join(logdir, "cdhit_final.log")
     benchmark: 
         os.path.join(benchmarks, "identify/viral_cdhit.log")
     shell:
         """
         cp {input.fa} {output.fa}
         cp {input.clstr} {output.clstr}
-        
+         
         touch {output.done}
         """
