@@ -218,7 +218,7 @@ if config["clustering-fast"]:
 # 2) CD-HIT CLUSTERING (clustering-fast=False)
 else:
   rule cdhit_split_input:
-    name: "clustering.smk split input fasta [clustering-fast=False]"
+    name: "clustering.smk Split input fasta"
     input:
         fastap
     output:
@@ -282,7 +282,7 @@ else:
         """
 
   rule cdhit_derep_finalize:
-    name: "clustering.smk create final dereplicated dataset [clustering-fast=False]"
+    name: "clustering.smk Create final dereplicated dataset"
     input:
         # We explicitly request Chunk 0 of the Final Layer (the bottom of the tree)
         fa = os.path.join(tmpd, f"layer_{clustering_iter}", "chunk_0.fa"),
