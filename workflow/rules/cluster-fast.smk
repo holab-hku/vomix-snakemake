@@ -104,7 +104,7 @@ if config["clustering-fast"]:
             os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "input.fa")
         params:
             tmpdir = lambda wildcards, output: os.path.dirname(output[0])
-        log: os.path.join(logdir, "mega_prep_layer_{layer}_chunk_{chunk}.log")
+        log: os.path.join(logdir, "megablast_prep_layer_{layer}_chunk_{chunk}.log")
         threads: 1
         shell:
             """
@@ -119,7 +119,7 @@ if config["clustering-fast"]:
             fi
             """
 
-    rule mega_makeblastdb:
+    rule megablast_makeblastdb:
         name: "clustering.smk make blast db"
         input:
             os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "input.fa")
@@ -128,8 +128,8 @@ if config["clustering-fast"]:
         params:
             tmpdir = lambda wildcards, input: os.path.dirname(input[0]),
             dbtype = 'nucl'
-        log: os.path.join(logdir, "mega_makeblastdb_layer_{layer}_chunk_{chunk}.log")
-        benchmark: os.path.join(benchmarks, "mega_makeblastdb_layer_{layer}_chunk_{chunk}.log")
+        log: os.path.join(logdir, "megablast_makeblastdb_layer_{layer}_chunk_{chunk}.log")
+        benchmark: os.path.join(benchmarks, "megablast_makeblastdb_layer_{layer}_chunk_{chunk}.log")
         conda: "../envs/checkv.yml"
         threads: 1
         resources:
@@ -139,7 +139,7 @@ if config["clustering-fast"]:
             makeblastdb -in {input} -dbtype {params.dbtype} -out {params.tmpdir}/db &> {log}
             """
 
-    rule mega_megablast:
+    rule megablast_run:
         name: "clustering.smk megablast run"
         input:
             fasta = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "input.fa"),
@@ -150,8 +150,8 @@ if config["clustering-fast"]:
             db = lambda wildcards, input: os.path.join(os.path.dirname(input.fasta), "db"),
             outfmt = "'6 std qlen slen'",
             maxtargetseqs = 10000
-        log: os.path.join(logdir, "mega_megablast_layer_{layer}_chunk_{chunk}.log")
-        benchmark: os.path.join(benchmarks, "mega_megablast_layer_{layer}_chunk_{chunk}.log")
+        log: os.path.join(logdir, "megablast_run_layer_{layer}_chunk_{chunk}.log")
+        benchmark: os.path.join(benchmarks, "megablast_run_layer_{layer}_chunk_{chunk}.log")
         conda: "../envs/checkv.yml"
         threads: 64
         resources:
@@ -166,7 +166,7 @@ if config["clustering-fast"]:
                 -num_threads {threads} &> {log}
             """
   
-    rule mega_anicalc:
+    rule megablast_anicalc:
         name: "clustering.smk calculate ani"
         input:
             os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "blast_out.csv")
@@ -174,8 +174,8 @@ if config["clustering-fast"]:
             os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "ani.tsv")
         params:
             script = "workflow/scripts/clust_anicalc.py"
-        log: os.path.join(logdir, "mega_anicalc_layer_{layer}_chunk_{chunk}.log")
-        benchmark: os.path.join(benchmarks, "mega_anicalc_layer_{layer}_chunk_{chunk}.log")
+        log: os.path.join(logdir, "megablast_anicalc_layer_{layer}_chunk_{chunk}.log")
+        benchmark: os.path.join(benchmarks, "megablast_anicalc_layer_{layer}_chunk_{chunk}.log")
         conda: "../envs/checkv.yml"
         threads: 1
         resources:
@@ -187,7 +187,7 @@ if config["clustering-fast"]:
                 -o {output} &> {log}
             """
 
-    rule mega_aniclust:
+    rule megablast_aniclust:
         name: "clustering.smk cluster by ani"
         input:
             fa = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "input.fa"),
@@ -201,8 +201,8 @@ if config["clustering-fast"]:
             targetcov = config["vOTU-targetcov"],
             querycov = config["vOTU-querycov"],
             outdir = lambda wildcards, output: os.path.dirname(output.clstr)
-        log: os.path.join(logdir, "mega_aniclust_layer_{layer}_chunk_{chunk}.log")
-        benchmark: os.path.join(benchmarks, "mega_aniclust_layer_{layer}_chunk_{chunk}.log")
+        log: os.path.join(logdir, "megablast_aniclust_layer_{layer}_chunk_{chunk}.log")
+        benchmark: os.path.join(benchmarks, "megablast_aniclust_layer_{layer}_chunk_{chunk}.log")
         conda: "../envs/checkv.yml"
         threads: 1
         resources:
@@ -221,7 +221,7 @@ if config["clustering-fast"]:
             cut -f1 {output.clstr} > {output.reps}
             """
 
-    rule mega_filtercontigs:
+    rule megablast_filtercontigs:
         name: "clustering.smk filter dereplicated viral contigs"
         input:
             fna = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "input.fa"),
@@ -231,7 +231,7 @@ if config["clustering-fast"]:
         params:
             tmpdir = lambda wildcards, input: os.path.dirname(input.fna),
             outdir = lambda wildcards, output: os.path.dirname(output.fa)
-        log: os.path.join(logdir, "mega_filtercontigs_layer_{layer}_chunk_{chunk}.log")
+        log: os.path.join(logdir, "megablast_filtercontigs_layer_{layer}_chunk_{chunk}.log")
         conda: "../envs/seqkit-biopython.yml" 
         threads: 1
         resources:
