@@ -48,7 +48,8 @@ rule done_log:
     name: "clustering.smk Done. removing tmp files"
     localrule: True
     input:
-        relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr")
+        relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr"), 
+        os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{clustering_iter}", "chunk_0.fa"),
     output:
         os.path.join(logdir, "clustering-done.log")
     shell: "touch {output}"
@@ -94,7 +95,7 @@ if config["clustering-fast"]:
         input:
             get_iter_inputs
         output:
-            os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "input.fa")
+            os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "input.fa")
         params:
             tmpdir = lambda wildcards, output: os.path.dirname(output[0])
         log: os.path.join(logdir, "mega_prep_layer_{layer}_chunk_{chunk}.log")
@@ -115,7 +116,7 @@ if config["clustering-fast"]:
     rule mega_makeblastdb:
         name: "clustering.smk make blast db"
         input:
-            os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "input.fa")
+            os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "input.fa")
         output:
             expand(os.path.join(tmpd, "cluster-layers", "layer_{{layer}}", "chunk_{{chunk}}", "db.{suffix}"), suffix=["ntf", "ndb"])
         params:
@@ -135,8 +136,8 @@ if config["clustering-fast"]:
     rule mega_megablast:
         name: "clustering.smk megablast run"
         input:
-            fasta = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "input.fa"),
-            dbcheckpoints = expand(os.path.join(tmpd, "cluster-layers", "layer_{{layer}}", "chunk_{{chunk}}", "db.{suffix}"), suffix=["ntf", "ndb"])
+            fasta = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "input.fa"),
+            dbcheckpoints = expand(os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{{layer}}", "chunk_{{chunk}}", "db.{suffix}"), suffix=["ntf", "ndb"])
         output:
             os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "blast_out.csv")
         params:
@@ -162,9 +163,9 @@ if config["clustering-fast"]:
     rule mega_anicalc:
         name: "clustering.smk calculate ani"
         input:
-            os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "blast_out.csv")
+            os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "blast_out.csv")
         output:
-            os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "ani.tsv")
+            os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "ani.tsv")
         params:
             script = "workflow/scripts/clust_anicalc.py"
         log: os.path.join(logdir, "mega_anicalc_layer_{layer}_chunk_{chunk}.log")
@@ -183,11 +184,11 @@ if config["clustering-fast"]:
     rule mega_aniclust:
         name: "clustering.smk cluster by ani"
         input:
-            fa = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "input.fa"),
-            ani = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "ani.tsv")
+            fa = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "input.fa"),
+            ani = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "ani.tsv")
         output:
             clstr = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}.fa.clstr"),
-            reps = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "cluster_representatives.txt")
+            reps = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "cluster_representatives.txt")
         params:
             script = "workflow/scripts/clust_ani.py",
             minani = config["vOTU-ani"],
@@ -217,8 +218,8 @@ if config["clustering-fast"]:
     rule mega_filtercontigs:
         name: "clustering.smk filter dereplicated viral contigs"
         input:
-            fna = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "input.fa"),
-            reps = os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "cluster_representatives.txt")
+            fna = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "input.fa"),
+            reps = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "cluster_representatives.txt")
         output:
             fa = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}.fa")
         params:
@@ -291,6 +292,7 @@ else:
 
 rule derep_finalize:
     name: "clustering.smk finalize dereplicated dataset"
+    localrule: True
     input:
         fa = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{clustering_iter}", "chunk_0.fa"),
         clstr = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{clustering_iter}", "chunk_0.fa.clstr")
