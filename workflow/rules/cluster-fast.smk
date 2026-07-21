@@ -299,7 +299,6 @@ rule derep_finalize:
     output:
         fa = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa"),
         clstr = relpath("identify/viral/output/derep/combined.viralcontigs.derep.fa.clstr"), 
-        done = os.path.join(logdir, "clustering-sensitive-done.log")
     log: os.path.join(logdir, "cdhit_final.log")
     benchmark: 
         os.path.join(benchmarks, "identify/viral_cdhit.log")
@@ -307,6 +306,4 @@ rule derep_finalize:
         """
         cp {input.fa} {output.fa}
         cp {input.clstr} {output.clstr}
-         
-        touch {output.done}
         """
