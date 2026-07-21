@@ -263,7 +263,7 @@ else:
             rm -rf {params.tmpdir}
             mkdir -p {params.tmpdir} {params.outdir}
             
-            chunk_name=$(basename "{output.fa}" | sed 's/\.[^.]*$//')
+            chunk_name=$(basename "{output.fa}" | sed 's/\\.[^.]*$//')
             
             if [ "{wildcards.layer}" -eq "1" ]; then
     
