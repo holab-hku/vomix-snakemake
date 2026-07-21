@@ -97,6 +97,7 @@ rule split_input:
 if config["clustering-fast"]:
     rule megablast_prep_input:
         name: "clustering.smk prepare split input"
+        localrule: True
         input:
             get_iter_inputs
         output:
