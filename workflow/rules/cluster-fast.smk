@@ -118,7 +118,7 @@ if config["clustering-fast"]:
         input:
             os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "input.fa")
         output:
-            expand(os.path.join(tmpd, "cluster-layers", "layer_{{layer}}", "chunk_{{chunk}}", "db.{suffix}"), suffix=["ntf", "ndb"])
+            expand(os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{{layer}}", "chunk_{{chunk}}", "db.{suffix}"), suffix=["ntf", "ndb"])
         params:
             tmpdir = lambda wildcards, input: os.path.dirname(input[0]),
             dbtype = 'nucl'
@@ -139,7 +139,7 @@ if config["clustering-fast"]:
             fasta = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "input.fa"),
             dbcheckpoints = expand(os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{{layer}}", "chunk_{{chunk}}", "db.{suffix}"), suffix=["ntf", "ndb"])
         output:
-            os.path.join(tmpd, "cluster-layers", "layer_{layer}", "chunk_{chunk}", "blast_out.csv")
+            os.path.join(relpath("identify/viral/output/derep/cluster-layers"), "layer_{layer}", "chunk_{chunk}", "blast_out.csv")
         params:
             db = lambda wildcards, input: os.path.join(os.path.dirname(input.fasta), "db"),
             outfmt = "'6 std qlen slen'",
@@ -251,7 +251,7 @@ else:
         params:
             cdhitparams = config['cdhit-params'],
             outdir = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{{layer}}"), 
-            tmpdir = os.path.join(tmpd, "cluster-layers", f"layer_{{layer}}", f"chunk_{{chunk}}")
+            tmpdir = os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{{layer}}", f"chunk_{{chunk}}")
         threads: 64
         resources:
             mem_mb = lambda wildcards, threads, attempt: int(attempt * (threads / 64) * 72 * 10**3)
