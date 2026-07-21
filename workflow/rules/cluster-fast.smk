@@ -1,6 +1,10 @@
 import math
 import os
 
+wildcard_constraints:
+    layer=r"\d+",
+    chunk=r"\d+"
+
 logdir = relpath("identify/viral/logs")
 tmpd = relpath("identify/viral/tmp")
 benchmarks=relpath("identify/viral/benchmarks")
