@@ -62,6 +62,7 @@ rule done_log:
 ### RULES 
 rule split_input:
     name: "clustering.smk split input fasta"
+    localrule: True
     input:
         fastap
     output:
