@@ -16,8 +16,8 @@ os.makedirs(tmpd, exist_ok=True)
 
 n_cores = config['max-cores']
 assembler = config['assembler']
-split_part = list(range(1, config["splits"] + 2))
-split_part_ids = [f"{i:03d}" for i in range(1, config["splits"] + 2)] # matches seqkit
+split_part = list(range(1, config["contig-splits"] + 2))
+split_part_ids = [f"{i:03d}" for i in range(1, config["contig-splits"] + 2)] # matches seqkit
 
 
 ### Read fasta or fastadir input
@@ -100,7 +100,7 @@ rule split_contigs:
   output:
     expand(relpath("identify/viral/samples/{{sample_id}}/tmp/splits/{{sample_id}}_filtered.part_{part}.fa"), part=split_part_ids)
   params:
-    parts=config["splits"] + 1,
+    parts=config["contig-splits"] + 1,
     tmpdir=os.path.join(tmpd, "contigs/{sample_id}/splits"),
     outdir=relpath("identify/viral/samples/{sample_id}/tmp/splits")
   log: os.path.join(logdir, "splitcontig_{sample_id}.log")
