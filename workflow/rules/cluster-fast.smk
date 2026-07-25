@@ -34,6 +34,7 @@ def get_iter_inputs(wildcards):
             os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{prev_layer}/chunk_{child1}.fa"), 
             os.path.join(relpath("identify/viral/output/derep/cluster-layers"), f"layer_{prev_layer}/chunk_{child2}.fa")
         ]
+ 
         
     
 ### Read single fasta file if input

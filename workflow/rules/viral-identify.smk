@@ -91,7 +91,7 @@ rule genomad_classify:
     genomadparams=config['genomad-params'],
     dbdir=config['genomad-db'],
     outdir=relpath("identify/viral/samples/{sample_id}/intermediate/genomad/"),
-    splits=config['splits'],
+    splits=config['contig-splits'],
     tmpdir=os.path.join(tmpd, "genomad/{sample_id}")
   log: os.path.join(logdir, "genomad_{sample_id}.log")
   benchmark: os.path.join(benchmarks, "genomad_{sample_id}.log")
