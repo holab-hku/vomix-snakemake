@@ -82,7 +82,7 @@ EMAIL="your.email@example.com"
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda apptainer --config module="viral-identify" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+snakemake --sdm apptainer --config module="viral-identify" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
 
 # Run on cluster with 64 CPUs
 snakemake --sdm conda apptainer --config module="viral-identify" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
@@ -134,7 +134,7 @@ head -n 20 quick/identify/viral/output/benchmark_results_merged.csv
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda apptainer --config module="viral-benchmark" outdir="quick-run/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" contig-splits=0 -j 4 --latency-wait 20 -n
+snakemake --sdm apptainer --config module="viral-benchmark" outdir="quick-run/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" contig-splits=0 -j 4 --latency-wait 20 -n
 
 # Run jobs
 snakemake --sdm conda apptainer --config module="viral-benchmark" outdir="quick-run/results" fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" contig-splits=0 -j 4 --latency-wait 20
@@ -174,7 +174,7 @@ EMAIL="your.email@example.com"
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda apptainer --config module="viral-benchmark" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
+snakemake --sdm apptainer --config module="viral-benchmark" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 -n --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
 
 # Run jobs on cluster with 64 CPUs
 snakemake --sdm conda apptainer --config module="viral-benchmark" outdir="quick-run/results" contig-splits=0 fasta="sample/contigs/contigs_simulated_viral_nonviral.fasta" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
@@ -215,7 +215,7 @@ head -n 20 quick/identify/viral/output/classification_summary_vOTUs.csv
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda apptainer --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --dry-run
+snakemake --sdm apptainer --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --dry-run
 
 # Run your pipeline
 snakemake --sdm conda apptainer --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --latency-wait 20
@@ -261,7 +261,7 @@ EMAIL="your.email@example.com"
 conda activate vomix
 
 # Dry run (check jobs)
-snakemake --sdm conda apptainer --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --dry-run --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a" -n
+snakemake --sdm apptainer --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --dry-run --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a" -n
 
 # Submit the workflow to the cluster with PBS
 snakemake --sdm conda apptainer --configfile config/config.yml --config module="viral-end-to-end" decontam-host=False outdir="sample/results" datadir="sample/fastq" samplelist="sample/sample_list.csv" -j 64 --latency-wait 20 --executor cluster-generic --cluster-generic-submit-cmd "qsub -N {log} -l nodes=1:ppn={threads} -l mem={resources.mem_mb}m -l walltime=120:00:00 -M $EMAIL -q cgsd -o qsub.log -e qsub.log -m a"
