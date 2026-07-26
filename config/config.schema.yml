@@ -84,7 +84,7 @@ properties:
 
   contig-splits:
     type: integer
-    description: "Number of parallel data partitions in viral identification tools for reducing memory overhead (e.g. geNomad, VIBRANT, VirFinder, DeepVirFinder, PhaMer, VirSorter2). Set to 0 to disable partitioning."
+    description: "Number of parallel data partitions in viral identification tools to produce n+1 chunks of data. Used for reducing memory overhead (e.g. geNomad, VIBRANT, VirFinder, DeepVirFinder, PhaMer, VirSorter2). Set to 0 to disable partitioning."
     default: 0
 
   keep-intermediates:
@@ -335,7 +335,7 @@ properties:
 
   checkv-splits:
     type: integer
-    description: "Number of input data splits for CheckV or CheckV-PyHMMER analysis. Higher values reduce memory usage but increase runtime. Set to 0 for no splitting."
+    description: "Number of input data splits for CheckV or CheckV-PyHMMER analysis, splitting data into n+1 chunks. Higher values reduce memory usage but increase runtime. Set to 0 for no splitting."
     default: 0
     minimum: 0
 
